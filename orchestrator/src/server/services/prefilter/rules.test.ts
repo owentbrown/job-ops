@@ -1,7 +1,12 @@
 import { createJob } from "@shared/testing/factories";
 import { describe, expect, it } from "vitest";
 import { parsePrefilterConfig } from "./config";
-import { evaluateRules } from "./rules";
+import {
+  evaluateRules,
+  OCCASIONAL_PHRASES,
+  WEEKLY_PATTERNS,
+  WEEKLY_PHRASES,
+} from "./rules";
 
 const config = parsePrefilterConfig({
   title: {
@@ -95,7 +100,7 @@ describe("evaluateRules", () => {
       ),
     ).toEqual({
       decision: "undecided",
-      flags: ["commute: toronto (description says remote)"],
+      flags: ["commute: toronto (remote/occasional travel?)"],
     });
     expect(
       evaluateRules(
@@ -108,7 +113,7 @@ describe("evaluateRules", () => {
   it("drops non-remote Toronto jobs but keeps remote ones", () => {
     expect(evaluateRules(job({ location: "Toronto, ON" }), config)).toEqual({
       decision: "drop",
-      reason: "location 'toronto' needs a commute (not remote)",
+      reason: "location 'toronto' needs a commute (no remote signal)",
     });
     expect(
       evaluateRules(job({ location: "Toronto, ON", isRemote: true }), config)
@@ -183,5 +188,109 @@ describe("evaluateRules", () => {
     expect(
       evaluateRules(job({ location: "Toronto, ON" }), config).decision,
     ).toBe("drop");
+  });
+
+  describe("commute weekly vs occasional", () => {
+    const toronto = (description: string, extra = {}) =>
+      evaluateRules(
+        job({ location: "Toronto, ON", jobDescription: description, ...extra }),
+        config,
+      );
+
+    it("drops hybrid / N days a week roles", () => {
+      expect(toronto("Hybrid, 3 days a week in office")).toEqual({
+        decision: "drop",
+        reason: "location 'toronto': weekly in-office (hybrid)",
+      });
+      expect(toronto("Be in the office 3 days a week.")).toMatchObject({
+        decision: "drop",
+        reason: "location 'toronto': weekly in-office (3 days a week)",
+      });
+    });
+
+    it("lets weekly win over remote signals", () => {
+      expect(
+        toronto("We are remote-first, 2 days per week in office"),
+      ).toMatchObject({ decision: "drop" });
+    });
+
+    it("sends remote roles with occasional travel to the AI check", () => {
+      expect(
+        toronto("This is a remote role with quarterly team meetups in Toronto"),
+      ).toEqual({
+        decision: "undecided",
+        flags: ["commute: toronto (remote/occasional travel?)"],
+      });
+    });
+
+    it("drops with no remote signal", () => {
+      expect(toronto("A plain description.")).toEqual({
+        decision: "drop",
+        reason: "location 'toronto' needs a commute (no remote signal)",
+      });
+    });
+
+    it("drops when workFromHomeType or location says hybrid or on-site", () => {
+      expect(toronto("Great role.", { workFromHomeType: "Hybrid" })).toEqual({
+        decision: "drop",
+        reason: "location 'toronto': weekly in-office (hybrid)",
+      });
+      expect(
+        evaluateRules(
+          job({ location: "Toronto, ON (On-site)", jobDescription: "x" }),
+          config,
+        ),
+      ).toMatchObject({ decision: "drop" });
+    });
+
+    it("ignores negated weekly phrases", () => {
+      expect(toronto("No hybrid requirement, fully remote")).toEqual({
+        decision: "undecided",
+        flags: ["commute: toronto (remote/occasional travel?)"],
+      });
+      expect(
+        toronto("Not required to be in office 3 days a week. Remote role."),
+      ).toMatchObject({ decision: "undecided" });
+    });
+
+    it("drops fully on-site roles", () => {
+      expect(toronto("This is a fully on-site position")).toMatchObject({
+        decision: "drop",
+      });
+    });
+
+    it("drops multi-location when weekly and all places are commute cities", () => {
+      const multi = (location: string, description: string) =>
+        evaluateRules(job({ location, jobDescription: description }), config);
+      expect(multi("Toronto or Toronto, ON", "Hybrid role")).toMatchObject({
+        decision: "drop",
+      });
+      expect(multi("Waterloo or Toronto", "Hybrid role")).toEqual({
+        decision: "undecided",
+        flags: ["commute: toronto"],
+      });
+    });
+
+    it("does not touch remote-flagged or non-commute jobs", () => {
+      expect(toronto("Hybrid 3 days a week", { isRemote: true }).decision).toBe(
+        "undecided",
+      );
+      expect(
+        evaluateRules(
+          job({
+            location: "Waterloo, ON",
+            jobDescription: "Hybrid, 3 days a week",
+          }),
+          config,
+        ).decision,
+      ).toBe("undecided");
+    });
+
+    it("exports phrase constants", () => {
+      expect(WEEKLY_PHRASES).toContain("fully on-site");
+      expect(OCCASIONAL_PHRASES).toContain("quarterly");
+      expect(OCCASIONAL_PHRASES).toContain("remote role");
+      expect(WEEKLY_PATTERNS.length).toBeGreaterThan(0);
+    });
   });
 });

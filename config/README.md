@@ -48,3 +48,7 @@ npx tsx scripts/prefilter-dry-run.ts /tmp/jobs-copy.db --all  # discovered + ski
 
 It prints one line per job (drop / keep / undecided with the reason) and a
 summary. Set `PREFILTER_CONFIG_PATH` to test a different rules file.
+
+### Commute rule (Toronto area)
+
+For jobs whose location matches `location.commuteBlocklist` and that are not flagged remote, the description decides. A weekly in-office signal (the word "hybrid", "N days a week", "fully on-site", or hybrid/on-site in the location or work-from-home type) drops the job, even if the posting also says remote-first. Remote or occasional-travel wording (for example "remote role", "quarterly") sends the job to the AI check, which sees an `Arrangement:` excerpt. With no signal either way the job is dropped. Negated phrases such as "no hybrid requirement" are ignored.

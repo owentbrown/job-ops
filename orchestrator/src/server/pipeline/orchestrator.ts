@@ -48,6 +48,7 @@ import {
   type PendingChallenge,
   progressHelpers,
   resetProgress,
+  updateProgress,
 } from "./progress";
 import {
   buildPipelineRunSavedDetails,
@@ -63,6 +64,7 @@ import {
   scoreJobsStep,
   selectJobsStep,
 } from "./steps";
+import { prefilterJobsStep } from "./steps/prefilter-jobs";
 
 const DEFAULT_CONFIG: PipelineConfig = {
   topN: 10,
@@ -344,7 +346,11 @@ function mergeRetriedJobs(
  */
 export async function runPipeline(
   config: Partial<PipelineConfig> = {},
-  options?: { hostedUsageReservationId?: string | null },
+  options?: {
+    hostedUsageReservationId?: string | null;
+    /** Backlog button: the click is the go-ahead, so don't pause for review. */
+    skipPrefilterReview?: boolean;
+  },
 ): Promise<{
   success: boolean;
   jobsDiscovered: number;
@@ -432,12 +438,19 @@ export async function runPipeline(
       ensureNotCancelled(scopeKey);
       await persistResultSummary({ stage: "discovery" });
       let { discoveredJobs, sourceErrors, pendingChallenges } =
-        await discoverJobsStep({
-          mergedConfig,
-          watchlistSelectedSourceIds: mergedConfig.watchlistSelectedSourceIds,
-          shouldCancel: () =>
-            getPipelineState(scopeKey).cancelRequestedAt !== null,
-        });
+        mergedConfig.enableCrawling === false
+          ? {
+              discoveredJobs: [] as CreateJobInput[],
+              sourceErrors: [] as string[],
+              pendingChallenges: [] as PendingChallenge[],
+            }
+          : await discoverJobsStep({
+              mergedConfig,
+              watchlistSelectedSourceIds:
+                mergedConfig.watchlistSelectedSourceIds,
+              shouldCancel: () =>
+                getPipelineState(scopeKey).cancelRequestedAt !== null,
+            });
       await persistResultSummary({
         stage: "discovery",
         sourceErrors,
@@ -550,6 +563,38 @@ export async function runPipeline(
         jobsDiscovered,
       });
 
+      ensureNotCancelled(scopeKey);
+      const prefilterResult = await prefilterJobsStep({
+        reviewGate: !options?.skipPrefilterReview,
+        shouldCancel: () =>
+          getPipelineState(scopeKey).cancelRequestedAt !== null,
+        // Reuses the LLM-config pause: same card, same Resume endpoint, and
+        // requestPipelineCancel() already unblocks it.
+        waitForResume: async ({ title, message }) => {
+          pipelineLogger.info("Pipeline paused before scoring", { title });
+          updateProgress({
+            step: "configuration_required",
+            message: title,
+            detail: message,
+            error: message,
+            actionTitle: title,
+            actionLabel: "Resume: rules → AI check → scoring",
+          });
+          await new Promise<void>((resolve) => {
+            tenantState.activeLlmConfigState = { resolve };
+          });
+          tenantState.activeLlmConfigState = null;
+          updateProgress({
+            actionTitle: undefined,
+            actionLabel: undefined,
+            error: undefined,
+            detail: undefined,
+          });
+          ensureNotCancelled(scopeKey);
+        },
+      });
+      pipelineLogger.info("Prefilter finished", prefilterResult);
+
       let scoredJobs: import("./steps/types").ScoredJob[] = [];
 
       ensureNotCancelled(scopeKey);
@@ -591,10 +636,13 @@ export async function runPipeline(
 
       ensureNotCancelled(scopeKey);
       await persistResultSummary({ stage: "selection" });
-      const jobsToProcess = await selectJobsStep({
-        scoredJobs,
-        mergedConfig,
-      });
+      const jobsToProcess =
+        mergedConfig.enableAutoTailoring === false
+          ? []
+          : await selectJobsStep({
+              scoredJobs,
+              mergedConfig,
+            });
       await persistResultSummary({
         stage: "selection",
         jobsScored: scoredJobs.length,

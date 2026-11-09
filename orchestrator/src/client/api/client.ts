@@ -8,5 +8,6 @@ export * from "./ghostwriter";
 export * from "./jobs";
 export * from "./pipeline";
 export * from "./post-application";
+export * from "./prefilter";
 export * from "./settings-profile";
 export * from "./watchlist";

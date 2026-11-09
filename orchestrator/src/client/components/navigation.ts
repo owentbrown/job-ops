@@ -2,6 +2,7 @@ import {
   Columns3,
   Eye,
   FilePenLine,
+  Filter,
   Home,
   Inbox,
   LayoutDashboard,
@@ -51,6 +52,7 @@ export const NAV_LINKS: NavLink[] = [
   },
   { to: "/visa-sponsors", label: "Visa Sponsors", icon: Shield },
   { to: "/watchlist", label: "Watchlist", icon: Eye },
+  { to: "/filtered", label: "Filtered", icon: Filter },
   { to: "/settings", label: "Settings", icon: Settings },
 ];
 

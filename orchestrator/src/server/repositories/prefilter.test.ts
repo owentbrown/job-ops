@@ -95,4 +95,65 @@ describe.sequential("prefilter repository", () => {
 
     expect(await prefilterRepo.restoreFilteredJob(a.id)).toBe(false);
   });
+
+  it("never re-filters a restored job", async () => {
+    const job = await makeJob("e");
+    await prefilterRepo.markJobFiltered({
+      id: job.id,
+      layer: "rules",
+      reason: "r",
+    });
+    await prefilterRepo.restoreFilteredJob(job.id);
+    const changed = await prefilterRepo.markJobFiltered({
+      id: job.id,
+      layer: "llm",
+      reason: "again",
+    });
+    expect(changed).toBe(false);
+    const after = await jobsRepo.getJobById(job.id);
+    expect(after?.status).toBe("discovered");
+    expect(after?.filterLayer).toBe("restored");
+  });
+
+  it("does not restore a skipped job that was never filtered", async () => {
+    const job = await makeJob("f");
+    await jobsRepo.updateJob(job.id, { status: "skipped" });
+    expect(await prefilterRepo.restoreFilteredJob(job.id)).toBe(false);
+    expect((await jobsRepo.getJobById(job.id))?.status).toBe("skipped");
+  });
+
+  it("isolates filtered jobs between tenants", async () => {
+    const { runWithRequestContext } = await import("@infra/request-context");
+    const inTenant = <T>(tenantId: string, run: () => Promise<T>) =>
+      runWithRequestContext({ requestId: `test-${tenantId}`, tenantId }, run);
+
+    const { db, schema } = await import("../db/index");
+    await db
+      .insert(schema.tenants)
+      .values({ id: "tenant-b", name: "Tenant B", slug: "tenant-b" });
+
+    const other = await inTenant("tenant-b", () => makeJob("g"));
+    expect(
+      await prefilterRepo.markJobFiltered({
+        id: other.id,
+        layer: "rules",
+        reason: "x",
+      }),
+    ).toBe(false);
+
+    await inTenant("tenant-b", () =>
+      prefilterRepo.markJobFiltered({
+        id: other.id,
+        layer: "rules",
+        reason: "x",
+      }),
+    );
+    expect(await prefilterRepo.listFilteredJobs()).toEqual([]);
+    expect(await prefilterRepo.restoreFilteredJob(other.id)).toBe(false);
+    expect(
+      (await inTenant("tenant-b", () => prefilterRepo.listFilteredJobs())).map(
+        (j) => j.id,
+      ),
+    ).toEqual([other.id]);
+  });
 });

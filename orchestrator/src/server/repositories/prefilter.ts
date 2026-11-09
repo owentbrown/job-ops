@@ -1,5 +1,5 @@
 import type { PrefilterLayer } from "@shared/types";
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, ne, or } from "drizzle-orm";
 import { db, schema } from "../db/index";
 import { privateDataScopeFilter } from "../tenancy/private-scope";
 
@@ -18,11 +18,14 @@ export type FilteredJobSummary = {
   discoveredAt: string;
 };
 
-const ACTIVE_FILTER_LAYERS = ["rules", "llm"] as const;
+const ACTIVE_FILTER_LAYERS = [
+  "rules",
+  "llm",
+] as const satisfies readonly PrefilterLayer[];
 
 export async function markJobFiltered(input: {
   id: string;
-  layer: "rules" | "llm";
+  layer: Exclude<PrefilterLayer, "restored">;
   reason: string;
 }): Promise<boolean> {
   const now = new Date().toISOString();
@@ -41,6 +44,7 @@ export async function markJobFiltered(input: {
         privateDataScopeFilter(jobs),
         eq(jobs.id, input.id),
         eq(jobs.status, "discovered"),
+        or(isNull(jobs.filterLayer), ne(jobs.filterLayer, "restored")),
       ),
     );
   return result.changes > 0;

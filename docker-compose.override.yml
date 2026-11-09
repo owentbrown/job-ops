@@ -1,0 +1,10 @@
+# Local fork overrides: build from source under a local tag and mount the
+# prefilter config read-write so the in-app Rules editor can save it.
+services:
+  job-ops:
+    image: job-ops:local
+    pull_policy: build
+    volumes:
+      - ./config:/app/config
+    environment:
+      - PREFILTER_CONFIG_PATH=/app/config/prefilter.json

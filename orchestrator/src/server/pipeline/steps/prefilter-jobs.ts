@@ -1,4 +1,5 @@
 import { logger } from "@infra/logger";
+import { getJobOpsAppConfig } from "@server/config/app-mode";
 import * as jobsRepo from "@server/repositories/jobs";
 import * as prefilterRepo from "@server/repositories/prefilter";
 import {
@@ -76,6 +77,7 @@ async function resolveConfig(
         title: "Pre-score filter needs attention",
         message,
       });
+      reviewed = true; // the user just looked at the rules; don't pause again
       continue;
     }
 
@@ -92,11 +94,16 @@ async function resolveConfig(
 /**
  * Runs before scoring on every unscored discovered job (all runs, not just
  * this one). Dropped jobs become status "skipped" with an audit reason; they
- * are never deleted. Jobs the user restored are never re-filtered.
+ * are never deleted. Jobs the user restored or added manually are never filtered.
  */
 export async function prefilterJobsStep(
   args: PrefilterStepArgs = {},
 ): Promise<PrefilterStepResult> {
+  // The rules file is global and its page is unavailable in hosted mode.
+  if (getJobOpsAppConfig().appMode === "hosted") {
+    logger.info("Prefilter unavailable in hosted mode; skipping");
+    return emptyResult(true);
+  }
   const config = await resolveConfig(args);
   if (config === CANCELLED) return emptyResult(false);
   if (!config) {
@@ -110,7 +117,7 @@ export async function prefilterJobsStep(
   if (args.shouldCancel?.()) return emptyResult(false);
 
   const candidates = (await jobsRepo.getUnscoredDiscoveredJobs()).filter(
-    (job) => job.filterLayer !== "restored",
+    (job) => job.filterLayer !== "restored" && job.source !== "manual",
   );
   updateProgress({
     step: "scoring",

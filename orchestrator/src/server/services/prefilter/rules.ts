@@ -14,6 +14,21 @@ export type RuleOutcome =
   | { decision: "keep"; reason: string }
   | { decision: "undecided"; flags: string[] };
 
+/**
+ * Phrases that say the role is remote even when the location field names a
+ * commute city. A match sends the job to the LLM check instead of dropping it.
+ */
+const STRONG_REMOTE_PHRASES = [
+  "fully remote",
+  "100% remote",
+  "remote-first",
+  "remote first",
+  "work from anywhere",
+  "remote in canada",
+  "remote within canada",
+  "remote across canada",
+];
+
 const MULTI_LOCATION = /\s(or|&)\s|[/;|]|multiple/;
 
 /** True when one of the 3 words before the match is a negation (not/no/non/never). */
@@ -46,12 +61,15 @@ export function evaluateRules(
   if (company)
     return { decision: "drop", reason: `company blocklist '${company}'` };
 
+  const description = stripHtmlTags(job.jobDescription ?? "");
   const extraFlags: string[] = [];
   if (!isRemoteJob(job)) {
     const place = findKeyword(job.location, config.location.commuteBlocklist);
     if (place) {
       if (MULTI_LOCATION.test(normalizeText(job.location))) {
         extraFlags.push(`commute: ${place}`);
+      } else if (findKeywords(description, STRONG_REMOTE_PHRASES).length > 0) {
+        extraFlags.push(`commute: ${place} (description says remote)`);
       } else {
         return {
           decision: "drop",
@@ -69,7 +87,6 @@ export function evaluateRules(
     };
   }
 
-  const description = stripHtmlTags(job.jobDescription ?? "");
   for (const phrase of config.description.hardDropPhrases) {
     const occurrences = findKeywordOccurrences(description, phrase);
     if (occurrences.length === 0) continue;

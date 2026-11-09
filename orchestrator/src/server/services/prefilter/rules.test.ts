@@ -84,6 +84,27 @@ describe("evaluateRules", () => {
     });
   });
 
+  it("does not drop a commute city when the description says fully remote", () => {
+    expect(
+      evaluateRules(
+        job({
+          location: "Toronto, ON",
+          jobDescription: "<p>We are a <b>fully remote</b> team</p>",
+        }),
+        config,
+      ),
+    ).toEqual({
+      decision: "undecided",
+      flags: ["commute: toronto (description says remote)"],
+    });
+    expect(
+      evaluateRules(
+        job({ location: "Toronto, ON", jobDescription: "On site daily." }),
+        config,
+      ).decision,
+    ).toBe("drop");
+  });
+
   it("drops non-remote Toronto jobs but keeps remote ones", () => {
     expect(evaluateRules(job({ location: "Toronto, ON" }), config)).toEqual({
       decision: "drop",

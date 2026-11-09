@@ -1,7 +1,7 @@
 /**
  * Usage (from orchestrator/):
  *   npx tsx scripts/prefilter-dry-run.ts <path-to-COPY-of-jobs.db> [--all]
- * Default: unscored discovered jobs. --all: every discovered or skipped job.
+ * Default: unscored discovered jobs (never manual or restored ones). --all: every discovered or skipped job.
  * Opens the DB read-only and never writes. Always point it at a copy.
  */
 import { readFileSync } from "node:fs";
@@ -27,9 +27,18 @@ const config = parsePrefilterConfig(
 );
 
 const db = new Database(dbPath, { readonly: true, fileMustExist: true });
+// Never filter manually added jobs. Restored jobs are excluded too, but only
+// if this DB copy already has the filter_layer column (older copies do not).
+const hasFilterLayer = (
+  db.prepare("PRAGMA table_info(jobs)").all() as Array<{ name: string }>
+).some((column) => column.name === "filter_layer");
 const where = flags.includes("--all")
-  ? "status IN ('discovered','skipped')"
-  : "status = 'discovered' AND suitability_score IS NULL";
+  ? "status IN ('discovered','skipped') AND source <> 'manual'"
+  : `status = 'discovered' AND suitability_score IS NULL AND source <> 'manual'${
+      hasFilterLayer
+        ? " AND (filter_layer IS NULL OR filter_layer <> 'restored')"
+        : ""
+    }`;
 const rows = db
   .prepare(
     `SELECT id, title, employer, location, is_remote, work_from_home_type, salary,

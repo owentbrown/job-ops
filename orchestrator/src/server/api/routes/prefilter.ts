@@ -79,6 +79,9 @@ prefilterRouter.get(
 prefilterRouter.post(
   "/jobs/:id/restore",
   handle("POST /api/prefilter/jobs/:id/restore", async (req, res) => {
+    if (isDemoMode()) {
+      throw forbidden("Restoring jobs is disabled in demo mode.");
+    }
     if (!(await prefilterRepo.restoreFilteredJob(req.params.id))) {
       throw notFound("Filtered job not found");
     }
@@ -107,6 +110,9 @@ prefilterRouter.get(
 prefilterRouter.put(
   "/config",
   handle("PUT /api/prefilter/config", async (req, res) => {
+    if (isDemoMode()) {
+      throw forbidden("Saving filter rules is disabled in demo mode.");
+    }
     const saved = await writePrefilterConfig(requireConfigBody(req));
     logger.info("Prefilter config saved", {
       path: saved.path,
@@ -121,7 +127,7 @@ prefilterRouter.post(
   handle("POST /api/prefilter/preview", async (req, res) => {
     const config = parsePrefilterConfig(requireConfigBody(req));
     const jobs = (await jobsRepo.getUnscoredDiscoveredJobs()).filter(
-      (job) => job.filterLayer !== "restored",
+      (job) => job.filterLayer !== "restored" && job.source !== "manual",
     );
     ok(res, previewRules(jobs, config));
   }),

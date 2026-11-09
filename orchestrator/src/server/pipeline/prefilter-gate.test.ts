@@ -170,6 +170,35 @@ describe.sequential("pipeline prefilter gate", () => {
     expect(scoreJobsStep).not.toHaveBeenCalled();
   });
 
+  it("nonInteractive never pauses for review", async () => {
+    await writeConfig({ pauseBeforeScoring: true });
+    const pipeline = await import("./orchestrator");
+    const { getProgress } = await import("./progress");
+    const result = await Promise.race([
+      pipeline.runPipeline({}, { nonInteractive: true }),
+      new Promise<never>((_, rej) =>
+        setTimeout(() => rej(new Error("run hung")), 5000),
+      ),
+    ]);
+    expect(result.success).toBe(true);
+    expect(scoreJobsStep).toHaveBeenCalledTimes(1);
+    expect(getProgress().actionTitle).toBeUndefined();
+  });
+
+  it("nonInteractive fails on an invalid config instead of hanging", async () => {
+    await writeConfig("{ broken");
+    const pipeline = await import("./orchestrator");
+    const result = await Promise.race([
+      pipeline.runPipeline({}, { nonInteractive: true }),
+      new Promise<never>((_, rej) =>
+        setTimeout(() => rej(new Error("run hung")), 5000),
+      ),
+    ]);
+    expect(result.success).toBe(false);
+    expect(result.error).toMatch(/invalid/i);
+    expect(scoreJobsStep).not.toHaveBeenCalled();
+  });
+
   it("backlog mode skips discovery, the pause and tailoring", async () => {
     await writeConfig({ pauseBeforeScoring: true });
     const pipeline = await import("./orchestrator");

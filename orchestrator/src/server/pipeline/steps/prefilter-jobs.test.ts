@@ -20,6 +20,9 @@ vi.mock("@server/services/prefilter/llm-title-check", () => ({
   checkTitlesWithLlm: vi.fn(),
 }));
 vi.mock("../progress", () => ({ updateProgress: vi.fn() }));
+vi.mock("@server/config/app-mode", () => ({
+  getJobOpsAppConfig: vi.fn(() => ({ appMode: "self-hosted" })),
+}));
 
 type Prompt = { title: string; message: string };
 
@@ -43,6 +46,12 @@ describe("prefilterJobsStep", () => {
         id: "vague",
         title: "Operations Lead",
         jobDescription: "quota",
+      }),
+      createJob({
+        id: "manual",
+        title: "Business Analyst",
+        source: "manual",
+        jobDescription: "",
       }),
       createJob({
         id: "restored",
@@ -157,6 +166,45 @@ describe("prefilterJobsStep", () => {
       "Review filter rules before scoring",
     );
     expect(configModule.readPrefilterConfig).toHaveBeenCalledTimes(2);
+    expect(result.droppedByRules).toBe(1);
+  });
+
+  it("never filters manually added jobs", async () => {
+    await useConfig({ title: { exclude: ["analyst"] } });
+    const prefilterRepo = await import("@server/repositories/prefilter");
+    const result = await prefilterJobsStep();
+    expect(result.considered).toBe(4);
+    expect(prefilterRepo.markJobFiltered).not.toHaveBeenCalledWith(
+      expect.objectContaining({ id: "manual" }),
+    );
+  });
+
+  it("returns the disabled result immediately in hosted mode", async () => {
+    const appMode = await import("@server/config/app-mode");
+    vi.mocked(appMode.getJobOpsAppConfig).mockReturnValueOnce({
+      appMode: "hosted",
+    } as never);
+    const configModule = await useConfig({ title: { exclude: ["analyst"] } });
+    const prefilterRepo = await import("@server/repositories/prefilter");
+    const result = await prefilterJobsStep();
+    expect(result.disabled).toBe(true);
+    expect(configModule.readPrefilterConfig).not.toHaveBeenCalled();
+    expect(prefilterRepo.markJobFiltered).not.toHaveBeenCalled();
+  });
+
+  it("does not pause a second time after the needs-attention pause", async () => {
+    const configModule = await useConfig({
+      pauseBeforeScoring: true,
+      title: { exclude: ["analyst"] },
+    });
+    vi.mocked(configModule.readPrefilterConfig).mockResolvedValueOnce({
+      status: "invalid",
+      path: "/tmp/prefilter.json",
+      error: "bad",
+    });
+    const waitForResume = vi.fn(async (_prompt: Prompt) => {});
+    const result = await prefilterJobsStep({ reviewGate: true, waitForResume });
+    expect(waitForResume).toHaveBeenCalledTimes(1);
     expect(result.droppedByRules).toBe(1);
   });
 

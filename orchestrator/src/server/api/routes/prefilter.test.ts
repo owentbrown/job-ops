@@ -30,10 +30,14 @@ describe.sequential("Prefilter API routes", () => {
     }));
   };
 
-  const seedJob = async (title: string, url: string) => {
+  const seedJob = async (
+    title: string,
+    url: string,
+    source: "linkedin" | "manual" = "linkedin",
+  ) => {
     const { createJob } = await import("@server/repositories/jobs");
     return createJob({
-      source: "manual",
+      source,
       title,
       employer: "Acme",
       jobUrl: url,
@@ -227,6 +231,34 @@ describe.sequential("Prefilter API routes", () => {
     expect(body.data.items.map((i: { id: string }) => i.id)).toEqual([
       normal.id,
     ]);
+  });
+
+  it("excludes manually added jobs from the preview backlog", async () => {
+    const normal = await seedJob("Product Manager", "https://example.com/n");
+    await seedJob("Data Analyst", "https://example.com/m", "manual");
+    const res = await request("/preview", {
+      method: "POST",
+      body: JSON.stringify({ config: VALID_CONFIG }),
+    });
+    const body = await res.json();
+    expect(body.data.items.map((i: { id: string }) => i.id)).toEqual([
+      normal.id,
+    ]);
+  });
+
+  it("blocks config saves and restores in demo mode", async () => {
+    await stopServer({ server, closeDb, tempDir });
+    await boot({ DEMO_MODE: "true" });
+    const put = await request("/config", {
+      method: "PUT",
+      body: JSON.stringify({ config: VALID_CONFIG }),
+    });
+    expect(put.status).toBe(403);
+    await expect(readFile(configPath, "utf8")).rejects.toThrow();
+    const restore = await request("/jobs/whatever/restore", {
+      method: "POST",
+    });
+    expect(restore.status).toBe(403);
   });
 
   it("blocks backlog scoring in demo mode", async () => {

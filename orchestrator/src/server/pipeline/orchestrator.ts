@@ -350,6 +350,11 @@ export async function runPipeline(
     hostedUsageReservationId?: string | null;
     /** Backlog button: the click is the go-ahead, so don't pause for review. */
     skipPrefilterReview?: boolean;
+    /**
+     * CLI runs: no review pause, and a missing/invalid filter config fails the
+     * run instead of waiting for a Resume that can never come.
+     */
+    nonInteractive?: boolean;
   },
 ): Promise<{
   success: boolean;
@@ -568,38 +573,40 @@ export async function runPipeline(
 
       ensureNotCancelled(scopeKey);
       const prefilterResult = await prefilterJobsStep({
-        reviewGate: !options?.skipPrefilterReview,
+        reviewGate: !options?.skipPrefilterReview && !options?.nonInteractive,
         shouldCancel: () =>
           getPipelineState(scopeKey).cancelRequestedAt !== null,
         // Reuses the LLM-config pause: same card, same Resume endpoint, and
         // requestPipelineCancel() already unblocks it.
-        waitForResume: async ({ title, message }) => {
-          // No await between this check and installing the pause below, so a
-          // cancel can never slip in unseen and leave us blocked forever.
-          ensureNotCancelled(scopeKey);
-          pipelineLogger.info("Pipeline paused before scoring", { title });
-          updateProgress({
-            step: "configuration_required",
-            message: title,
-            detail: message,
-            error: message,
-            actionTitle: title,
-            actionLabel: "Resume: rules → AI check → scoring",
-          });
-          await new Promise<void>((resolve) => {
-            tenantState.activeLlmConfigState = { resolve };
-          });
-          tenantState.activeLlmConfigState = null;
-          updateProgress({
-            step: "scoring",
-            message: "Resuming…",
-            actionTitle: undefined,
-            actionLabel: undefined,
-            error: undefined,
-            detail: undefined,
-          });
-          ensureNotCancelled(scopeKey);
-        },
+        waitForResume: options?.nonInteractive
+          ? undefined
+          : async ({ title, message }) => {
+              // No await between this check and installing the pause below, so a
+              // cancel can never slip in unseen and leave us blocked forever.
+              ensureNotCancelled(scopeKey);
+              pipelineLogger.info("Pipeline paused before scoring", { title });
+              updateProgress({
+                step: "configuration_required",
+                message: title,
+                detail: message,
+                error: message,
+                actionTitle: title,
+                actionLabel: "Resume: rules → AI check → scoring",
+              });
+              await new Promise<void>((resolve) => {
+                tenantState.activeLlmConfigState = { resolve };
+              });
+              tenantState.activeLlmConfigState = null;
+              updateProgress({
+                step: "scoring",
+                message: "Resuming…",
+                actionTitle: undefined,
+                actionLabel: undefined,
+                error: undefined,
+                detail: undefined,
+              });
+              ensureNotCancelled(scopeKey);
+            },
       });
       pipelineLogger.info("Prefilter finished", prefilterResult);
 

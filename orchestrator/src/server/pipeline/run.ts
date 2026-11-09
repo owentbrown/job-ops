@@ -3,6 +3,10 @@
  * Can be triggered by n8n or cron.
  *
  * Usage: npm run pipeline:run
+ *
+ * CLI runs skip the pre-score filter's review pause (starting the CLI is the
+ * go-ahead) and fail on missing or invalid filter rules, because nothing in
+ * this process could ever resume a paused run.
  */
 
 import "../config/env";
@@ -15,10 +19,13 @@ async function main() {
   console.log(`   Started at: ${new Date().toISOString()}`);
   console.log("=".repeat(60));
 
-  const result = await runPipeline({
-    topN: parseInt(process.env.PIPELINE_TOP_N || "10", 10),
-    minSuitabilityScore: parseInt(process.env.PIPELINE_MIN_SCORE || "50", 10),
-  });
+  const result = await runPipeline(
+    {
+      topN: parseInt(process.env.PIPELINE_TOP_N || "10", 10),
+      minSuitabilityScore: parseInt(process.env.PIPELINE_MIN_SCORE || "50", 10),
+    },
+    { nonInteractive: true },
+  );
 
   console.log(`\n${"=".repeat(60)}`);
   console.log("📊 Pipeline Results:");

@@ -1,5 +1,6 @@
 import type { PrefilterConfigDto, PrefilterPreview } from "@client/api";
 import * as api from "@client/api";
+import { formatUserFacingError } from "@client/lib/error-format";
 import { showErrorToast } from "@client/lib/error-toast";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type React from "react";
@@ -14,6 +15,51 @@ import {
   formToConfig,
   type PrefilterFormState,
 } from "./prefilter-form";
+
+const NUMBER_FIELDS: Array<[keyof PrefilterFormState, string]> = [
+  ["floorAnnualCad", "Floor"],
+  ["hoursPerYear", "Hours per year"],
+  ["batchSize", "Jobs per call"],
+  ["descriptionChars", "Description characters"],
+];
+
+/** Client-side checks so obvious typos never reach the server. */
+export function validateForm(
+  form: PrefilterFormState,
+): Partial<Record<keyof PrefilterFormState, string>> {
+  const errors: Partial<Record<keyof PrefilterFormState, string>> = {};
+  for (const [key, label] of NUMBER_FIELDS) {
+    const raw = String(form[key]).trim();
+    if (raw === "" || !Number.isFinite(Number(raw))) {
+      errors[key] = `${label} must be a number.`;
+    }
+  }
+  if (form.defaultCurrency.trim() === "") {
+    errors.defaultCurrency = "Default currency is required.";
+  }
+  const badRate = form.ratesToCad
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0)
+    .find((line) => {
+      const parts = line.split("=");
+      if (parts.length !== 2) return true;
+      const code = parts[0].trim();
+      const rate = parts[1].trim();
+      return code === "" || rate === "" || !Number.isFinite(Number(rate));
+    });
+  if (badRate) {
+    errors.ratesToCad = `Rate lines must look like CODE=number (got "${badRate}").`;
+  }
+  return errors;
+}
+
+const FieldError: React.FC<{ message?: string }> = ({ message }) =>
+  message ? (
+    <p role="alert" className="text-xs text-destructive">
+      {message}
+    </p>
+  ) : null;
 
 export const PREFILTER_CONFIG_KEY = ["prefilter", "config"] as const;
 
@@ -42,8 +88,9 @@ const TextField: React.FC<{
   hint?: string;
   value: string;
   rows?: number;
+  error?: string;
   onChange: (value: string) => void;
-}> = ({ id, label, hint, value, rows = 6, onChange }) => (
+}> = ({ id, label, hint, value, rows = 6, error, onChange }) => (
   <div className="space-y-1.5">
     <Label htmlFor={id}>{label}</Label>
     {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
@@ -53,6 +100,7 @@ const TextField: React.FC<{
       value={value}
       onChange={(e) => onChange(e.target.value)}
     />
+    <FieldError message={error} />
   </div>
 );
 
@@ -60,8 +108,9 @@ const NumberField: React.FC<{
   id: string;
   label: string;
   value: string;
+  error?: string;
   onChange: (value: string) => void;
-}> = ({ id, label, value, onChange }) => (
+}> = ({ id, label, value, error, onChange }) => (
   <div className="space-y-1.5">
     <Label htmlFor={id}>{label}</Label>
     <Input
@@ -70,6 +119,7 @@ const NumberField: React.FC<{
       value={value}
       onChange={(e) => onChange(e.target.value)}
     />
+    <FieldError message={error} />
   </div>
 );
 
@@ -89,7 +139,9 @@ const ToggleField: React.FC<{
   </div>
 );
 
-export const PrefilterRulesEditor: React.FC = () => {
+export const PrefilterRulesEditor: React.FC<{
+  onDirtyChange?: (dirty: boolean) => void;
+}> = ({ onDirtyChange }) => {
   const queryClient = useQueryClient();
   const configQuery = useQuery({
     queryKey: PREFILTER_CONFIG_KEY,
@@ -99,18 +151,32 @@ export const PrefilterRulesEditor: React.FC = () => {
     ? (configQuery.data.config ?? configQuery.data.defaults)
     : null;
   const [form, setForm] = useState<PrefilterFormState | null>(null);
+  const [baseline, setBaseline] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [preview, setPreview] = useState<PrefilterPreview | null>(null);
 
   useEffect(() => {
-    if (base && form === null) setForm(configToForm(base));
+    if (base && form === null) {
+      const initial = configToForm(base);
+      setForm(initial);
+      setBaseline(JSON.stringify(initial));
+    }
   }, [base, form]);
+
+  const dirty =
+    form !== null && baseline !== null && JSON.stringify(form) !== baseline;
+  useEffect(() => {
+    onDirtyChange?.(dirty);
+  }, [dirty, onDirtyChange]);
 
   const save = useMutation({
     mutationFn: (config: PrefilterConfigDto) => api.savePrefilterConfig(config),
     onSuccess: (saved) => {
       setNotice(`Saved to ${saved.path}`);
-      setForm(configToForm(saved.config));
+      const savedForm = configToForm(saved.config);
+      setForm(savedForm);
+      setBaseline(JSON.stringify(savedForm));
+      setPreview(null);
       void queryClient.invalidateQueries({ queryKey: PREFILTER_CONFIG_KEY });
     },
     onError: (err) => showErrorToast(err, "Rules not saved"),
@@ -122,12 +188,36 @@ export const PrefilterRulesEditor: React.FC = () => {
   });
   const resume = useMutation({
     mutationFn: api.resumePipelineScoring,
-    onSuccess: () =>
-      setNotice("Resumed: rules → AI title check → scoring are running."),
+    onSuccess: (result) =>
+      setNotice(
+        result.resolved
+          ? "Resumed: rules → AI title check → scoring are running."
+          : "No paused run to resume.",
+      ),
     onError: (err) => showErrorToast(err, "No paused run to resume"),
   });
 
-  if (configQuery.isLoading || !form || !base) {
+  if (configQuery.isError) {
+    return (
+      <div className="space-y-3 rounded-md border border-rose-500/30 bg-rose-500/10 p-4 text-sm">
+        <p role="alert">
+          {formatUserFacingError(
+            configQuery.error,
+            "Could not load the rules.",
+          )}
+        </p>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => void configQuery.refetch()}
+          disabled={configQuery.isFetching}
+        >
+          Retry
+        </Button>
+      </div>
+    );
+  }
+  if (configQuery.isPending || !form || !base) {
     return <p className="text-sm text-muted-foreground">Loading rules…</p>;
   }
 
@@ -137,9 +227,12 @@ export const PrefilterRulesEditor: React.FC = () => {
     value: PrefilterFormState[K],
   ) => {
     setNotice(null);
+    setPreview(null);
     setForm({ ...form, [key]: value });
   };
   const draft = () => formToConfig(form, base);
+  const errors = validateForm(form);
+  const invalid = Object.keys(errors).length > 0;
 
   return (
     <div className="space-y-6">
@@ -157,13 +250,20 @@ export const PrefilterRulesEditor: React.FC = () => {
       ) : null}
 
       <div className="flex flex-wrap gap-2">
-        <Button onClick={() => save.mutate(draft())} disabled={save.isPending}>
-          {save.isPending ? "Saving…" : "Save rules"}
+        <Button
+          onClick={() => save.mutate(draft())}
+          disabled={save.isPending || invalid}
+        >
+          {save.isPending
+            ? "Saving…"
+            : status === "invalid"
+              ? "Overwrite invalid rules file"
+              : "Save rules"}
         </Button>
         <Button
           variant="outline"
           onClick={() => runPreview.mutate(draft())}
-          disabled={runPreview.isPending}
+          disabled={runPreview.isPending || invalid}
         >
           {runPreview.isPending ? "Previewing…" : "Preview (rules only, free)"}
         </Button>
@@ -174,6 +274,11 @@ export const PrefilterRulesEditor: React.FC = () => {
         >
           Resume paused run
         </Button>
+        {dirty ? (
+          <span className="self-center text-sm text-amber-300">
+            Unsaved changes
+          </span>
+        ) : null}
       </div>
       {notice ? (
         <p className="text-sm text-muted-foreground">{notice}</p>
@@ -276,12 +381,14 @@ export const PrefilterRulesEditor: React.FC = () => {
             id="pf-floor"
             label="Floor (CAD / year)"
             value={form.floorAnnualCad}
+            error={errors.floorAnnualCad}
             onChange={(v) => update("floorAnnualCad", v)}
           />
           <NumberField
             id="pf-hours"
             label="Hours per year (hourly → annual)"
             value={form.hoursPerYear}
+            error={errors.hoursPerYear}
             onChange={(v) => update("hoursPerYear", v)}
           />
           <div className="space-y-1.5">
@@ -291,6 +398,7 @@ export const PrefilterRulesEditor: React.FC = () => {
               value={form.defaultCurrency}
               onChange={(e) => update("defaultCurrency", e.target.value)}
             />
+            <FieldError message={errors.defaultCurrency} />
           </div>
         </div>
         <TextField
@@ -298,6 +406,7 @@ export const PrefilterRulesEditor: React.FC = () => {
           label="Rates to CAD"
           hint="One per line, e.g. USD=1.37"
           value={form.ratesToCad}
+          error={errors.ratesToCad}
           rows={4}
           onChange={(v) => update("ratesToCad", v)}
         />
@@ -333,12 +442,14 @@ export const PrefilterRulesEditor: React.FC = () => {
             id="pf-batch"
             label="Jobs per call"
             value={form.batchSize}
+            error={errors.batchSize}
             onChange={(v) => update("batchSize", v)}
           />
           <NumberField
             id="pf-chars"
             label="Description characters"
             value={form.descriptionChars}
+            error={errors.descriptionChars}
             onChange={(v) => update("descriptionChars", v)}
           />
           <div className="space-y-1.5">

@@ -37,6 +37,7 @@ export const OCCASIONAL_PHRASES = [
   "remote position",
   "work remotely",
   "remote-friendly",
+  "remote option",
   "quarterly",
   "once a quarter",
   "few times a year",
@@ -50,7 +51,6 @@ export const OCCASIONAL_PHRASES = [
 
 /** Phrases that mean regular (weekly or more) in-office presence. */
 export const WEEKLY_PHRASES = [
-  "hybrid",
   "in office weekly",
   "in-office weekly",
   "every week in the office",
@@ -62,6 +62,12 @@ export const WEEKLY_PHRASES = [
   "onsite role",
   "in-person role",
 ];
+
+/** The bare word "hybrid" is only a weak weekly signal. */
+export const WEAK_WEEKLY_PHRASES = ["hybrid"];
+
+/** "hybrid" uses that are not about the work arrangement. */
+const HYBRID_NOISE = /hybrid[- ](?:cloud|infrastructure|environments?)/gu;
 
 /** Words before a weekly phrase that are searched for a negation. */
 const WEEKLY_NEGATION_WINDOW = 6;
@@ -100,7 +106,19 @@ function isRemoteJob(job: PrefilterJob): boolean {
   );
 }
 
-/** First non-negated weekly in-office signal in the description, or null. */
+/** Non-negated bare "hybrid" in the description (ignoring hybrid cloud etc.). */
+export function findWeakHybridSignal(description: string): string | null {
+  const text = normalizeText(description).replace(HYBRID_NOISE, " ");
+  for (const phrase of WEAK_WEEKLY_PHRASES) {
+    const hit = findKeywordOccurrences(text, phrase).find(
+      (occurrence) => !isNegated(occurrence.before, WEEKLY_NEGATION_WINDOW),
+    );
+    if (hit) return phrase;
+  }
+  return null;
+}
+
+/** First non-negated STRONG weekly in-office signal in the description, or null. */
 export function findWeeklySignal(description: string): string | null {
   for (const phrase of WEEKLY_PHRASES) {
     const hit = findKeywordOccurrences(description, phrase).find(
@@ -138,13 +156,15 @@ export function evaluateRules(
       const fields = normalizeText(
         `${job.workFromHomeType ?? ""} ${job.location ?? ""}`,
       );
-      const weekly =
+      const strong =
         findWeeklySignal(description) ??
-        (fields.includes("hybrid")
-          ? "hybrid"
-          : /on-?site/.test(fields)
-            ? "on-site"
-            : null);
+        (/on-?site/.test(fields) ? "on-site" : null);
+      const weak =
+        findWeakHybridSignal(description) ??
+        (fields.includes("hybrid") ? "hybrid" : null);
+      const occasional =
+        findKeywords(description, OCCASIONAL_PHRASES).length > 0;
+      const weekly = strong ?? (occasional ? null : weak);
       const isMulti = MULTI_LOCATION.test(normalizeText(job.location));
       const allCommute =
         isMulti &&
@@ -159,7 +179,9 @@ export function evaluateRules(
       }
       if (isMulti) {
         extraFlags.push(`commute: ${place}`);
-      } else if (findKeywords(description, OCCASIONAL_PHRASES).length > 0) {
+      } else if (weak && occasional) {
+        extraFlags.push(`commute: ${place} (hybrid or remote?)`);
+      } else if (occasional) {
         extraFlags.push(`commute: ${place} (remote/occasional travel?)`);
       } else {
         return {

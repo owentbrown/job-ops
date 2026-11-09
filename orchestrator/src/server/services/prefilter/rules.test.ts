@@ -200,7 +200,7 @@ describe("evaluateRules", () => {
     it("drops hybrid / N days a week roles", () => {
       expect(toronto("Hybrid, 3 days a week in office")).toEqual({
         decision: "drop",
-        reason: "location 'toronto': weekly in-office (hybrid)",
+        reason: "location 'toronto': weekly in-office (3 days a week)",
       });
       expect(toronto("Be in the office 3 days a week.")).toMatchObject({
         decision: "drop",
@@ -251,6 +251,26 @@ describe("evaluateRules", () => {
       expect(
         toronto("Not required to be in office 3 days a week. Remote role."),
       ).toMatchObject({ decision: "undecided" });
+    });
+
+    it("treats bare hybrid as a weak signal", () => {
+      expect(toronto("We offer hybrid and remote options")).toEqual({
+        decision: "undecided",
+        flags: ["commute: toronto (hybrid or remote?)"],
+      });
+      expect(toronto("Our hybrid cloud platform team")).toEqual({
+        decision: "drop",
+        reason: "location 'toronto' needs a commute (no remote signal)",
+      });
+      expect(
+        evaluateRules(
+          job({ location: "Hybrid - Toronto", jobDescription: "A role." }),
+          config,
+        ),
+      ).toEqual({
+        decision: "drop",
+        reason: "location 'toronto': weekly in-office (hybrid)",
+      });
     });
 
     it("drops fully on-site roles", () => {

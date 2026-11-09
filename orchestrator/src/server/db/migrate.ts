@@ -1258,6 +1258,11 @@ const migrations = [
        ORDER BY se.occurred_at DESC, se.id DESC
        LIMIT 1
      ), 'applied') = 'closed'`,
+
+  // Pre-score filter audit columns (fork: prescore-filter)
+  `ALTER TABLE jobs ADD COLUMN filter_reason TEXT`,
+  `ALTER TABLE jobs ADD COLUMN filter_layer TEXT`,
+  `ALTER TABLE jobs ADD COLUMN filtered_at TEXT`,
 ];
 
 console.log("🔧 Running database migrations...");

@@ -288,6 +288,10 @@ export const jobs = sqliteTable(
       .default(false),
     sponsorMatchScore: real("sponsor_match_score"),
     sponsorMatchNames: text("sponsor_match_names"),
+    // Pre-score filter audit (fork: prescore-filter)
+    filterReason: text("filter_reason"),
+    filterLayer: text("filter_layer", { enum: ["rules", "llm", "restored"] }),
+    filteredAt: text("filtered_at"),
 
     // Timestamps
     discoveredAt: text("discovered_at")

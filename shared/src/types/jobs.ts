@@ -14,6 +14,9 @@ export type JobStatus =
   | "skipped" // User skipped this job
   | "expired"; // Deadline passed
 
+/** Which pre-score filter layer acted on a job. "restored" = user un-filtered it; never re-filter. */
+export type PrefilterLayer = "rules" | "llm" | "restored";
+
 export const APPLICATION_STAGES = [
   "applied",
   "recruiter_screen",
@@ -216,6 +219,9 @@ export interface Job {
   tracerLinksEnabled: boolean; // Rewrite outbound resume links to tracer links on next PDF generation
   sponsorMatchScore: number | null; // 0-100 fuzzy match score with visa sponsors
   sponsorMatchNames: string | null; // JSON array of matched sponsor names (when 100% matches or top match)
+  filterReason?: string | null; // Pre-score filter reason (kept after restore for history)
+  filterLayer?: PrefilterLayer | null; // rules | llm | restored
+  filteredAt?: string | null; // ISO timestamp when filtered
   appliedDuplicateMatch?: AppliedDuplicateMatch | null; // Included on detail responses and may be omitted on list responses
 
   // JobSpy fields (nullable for non-JobSpy sources)

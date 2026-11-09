@@ -295,9 +295,9 @@ export const PipelineProgressCard = ({
 
             {progress.step === "configuration_required" && progress.error ? (
               <PipelineActionRequired
-                title="LLM configuration required"
+                title={progress.actionTitle ?? "LLM configuration required"}
                 description={progress.error}
-                actionLabel="Restart scoring"
+                actionLabel={progress.actionLabel ?? "Restart scoring"}
                 pendingLabel="Resuming…"
                 pending={resumingScoring}
                 onAction={onResumeScoring ?? noop}

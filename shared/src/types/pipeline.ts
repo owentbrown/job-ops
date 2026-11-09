@@ -327,6 +327,9 @@ export interface PipelineProgressState {
   step: PipelineProgressStep;
   message: string;
   detail?: string;
+  /** Optional overrides for the configuration_required pause card. */
+  actionTitle?: string;
+  actionLabel?: string;
   pendingChallenges?: PipelinePendingChallenge[];
   fanout?: PipelineFanoutProgress;
   crawlingSource: string | null;

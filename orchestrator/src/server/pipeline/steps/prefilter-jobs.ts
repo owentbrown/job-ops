@@ -24,7 +24,10 @@ export type PrefilterPausePrompt = { title: string; message: string };
 
 export type PrefilterStepArgs = {
   shouldCancel?: () => boolean;
-  /** Pauses the run until the user clicks Resume. Without it the step never pauses. */
+  /**
+   * Pauses the run until the user clicks Resume. Without it the step never pauses.
+   * It must reject/throw when the run is cancelled while paused.
+   */
   waitForResume?: (prompt: PrefilterPausePrompt) => Promise<void>;
   /** Pause for review first when config.pauseBeforeScoring is on (normal runs). */
   reviewGate?: boolean;
@@ -46,6 +49,8 @@ function emptyResult(disabled: boolean): PrefilterStepResult {
   };
 }
 
+const CANCELLED = Symbol("prefilter-cancelled");
+
 /**
  * Resolves the config to use, pausing when needed. Fails closed: a missing or
  * invalid config pauses the run (or throws when pausing is not possible) and
@@ -53,9 +58,10 @@ function emptyResult(disabled: boolean): PrefilterStepResult {
  */
 async function resolveConfig(
   args: PrefilterStepArgs,
-): Promise<PrefilterConfig | null> {
+): Promise<PrefilterConfig | null | typeof CANCELLED> {
   let reviewed = !args.reviewGate;
   while (true) {
+    if (args.shouldCancel?.()) return CANCELLED;
     const load = await readPrefilterConfig();
     if (load.status === "off-in-tests") return null;
 
@@ -91,6 +97,7 @@ export async function prefilterJobsStep(
   args: PrefilterStepArgs = {},
 ): Promise<PrefilterStepResult> {
   const config = await resolveConfig(args);
+  if (config === CANCELLED) return emptyResult(false);
   if (!config) {
     logger.info("Prefilter not configured in this environment; skipping");
     return emptyResult(true);
@@ -136,7 +143,16 @@ export async function prefilterJobsStep(
       step: "scoring",
       message: `Checking ${undecided.length} job titles with the AI pre-screen`,
     });
-    const decisions = await checkTitlesWithLlm(undecided, config.llm);
+    // Payload sent to the LLM: title, employer, location, rule flags and the
+    // first config.llm.descriptionChars characters of the description, plus the
+    // configured target roles / hard passes. No profile or resume data.
+    const decisions = await checkTitlesWithLlm(
+      undecided,
+      config.llm,
+      undefined,
+      args.shouldCancel,
+    );
+    if (args.shouldCancel?.()) return emptyResult(false);
     for (const { job } of undecided) {
       const decision = decisions.get(job.id);
       if (decision?.decision !== "drop") continue;

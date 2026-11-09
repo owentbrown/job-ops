@@ -207,4 +207,89 @@ describe("prefilterJobsStep", () => {
       /No pre-score filter config/,
     );
   });
+
+  it("waits on a missing config and proceeds once it appears", async () => {
+    const configModule = await useConfig({
+      pauseBeforeScoring: false,
+      title: { exclude: ["analyst"] },
+    });
+    vi.mocked(configModule.readPrefilterConfig).mockResolvedValueOnce({
+      status: "missing",
+      path: "/tmp/prefilter.json",
+    });
+    const waitForResume = vi.fn(async (_prompt: Prompt) => {});
+    const result = await prefilterJobsStep({ waitForResume });
+    expect(waitForResume).toHaveBeenCalledTimes(1);
+    expect(waitForResume.mock.calls[0][0].message).toMatch(
+      /No pre-score filter config/,
+    );
+    expect(result.droppedByRules).toBe(1);
+  });
+
+  it("drops nothing by LLM when it returns no decisions", async () => {
+    await useConfig({
+      title: { exclude: ["analyst"] },
+      llm: { enabled: true },
+    });
+    const llm = await import("@server/services/prefilter/llm-title-check");
+    vi.mocked(llm.checkTitlesWithLlm).mockResolvedValue(new Map());
+    const result = await prefilterJobsStep();
+    expect(result.droppedByLlm).toBe(0);
+    expect(result.passed).toBe(3);
+  });
+
+  it("stops without filtering when cancelled during the wait", async () => {
+    const configModule = await useConfig({ title: { exclude: ["analyst"] } });
+    const prefilterRepo = await import("@server/repositories/prefilter");
+    let cancelled = false;
+    const waitForResume = vi.fn(async (_prompt: Prompt) => {
+      cancelled = true;
+    });
+    const result = await prefilterJobsStep({
+      reviewGate: true,
+      waitForResume,
+      shouldCancel: () => cancelled,
+    });
+    expect(waitForResume).toHaveBeenCalledTimes(1);
+    expect(configModule.readPrefilterConfig).toHaveBeenCalledTimes(1);
+    expect(prefilterRepo.markJobFiltered).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      disabled: false,
+      considered: 0,
+      droppedByRules: 0,
+      droppedByLlm: 0,
+      passed: 0,
+    });
+  });
+
+  it("applies no LLM drops when cancelled during the LLM check", async () => {
+    await useConfig({
+      title: { exclude: ["analyst"] },
+      llm: { enabled: true },
+    });
+    const llm = await import("@server/services/prefilter/llm-title-check");
+    const prefilterRepo = await import("@server/repositories/prefilter");
+    let cancelled = false;
+    vi.mocked(llm.checkTitlesWithLlm).mockImplementation(async () => {
+      cancelled = true;
+      return new Map([["bball", { decision: "drop" as const, reason: "x" }]]);
+    });
+    await prefilterJobsStep({ shouldCancel: () => cancelled });
+    expect(prefilterRepo.markJobFiltered).toHaveBeenCalledTimes(1); // analyst (rules) only
+    expect(prefilterRepo.markJobFiltered).not.toHaveBeenCalledWith(
+      expect.objectContaining({ layer: "llm" }),
+    );
+  });
+
+  it("does not count a drop when markJobFiltered returns false", async () => {
+    await useConfig({
+      title: { exclude: ["analyst"] },
+      llm: { enabled: false },
+    });
+    const prefilterRepo = await import("@server/repositories/prefilter");
+    vi.mocked(prefilterRepo.markJobFiltered).mockResolvedValueOnce(false);
+    const result = await prefilterJobsStep();
+    expect(result.droppedByRules).toBe(0);
+    expect(result.passed).toBe(4);
+  });
 });

@@ -56,3 +56,21 @@ describe("normalizeText", () => {
     expect(normalizeText("  Go–To   Market ")).toBe("go-to market");
   });
 });
+
+describe("unicode and html handling", () => {
+  it("uses unicode-aware word boundaries", () => {
+    expect(findKeyword("Café Manager", ["caf"])).toBeNull();
+    expect(findKeyword("Café Manager", ["café"])).toBe("café");
+  });
+
+  it("decodes common html entities", () => {
+    expect(findKeyword("Strategy &amp; Ops", ["strategy & ops"])).toBe(
+      "strategy & ops",
+    );
+    expect(
+      normalizeText(
+        "a&nbsp;b &lt;c&gt; &quot;d&quot; &#39;e&#39; &apos;f&apos;",
+      ),
+    ).toBe("a b <c> \"d\" 'e' 'f'");
+  });
+});

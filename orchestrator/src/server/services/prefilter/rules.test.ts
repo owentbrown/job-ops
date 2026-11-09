@@ -132,4 +132,35 @@ describe("evaluateRules", () => {
       flags: ["commission", "quota"],
     });
   });
+
+  it("does not drop on a negated hard-drop phrase", () => {
+    const outcome = evaluateRules(
+      job({ jobDescription: "This is not a commission-only role." }),
+      config,
+    );
+    expect(outcome.decision).toBe("undecided");
+    expect(outcome.decision === "undecided" && outcome.flags).toContain(
+      "commission-only",
+    );
+    expect(
+      evaluateRules(
+        job({
+          jobDescription: "Not for everyone. This is a commission-only role.",
+        }),
+        config,
+      ).decision,
+    ).toBe("drop");
+  });
+
+  it("does not drop multi-location jobs on the commute list", () => {
+    expect(
+      evaluateRules(job({ location: "Waterloo or Toronto" }), config),
+    ).toEqual({
+      decision: "undecided",
+      flags: ["commute: toronto"],
+    });
+    expect(
+      evaluateRules(job({ location: "Toronto, ON" }), config).decision,
+    ).toBe("drop");
+  });
 });

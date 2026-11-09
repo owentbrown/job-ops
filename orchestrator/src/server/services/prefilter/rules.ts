@@ -1,13 +1,30 @@
 import { stripHtmlTags } from "@shared/utils/string";
 import type { PrefilterConfig } from "./config";
 import { evaluateSalary } from "./salary";
-import { findKeyword, findKeywords, normalizeText } from "./text-match";
+import {
+  findKeyword,
+  findKeywordOccurrences,
+  findKeywords,
+  normalizeText,
+} from "./text-match";
 import type { PrefilterJob } from "./types";
 
 export type RuleOutcome =
   | { decision: "drop"; reason: string }
   | { decision: "keep"; reason: string }
   | { decision: "undecided"; flags: string[] };
+
+const MULTI_LOCATION = /\s(or|&)\s|[/;|]|multiple/;
+
+/** True when one of the 3 words before the match is a negation (not/no/non/never). */
+function isNegated(before: string): boolean {
+  const words = before
+    .split(/[\s-]+/)
+    .filter(Boolean)
+    .slice(-3)
+    .map((word) => word.replace(/[^\p{L}\p{N}]/gu, ""));
+  return words.some((word) => ["not", "no", "non", "never"].includes(word));
+}
 
 function isRemoteJob(job: PrefilterJob): boolean {
   return (
@@ -29,13 +46,18 @@ export function evaluateRules(
   if (company)
     return { decision: "drop", reason: `company blocklist '${company}'` };
 
+  const extraFlags: string[] = [];
   if (!isRemoteJob(job)) {
     const place = findKeyword(job.location, config.location.commuteBlocklist);
     if (place) {
-      return {
-        decision: "drop",
-        reason: `location '${place}' needs a commute (not remote)`,
-      };
+      if (MULTI_LOCATION.test(normalizeText(job.location))) {
+        extraFlags.push(`commute: ${place}`);
+      } else {
+        return {
+          decision: "drop",
+          reason: `location '${place}' needs a commute (not remote)`,
+        };
+      }
     }
   }
 
@@ -48,9 +70,14 @@ export function evaluateRules(
   }
 
   const description = stripHtmlTags(job.jobDescription ?? "");
-  const hardDrop = findKeyword(description, config.description.hardDropPhrases);
-  if (hardDrop)
-    return { decision: "drop", reason: `description: '${hardDrop}'` };
+  for (const phrase of config.description.hardDropPhrases) {
+    const occurrences = findKeywordOccurrences(description, phrase);
+    if (occurrences.length === 0) continue;
+    if (occurrences.some((occurrence) => !isNegated(occurrence.before))) {
+      return { decision: "drop", reason: `description: '${phrase}'` };
+    }
+    extraFlags.push(phrase);
+  }
 
   const include = findKeyword(job.title, config.title.include);
   if (include)
@@ -62,6 +89,11 @@ export function evaluateRules(
 
   return {
     decision: "undecided",
-    flags: findKeywords(description, config.description.flagPhrases),
+    flags: [
+      ...new Set([
+        ...findKeywords(description, config.description.flagPhrases),
+        ...extraFlags,
+      ]),
+    ],
   };
 }

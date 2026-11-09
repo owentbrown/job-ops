@@ -1,6 +1,7 @@
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { readdirSync } from "node:fs";
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   parsePrefilterConfig,
@@ -28,6 +29,26 @@ describe("parsePrefilterConfig", () => {
 
   it("rejects unknown keys so typos are caught", () => {
     expect(() => parsePrefilterConfig({ titel: {} })).toThrow();
+  });
+
+  it("uppercases ratesToCad keys", () => {
+    const config = parsePrefilterConfig({
+      salary: { ratesToCad: { cad: 1, usd: 1.4 } },
+    });
+    expect(config.salary.ratesToCad).toEqual({ CAD: 1, USD: 1.4 });
+  });
+
+  it("requires a rate for the default currency", () => {
+    expect(() =>
+      parsePrefilterConfig({
+        salary: { defaultCurrency: "USD", ratesToCad: { CAD: 1 } },
+      }),
+    ).toThrow(/defaultCurrency/);
+    expect(
+      parsePrefilterConfig({
+        salary: { defaultCurrency: "usd", ratesToCad: { usd: 1.4 } },
+      }).salary.defaultCurrency,
+    ).toBe("USD");
   });
 
   it("allows _comment keys", () => {
@@ -106,6 +127,15 @@ describe("readPrefilterConfig / writePrefilterConfig", () => {
     const file = await tempFile(JSON.stringify({ enabled: true }));
     await expect(writePrefilterConfig({ enabled: "yes" })).rejects.toThrow();
     expect(JSON.parse(await readFile(file, "utf8"))).toEqual({ enabled: true });
+  });
+
+  it("leaves no temp file behind when the write fails", async () => {
+    const file = await tempFile();
+    await mkdir(file); // a directory at the target makes rename fail
+    await expect(writePrefilterConfig({})).rejects.toThrow();
+    expect(
+      readdirSync(dirname(file)).filter((n) => n.endsWith(".tmp")),
+    ).toEqual([]);
   });
 
   it("refuses to write under test without an explicit path", async () => {

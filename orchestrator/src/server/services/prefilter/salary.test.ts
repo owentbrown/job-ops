@@ -61,10 +61,10 @@ describe("evaluateSalary", () => {
     expect(result.annualMaxCad).toBe(93600);
   });
 
-  it("defaults to CAD when currency and country are unknown", () => {
-    expect(
-      evaluateSalary(job({ salary: "$45/hr" }), salaryConfig).belowFloor,
-    ).toBe(true);
+  it("uses the most generous rate when currency and country are unknown", () => {
+    const result = evaluateSalary(job({ salary: "$45/hr" }), salaryConfig);
+    expect(result.belowFloor).toBe(false);
+    expect(result.annualMaxCad).toBe(128232);
   });
 
   it("keeps US$45/hr (~128K CAD)", () => {
@@ -119,5 +119,125 @@ describe("evaluateSalary", () => {
     expect(evaluateSalary(job({ salary: "$20/hr" }), disabled).belowFloor).toBe(
       false,
     );
+  });
+});
+
+describe("evaluateSalary false-drop guards", () => {
+  const drops = (overrides: Parameters<typeof job>[0]) =>
+    evaluateSalary(job(overrides), salaryConfig).belowFloor;
+
+  it("does not drop US or ambiguous locations on the CAD rate", () => {
+    expect(
+      drops({ salary: "$100,000 - $105,000", location: "New York, NY" }),
+    ).toBe(false);
+    expect(
+      drops({
+        salary: "$100,000 - $105,000",
+        location: "Chicago, IL (on-site)",
+      }),
+    ).toBe(false);
+    expect(
+      drops({ salary: "$100,000 - $105,000", location: "Ontario, CA" }),
+    ).toBe(false);
+  });
+
+  it("treats clearly Canadian locations as CAD", () => {
+    expect(
+      drops({
+        salary: "$100,000 - $105,000",
+        location: "Kitchener, ON, Canada",
+      }),
+    ).toBe(true);
+    expect(
+      drops({ salary: "$100,000 - $105,000", location: "Waterloo, ON" }),
+    ).toBe(true);
+  });
+
+  it("never drops open-ended salaries", () => {
+    expect(drops({ salary: "$90,000+", location: "Waterloo, ON" })).toBe(false);
+    expect(drops({ salary: "From $90k", location: "Waterloo, ON" })).toBe(
+      false,
+    );
+    expect(drops({ salary: "Minimum $80,000", location: "Waterloo, ON" })).toBe(
+      false,
+    );
+    expect(
+      drops({ salary: "$80,000 plus commission", location: "Waterloo, ON" }),
+    ).toBe(false);
+    expect(drops({ salary: "Up to $95K", location: "Waterloo, ON" })).toBe(
+      true,
+    );
+    expect(
+      drops({ salary: "$80,000+ - $95,000", location: "Waterloo, ON" }),
+    ).toBe(true);
+  });
+
+  it("parses k and m suffixes and ignores unknown suffixes", () => {
+    expect(parseSalaryText("$1.2M")?.max).toBe(1200000);
+    expect(drops({ salary: "$1.2M", location: "Waterloo, ON" })).toBe(false);
+    expect(parseSalaryText("$5x")).toBeNull();
+    expect(parseSalaryText("$5 million")).toBeNull();
+  });
+
+  it("makes no decision for an ambiguous unknown interval", () => {
+    expect(
+      drops({
+        salaryMaxAmount: 12000,
+        salaryInterval: null,
+        salaryCurrency: "CAD",
+      }),
+    ).toBe(false);
+    expect(
+      drops({
+        salaryMaxAmount: 29000,
+        salaryInterval: null,
+        salaryCurrency: "CAD",
+      }),
+    ).toBe(false);
+    expect(
+      drops({
+        salaryMaxAmount: 95000,
+        salaryInterval: null,
+        salaryCurrency: "CAD",
+      }),
+    ).toBe(true);
+  });
+
+  it("handles semi-monthly and bi-weekly intervals", () => {
+    const semi = evaluateSalary(
+      job({ salary: "$5,000 semi-monthly" }),
+      salaryConfig,
+    );
+    expect(semi.annualMaxCad).toBe(5000 * 24 * 1.37);
+    expect(semi.belowFloor).toBe(false);
+    const structured = evaluateSalary(
+      job({
+        salaryMaxAmount: 4000,
+        salaryInterval: "bi-weekly",
+        salaryCurrency: "CAD",
+      }),
+      salaryConfig,
+    );
+    expect(structured.annualMaxCad).toBe(104000);
+    expect(structured.belowFloor).toBe(true);
+    expect(
+      evaluateSalary(
+        job({
+          salaryMaxAmount: 4000,
+          salaryInterval: "semimonthly",
+          salaryCurrency: "CAD",
+        }),
+        salaryConfig,
+      ).annualMaxCad,
+    ).toBe(96000);
+  });
+
+  it("falls back to salary text for missing interval and currency", () => {
+    const result = evaluateSalary(
+      job({ salaryMaxAmount: 45, salary: "US$40 - 45 per hour" }),
+      salaryConfig,
+    );
+    expect(result.annualMaxCad).toBe(Math.round(45 * 2080 * 1.37));
+    expect(result.belowFloor).toBe(false);
   });
 });

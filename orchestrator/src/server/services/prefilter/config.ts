@@ -1,5 +1,6 @@
+import { randomUUID } from "node:crypto";
 import { existsSync } from "node:fs";
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { logger } from "@infra/logger";
 import { z } from "zod";
@@ -30,9 +31,26 @@ export const prefilterConfigSchema = z
         defaultCurrency: z.string().trim().toUpperCase().default("CAD"),
         ratesToCad: z
           .record(z.string(), z.number().positive())
+          .transform((rates) =>
+            Object.fromEntries(
+              Object.entries(rates).map(([code, rate]) => [
+                code.trim().toUpperCase(),
+                rate,
+              ]),
+            ),
+          )
           .default({ CAD: 1 }),
       })
       .strict()
+      .superRefine((salary, ctx) => {
+        if (!(salary.defaultCurrency in salary.ratesToCad)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ["defaultCurrency"],
+            message: `ratesToCad must include a rate for ${salary.defaultCurrency}`,
+          });
+        }
+      })
       .default({}),
     description: z
       .object({
@@ -123,8 +141,13 @@ export async function writePrefilterConfig(
     throw new Error("No prefilter config path; set PREFILTER_CONFIG_PATH");
   }
   await mkdir(dirname(path), { recursive: true });
-  const tempPath = `${path}.${process.pid}.tmp`;
-  await writeFile(tempPath, `${JSON.stringify(config, null, 2)}\n`, "utf8");
-  await rename(tempPath, path);
+  const tempPath = `${path}.${process.pid}.${randomUUID()}.tmp`;
+  try {
+    await writeFile(tempPath, `${JSON.stringify(config, null, 2)}\n`, "utf8");
+    await rename(tempPath, path);
+  } catch (error) {
+    await rm(tempPath, { force: true }).catch(() => undefined);
+    throw error;
+  }
   return { config, path };
 }

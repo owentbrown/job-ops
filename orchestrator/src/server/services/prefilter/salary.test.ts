@@ -1,7 +1,7 @@
 import { createJob } from "@shared/testing/factories";
 import { describe, expect, it } from "vitest";
 import { parsePrefilterConfig } from "./config";
-import { evaluateSalary, parseSalaryText } from "./salary";
+import { evaluateSalary, isClearlyCanadian, parseSalaryText } from "./salary";
 
 const salaryConfig = parsePrefilterConfig({
   salary: { ratesToCad: { CAD: 1, USD: 1.37 } },
@@ -239,5 +239,28 @@ describe("evaluateSalary false-drop guards", () => {
     );
     expect(result.annualMaxCad).toBe(Math.round(45 * 2080 * 1.37));
     expect(result.belowFloor).toBe(false);
+  });
+
+  it("never drops on million or billion amounts", () => {
+    expect(parseSalaryText("$1.2 million")).toBeNull();
+    expect(parseSalaryText("$2.5 billion")).toBeNull();
+    expect(parseSalaryText("$1.2M")?.max).toBe(1200000);
+    expect(parseSalaryText("$1.2x")).toBeNull();
+    expect(drops({ salary: "$1.2 million", location: "Waterloo, ON" })).toBe(
+      false,
+    );
+    expect(drops({ salary: "$2.5 billion", location: "Waterloo, ON" })).toBe(
+      false,
+    );
+  });
+
+  it("does not treat Canada-or-US locations as clearly Canadian", () => {
+    expect(isClearlyCanadian("Remote - Canada or US")).toBe(false);
+    expect(isClearlyCanadian("Canada / US")).toBe(false);
+    expect(isClearlyCanadian("Canada (US)")).toBe(false);
+    expect(isClearlyCanadian("Kitchener, ON, Canada")).toBe(true);
+    expect(drops({ salary: "$100k", location: "Remote - Canada or US" })).toBe(
+      false,
+    );
   });
 });

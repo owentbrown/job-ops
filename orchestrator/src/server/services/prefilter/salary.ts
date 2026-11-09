@@ -72,7 +72,7 @@ function intervalFromText(text: string): SalaryInterval | null {
 }
 
 const AMOUNT =
-  /(?<![\p{L}\p{N}])(\d{1,3}(?:,\d{3})+|\d+(?:\.\d+)?)([km])?(?![\p{L}\p{N}])(?!\s*(?:million|billion|thousand)\b)/gu;
+  /(?<![\p{L}\p{N}])(\d{1,3}(?:,\d{3})+|\d+(?:\.\d+)?)([km])?(?![\p{L}\p{N}]|[.,]\d)(?!\s*(?:million|billion|thousand)\b)/gu;
 
 /** Conservative free-text parse. Only runs when a currency marker is present. */
 export function parseSalaryText(
@@ -80,6 +80,7 @@ export function parseSalaryText(
 ): ParsedSalary | null {
   const value = normalizeText(text);
   if (!value || !/[$£€]|\b(cad|usd|gbp|eur)\b/.test(value)) return null;
+  if (/\b(million|billion)s?\b/.test(value)) return null;
   const amounts: number[] = [];
   for (const match of value.matchAll(AMOUNT)) {
     let amount = Number(match[1].replace(/,/g, ""));
@@ -117,7 +118,7 @@ function isOpenEnded(text: string | null | undefined): boolean {
 const CANADA_WORDS =
   /\b(canada|ontario|british columbia|alberta|quebec|manitoba|saskatchewan|nova scotia|new brunswick|newfoundland|prince edward island)\b/;
 const CANADA_CODE = /,\s*(on|bc|ab|qc|mb|sk|ns|nb|nl|pe)\s*(,|\(|$)/;
-const US_WORDS = /united states|\busa\b|\bu\.s\.|,\s*us\b/;
+const US_WORDS = /united states|\bus\b|\busa\b|\bu\.s\./;
 const US_STATE_CODE =
   /,\s*(al|ak|az|ar|ca|co|ct|de|dc|fl|ga|hi|id|il|in|ia|ks|ky|la|me|md|ma|mi|mn|ms|mo|mt|ne|nv|nh|nj|nm|ny|nc|nd|oh|ok|or|pa|ri|sc|sd|tn|tx|ut|vt|va|wa|wv|wi|wy)\s*(,|\(|$)/;
 

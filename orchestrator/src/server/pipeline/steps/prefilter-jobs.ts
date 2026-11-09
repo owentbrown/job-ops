@@ -63,6 +63,7 @@ async function resolveConfig(
   while (true) {
     if (args.shouldCancel?.()) return CANCELLED;
     const load = await readPrefilterConfig();
+    if (args.shouldCancel?.()) return CANCELLED;
     if (load.status === "off-in-tests") return null;
 
     if (load.status === "missing" || load.status === "invalid") {

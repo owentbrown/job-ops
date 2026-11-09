@@ -284,9 +284,9 @@ export function resolvePipelineChallenge(extractorId: string): {
 }
 
 /**
- * Resume a pipeline that paused because the LLM was not configured.
- * Called by the POST /api/pipeline/resume-scoring endpoint after the user
- * configures an API key in Settings.
+ * Resume any scoring pause: LLM configuration (after the user sets an API key)
+ * or the pre-score filter review/config pause. Called by the
+ * POST /api/pipeline/resume-scoring endpoint.
  */
 export function resumePipelineScoring(): { resolved: boolean } {
   const state = getPipelineState();
@@ -550,13 +550,16 @@ export async function runPipeline(
         }
       }
 
-      progressHelpers.crawlingComplete(discoveredJobs.length);
+      if (mergedConfig.enableCrawling !== false) {
+        progressHelpers.crawlingComplete(discoveredJobs.length);
+      }
 
       ensureNotCancelled(scopeKey);
       jobsDiscovered = discoveredJobs.length;
-      const { created, skipped, fuzzyMerged } = await importJobsStep({
-        discoveredJobs,
-      });
+      const { created, skipped, fuzzyMerged } =
+        mergedConfig.enableCrawling === false
+          ? { created: 0, skipped: 0, fuzzyMerged: 0 }
+          : await importJobsStep({ discoveredJobs });
 
       await persistResultSummary({ stage: "import" });
       await pipelineRepo.updatePipelineRun(pipelineRun.id, {
@@ -571,6 +574,9 @@ export async function runPipeline(
         // Reuses the LLM-config pause: same card, same Resume endpoint, and
         // requestPipelineCancel() already unblocks it.
         waitForResume: async ({ title, message }) => {
+          // No await between this check and installing the pause below, so a
+          // cancel can never slip in unseen and leave us blocked forever.
+          ensureNotCancelled(scopeKey);
           pipelineLogger.info("Pipeline paused before scoring", { title });
           updateProgress({
             step: "configuration_required",
@@ -585,6 +591,8 @@ export async function runPipeline(
           });
           tenantState.activeLlmConfigState = null;
           updateProgress({
+            step: "scoring",
+            message: "Resuming…",
             actionTitle: undefined,
             actionLabel: undefined,
             error: undefined,

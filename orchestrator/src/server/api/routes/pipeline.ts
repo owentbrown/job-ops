@@ -732,17 +732,15 @@ pipelineRouter.post("/cancel", async (_req: Request, res: Response) => {
 });
 
 /**
- * POST /api/pipeline/resume-scoring - Resume a pipeline paused because LLM
- * was not configured. Called after the user configures an API key in Settings.
+ * POST /api/pipeline/resume-scoring - Resume any scoring pause: LLM
+ * configuration (after the user sets an API key) or the pre-score filter
+ * review/config pause.
  */
 pipelineRouter.post("/resume-scoring", async (_req: Request, res: Response) => {
   try {
     const { resolved } = resumePipelineScoring();
     if (!resolved) {
-      return fail(
-        res,
-        conflict("Pipeline is not paused waiting for LLM configuration"),
-      );
+      return fail(res, conflict("Pipeline is not paused"));
     }
     ok(res, { resolved: true });
   } catch (error) {

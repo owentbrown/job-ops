@@ -16,25 +16,26 @@ vi.mock("../repositories/pipeline", () => ({
   updatePipelineRun: vi.fn(async () => undefined),
 }));
 
-const discoverJobsStep = vi.fn(async () => ({
-  discoveredJobs: [],
-  sourceErrors: [],
-  pendingChallenges: [],
-}));
-const scoreJobsStep = vi.fn(async () => ({
-  unprocessedJobs: [],
-  scoredJobs: [],
-}));
-const selectJobsStep = vi.fn(() => []);
+const { discoverJobsStep, scoreJobsStep, selectJobsStep, importJobsStep } =
+  vi.hoisted(() => ({
+    discoverJobsStep: vi.fn(async () => ({
+      discoveredJobs: [],
+      sourceErrors: [],
+      pendingChallenges: [],
+    })),
+    scoreJobsStep: vi.fn(async () => ({ unprocessedJobs: [], scoredJobs: [] })),
+    selectJobsStep: vi.fn(() => []),
+    importJobsStep: vi.fn(async () => ({
+      created: 0,
+      skipped: 0,
+      fuzzyMerged: 0,
+    })),
+  }));
 
 vi.mock("./steps", () => ({
   loadProfileStep: vi.fn(async () => ({})),
   discoverJobsStep,
-  importJobsStep: vi.fn(async () => ({
-    created: 0,
-    skipped: 0,
-    fuzzyMerged: 0,
-  })),
+  importJobsStep,
   scoreJobsStep,
   selectJobsStep,
   processJobsStep: vi.fn(async () => ({ processedCount: 0 })),
@@ -55,8 +56,8 @@ describe.sequential("pipeline prefilter gate", () => {
     vi.resetModules();
     vi.clearAllMocks();
     tempDir = await mkdtemp(join(tmpdir(), "job-ops-prefilter-gate-"));
-    process.env.DATA_DIR = tempDir;
-    process.env.NODE_ENV = "test";
+    vi.stubEnv("DATA_DIR", tempDir);
+    vi.stubEnv("NODE_ENV", "test");
     await import("../db/migrate");
   });
 
@@ -67,6 +68,7 @@ describe.sequential("pipeline prefilter gate", () => {
     const { closeDb } = await import("../db/index");
     closeDb();
     await rm(tempDir, { recursive: true, force: true });
+    vi.unstubAllEnvs();
   });
 
   it("pauses before scoring until resumed", async () => {
@@ -107,6 +109,50 @@ describe.sequential("pipeline prefilter gate", () => {
     expect(pipeline.resumePipelineScoring()).toEqual({ resolved: true });
     expect((await runPromise).success).toBe(true);
     expect(scoreJobsStep).toHaveBeenCalledTimes(1);
+    expect(getProgress().actionTitle).toBeUndefined();
+  });
+
+  it("does not pause when pauseBeforeScoring is false", async () => {
+    await writeConfig({ pauseBeforeScoring: false });
+    const pipeline = await import("./orchestrator");
+    const { getProgress } = await import("./progress");
+
+    const result = await pipeline.runPipeline({});
+    expect(result.success).toBe(true);
+    expect(scoreJobsStep).toHaveBeenCalledTimes(1);
+    expect(getProgress().actionTitle).toBeUndefined();
+  });
+
+  it("finishes cancelled when cancel arrives during the config read", async () => {
+    await writeConfig({ pauseBeforeScoring: true });
+    const real = await import("@server/services/prefilter/config");
+    let release: () => void = () => {};
+    const gate = new Promise<void>((r) => {
+      release = r;
+    });
+    const spy = vi
+      .spyOn(real, "readPrefilterConfig")
+      .mockImplementation(async () => {
+        await gate;
+        return {
+          status: "ok",
+          config: real.parsePrefilterConfig({ pauseBeforeScoring: true }),
+        } as never;
+      });
+    const pipeline = await import("./orchestrator");
+    const runPromise = pipeline.runPipeline({});
+    await vi.waitFor(() => expect(spy).toHaveBeenCalled());
+    expect(pipeline.requestPipelineCancel().accepted).toBe(true);
+    release();
+    const result = await Promise.race([
+      runPromise,
+      new Promise<never>((_, rej) =>
+        setTimeout(() => rej(new Error("run hung after cancel")), 5000),
+      ),
+    ]);
+    expect(result.success).toBe(false);
+    expect(scoreJobsStep).not.toHaveBeenCalled();
+    spy.mockRestore();
   });
 
   it("can be cancelled while paused", async () => {
@@ -141,5 +187,6 @@ describe.sequential("pipeline prefilter gate", () => {
     expect(discoverJobsStep).not.toHaveBeenCalled();
     expect(scoreJobsStep).toHaveBeenCalledTimes(1);
     expect(selectJobsStep).not.toHaveBeenCalled();
+    expect(importJobsStep).not.toHaveBeenCalled();
   });
 });

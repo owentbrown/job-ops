@@ -302,10 +302,14 @@ export const PrefilterRulesEditor: React.FC<{
                 >
                   {item.decision}
                 </span>
-                <span className="min-w-0 flex-1 break-words">
-                  {item.title} · {item.employer}
-                </span>
-                <span className="text-muted-foreground">{item.detail}</span>
+                <div className="min-w-0 flex-1 space-y-0.5">
+                  <p className="break-words">
+                    {item.title} · {item.employer}
+                  </p>
+                  <p className="break-words text-xs text-muted-foreground">
+                    {item.detail}
+                  </p>
+                </div>
               </li>
             ))}
           </ul>

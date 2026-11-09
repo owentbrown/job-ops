@@ -1,7 +1,15 @@
-import { badRequest, conflict, notFound, toAppError } from "@infra/errors";
+import {
+  badRequest,
+  conflict,
+  forbidden,
+  notFound,
+  toAppError,
+} from "@infra/errors";
 import { fail, ok } from "@infra/http";
 import { logger } from "@infra/logger";
 import { runWithRequestContext } from "@infra/request-context";
+import { getJobOpsAppConfig } from "@server/config/app-mode";
+import { isDemoMode } from "@server/config/demo";
 import { getPipelineStatus, runPipeline } from "@server/pipeline/index";
 import * as jobsRepo from "@server/repositories/jobs";
 import * as prefilterRepo from "@server/repositories/prefilter";
@@ -17,6 +25,27 @@ import { z } from "zod";
 
 export const prefilterRouter = Router();
 
+function getRequestId(res: Response): string {
+  return String(res.getHeader("x-request-id") || "unknown");
+}
+
+function requireConfigBody(req: Request): unknown {
+  const config = req.body?.config;
+  if (config === undefined || config === null) {
+    throw badRequest("config is required");
+  }
+  return config;
+}
+
+// The rules file is global to the server, so it is never exposed in hosted mode.
+prefilterRouter.use((_req, res, next) => {
+  if (getJobOpsAppConfig().appMode === "hosted") {
+    fail(res, forbidden("Pre-score filter is unavailable in hosted mode."));
+    return;
+  }
+  next();
+});
+
 function handle(
   route: string,
   fn: (req: Request, res: Response) => Promise<void>,
@@ -31,7 +60,7 @@ function handle(
           : toAppError(error);
       logger[err.status >= 500 ? "error" : "warn"]("Prefilter route failed", {
         route,
-        requestId: String(res.getHeader("x-request-id") || "unknown"),
+        requestId: getRequestId(res),
         status: err.status,
         code: err.code,
       });
@@ -53,7 +82,10 @@ prefilterRouter.post(
     if (!(await prefilterRepo.restoreFilteredJob(req.params.id))) {
       throw notFound("Filtered job not found");
     }
-    logger.info("Prefiltered job restored", { jobId: req.params.id });
+    logger.info("Prefiltered job restored", {
+      jobId: req.params.id,
+      requestId: getRequestId(res),
+    });
     ok(res, { id: req.params.id, restored: true });
   }),
 );
@@ -75,8 +107,11 @@ prefilterRouter.get(
 prefilterRouter.put(
   "/config",
   handle("PUT /api/prefilter/config", async (req, res) => {
-    const saved = await writePrefilterConfig(req.body?.config);
-    logger.info("Prefilter config saved", { path: saved.path });
+    const saved = await writePrefilterConfig(requireConfigBody(req));
+    logger.info("Prefilter config saved", {
+      path: saved.path,
+      requestId: getRequestId(res),
+    });
     ok(res, saved);
   }),
 );
@@ -84,7 +119,7 @@ prefilterRouter.put(
 prefilterRouter.post(
   "/preview",
   handle("POST /api/prefilter/preview", async (req, res) => {
-    const config = parsePrefilterConfig(req.body?.config);
+    const config = parsePrefilterConfig(requireConfigBody(req));
     const jobs = (await jobsRepo.getUnscoredDiscoveredJobs()).filter(
       (job) => job.filterLayer !== "restored",
     );
@@ -95,6 +130,9 @@ prefilterRouter.post(
 prefilterRouter.post(
   "/score-backlog",
   handle("POST /api/prefilter/score-backlog", async (_req, res) => {
+    if (isDemoMode()) {
+      throw forbidden("Backlog scoring is disabled in demo mode.");
+    }
     if (getPipelineStatus().isRunning) {
       throw conflict("Pipeline is already running");
     }
@@ -119,6 +157,9 @@ prefilterRouter.post(
             error instanceof Error ? error.message.slice(0, 300) : "unknown",
         });
       });
+    });
+    logger.info("Backlog scoring run started", {
+      requestId: getRequestId(res),
     });
     ok(res, { started: true });
   }),

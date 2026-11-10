@@ -442,6 +442,10 @@ export async function runPipeline(
 
       ensureNotCancelled(scopeKey);
       await persistResultSummary({ stage: "discovery" });
+      if (mergedConfig.enableCrawling === false) {
+        // Discovery normally sets startedAt; backlog runs skip it.
+        updateProgress({ startedAt: new Date().toISOString() });
+      }
       let { discoveredJobs, sourceErrors, pendingChallenges } =
         mergedConfig.enableCrawling === false
           ? {

@@ -179,6 +179,24 @@ const pipelineRunsHasConfigSnapshot = tableHasColumn(
 const pipelineRunsHasTenantId = tableHasColumn("pipeline_runs", "tenant_id");
 const jobsHasPdfRegenerating = tableHasColumn("jobs", "pdf_regenerating");
 const jobsHasJobBrief = tableHasColumn("jobs", "job_brief");
+// Fork: the jobs rebuild below runs on every boot. Columns added to jobs after
+// it (by ALTER TABLE further down) must be carried through it, or every
+// restart empties them. Only the ones already present are carried; the ALTERs
+// add any that are missing. Add new later-added jobs columns here.
+const jobsCarriedColumns = [
+  "user_id",
+  "filter_reason",
+  "filter_layer",
+  "filtered_at",
+  "skip_reason",
+  "cover_letter",
+].filter((column) => tableHasColumn("jobs", column));
+const jobsCarriedColumnDefs = jobsCarriedColumns
+  .map((column) => `,\n    ${column} TEXT`)
+  .join("");
+const jobsCarriedColumnList = jobsCarriedColumns
+  .map((column) => `, ${column}`)
+  .join("");
 const watchlistJobStatesHasUserId = tableHasColumn(
   "watchlist_job_states",
   "user_id",
@@ -998,7 +1016,7 @@ const migrations = [
     ready_at TEXT,
     applied_at TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
-    updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))${jobsCarriedColumnDefs},
     FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE
   )`,
   `INSERT OR REPLACE INTO jobs_new (
@@ -1011,7 +1029,7 @@ const migrations = [
     suitability_score, suitability_reason, job_brief, tailored_summary, tailored_headline, tailored_skills,
     selected_project_ids, pdf_path, pdf_source, pdf_regenerating, pdf_fingerprint, pdf_generated_at, tracer_links_enabled, sponsor_match_score, sponsor_match_names, discovered_at, processed_at,
     ready_at,
-    applied_at, created_at, updated_at
+    applied_at, created_at, updated_at${jobsCarriedColumnList}
   )
   SELECT
     id, ${tableHasColumn("jobs", "tenant_id") ? `COALESCE(tenant_id, ${sqlString(DEFAULT_TENANT_ID)})` : sqlString(DEFAULT_TENANT_ID)}, source, source_job_id, job_url_direct, date_posted, job_type, salary_source, salary_interval,
@@ -1023,7 +1041,7 @@ const migrations = [
     suitability_score, suitability_reason, ${jobsHasJobBrief ? "job_brief" : "NULL"}, tailored_summary, tailored_headline, tailored_skills,
     selected_project_ids, pdf_path, pdf_source, ${jobsHasPdfRegenerating ? "pdf_regenerating" : "0"}, pdf_fingerprint, pdf_generated_at, tracer_links_enabled, sponsor_match_score, sponsor_match_names, discovered_at, processed_at,
     ready_at,
-    applied_at, created_at, updated_at
+    applied_at, created_at, updated_at${jobsCarriedColumnList}
   FROM jobs`,
   `DROP TABLE IF EXISTS jobs`,
   `ALTER TABLE jobs_new RENAME TO jobs`,

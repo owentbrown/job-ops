@@ -569,4 +569,57 @@ describe.sequential("database migrations", () => {
       },
     );
   });
+
+  // Fork regression: the jobs-table rebuild runs on every boot and used to
+  // copy a fixed column list, silently emptying columns added later
+  // (cover letters, pre-score filter results, skip reasons, owner).
+  it("keeps later-added jobs columns across a restart", async () => {
+    tempDir = await mkdtemp(join(tmpdir(), "job-ops-migrate-"));
+    const runMigrate = `
+      import { join } from "node:path";
+      import { pathToFileURL } from "node:url";
+      await import(pathToFileURL(join(process.cwd(), "src/server/db/migrate.ts")).href);
+    `;
+    const seed = `
+      import { join } from "node:path";
+      import Database from "better-sqlite3";
+      const db = new Database(join(process.env.DATA_DIR, "jobs.db"));
+      db.prepare(\`INSERT INTO jobs (id, tenant_id, user_id, title, employer, job_url,
+        cover_letter, filter_reason, filter_layer, filtered_at, skip_reason)
+        VALUES ('job-1', 'tenant_default', 'owner-1', 'Role', 'Acme', 'https://example.com/1',
+        'Dear team', 'too far', 'commute', '2026-11-11T00:00:00Z', 'not a fit')\`).run();
+      db.close();
+    `;
+    const check = `
+      import { join } from "node:path";
+      import Database from "better-sqlite3";
+      const db = new Database(join(process.env.DATA_DIR, "jobs.db"), { readonly: true });
+      const row = db.prepare("SELECT * FROM jobs WHERE id = 'job-1'").get();
+      const expected = {
+        user_id: "owner-1",
+        cover_letter: "Dear team",
+        filter_reason: "too far",
+        filter_layer: "commute",
+        filtered_at: "2026-11-11T00:00:00Z",
+        skip_reason: "not a fit",
+      };
+      for (const [column, value] of Object.entries(expected)) {
+        if (row?.[column] !== value) {
+          throw new Error(\`\${column} lost on restart: got \${row?.[column]}\`);
+        }
+      }
+      db.close();
+    `;
+
+    for (const script of [runMigrate, seed, runMigrate, check]) {
+      execFileSync(
+        process.execPath,
+        ["--import", "tsx", "--input-type=module", "-e", script],
+        {
+          env: { ...process.env, DATA_DIR: tempDir },
+          stdio: "pipe",
+        },
+      );
+    }
+  });
 });

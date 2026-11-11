@@ -3,14 +3,14 @@
  */
 
 import { existsSync, mkdirSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname } from "node:path";
 import Database from "better-sqlite3";
 import { drizzle } from "drizzle-orm/better-sqlite3";
-import { getDataDir } from "../config/dataDir";
+import { getDatabasePath } from "../config/dataDir";
 import * as schema from "./schema";
 
 // Database path - can be overridden via env for Docker
-const DB_PATH = join(getDataDir(), "jobs.db");
+const DB_PATH = getDatabasePath();
 
 // Ensure data directory exists
 const dataDir = dirname(DB_PATH);

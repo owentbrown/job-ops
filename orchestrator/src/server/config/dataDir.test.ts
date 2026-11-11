@@ -37,3 +37,29 @@ describe("getDataDir", () => {
     expect(process.env.DATA_DIR).toBe(expectedDataDir);
   });
 });
+
+describe("getDatabasePath", () => {
+  const originalDataDir = process.env.DATA_DIR;
+  const originalDbPath = process.env.DATABASE_PATH;
+
+  afterEach(() => {
+    if (originalDataDir === undefined) delete process.env.DATA_DIR;
+    else process.env.DATA_DIR = originalDataDir;
+    if (originalDbPath === undefined) delete process.env.DATABASE_PATH;
+    else process.env.DATABASE_PATH = originalDbPath;
+  });
+
+  it("defaults to jobs.db in the data folder", async () => {
+    process.env.DATA_DIR = "/tmp/jobops-data";
+    delete process.env.DATABASE_PATH;
+    const { getDatabasePath } = await import("./dataDir");
+    expect(getDatabasePath()).toBe(join("/tmp/jobops-data", "jobs.db"));
+  });
+
+  it("uses DATABASE_PATH when set (Docker volume)", async () => {
+    process.env.DATA_DIR = "/tmp/jobops-data";
+    process.env.DATABASE_PATH = "/app/db/jobs.db";
+    const { getDatabasePath } = await import("./dataDir");
+    expect(getDatabasePath()).toBe("/app/db/jobs.db");
+  });
+});

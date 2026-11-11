@@ -9,12 +9,12 @@ import fs from "node:fs";
 import type { FileHandle } from "node:fs/promises";
 import path from "node:path";
 import { logger } from "@infra/logger";
-import { getDataDir } from "@server/config/dataDir";
+import { getDatabasePath, getDataDir } from "@server/config/dataDir";
 import { createScheduler } from "@server/utils/scheduler";
 import type { BackupInfo } from "@shared/types";
 import Database from "better-sqlite3";
 
-const DB_FILENAME = "jobs.db";
+const _DB_FILENAME = "jobs.db";
 const AUTO_BACKUP_PREFIX = "jobs_";
 const MANUAL_BACKUP_PREFIX = "jobs_manual_";
 const AUTO_BACKUP_PATTERN = /^jobs_\d{4}_\d{2}_\d{2}\.db$/;
@@ -45,7 +45,7 @@ const scheduler = createScheduler("backup", async () => {
 });
 
 function getDbPath(): string {
-  return path.join(getDataDir(), DB_FILENAME);
+  return getDatabasePath();
 }
 
 function getBackupDir(): string {

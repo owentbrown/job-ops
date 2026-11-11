@@ -1,10 +1,20 @@
 # Local fork overrides: build from source under a local tag and mount the
 # prefilter config read-write so the in-app Rules editor can save it.
+#
+# The SQLite database lives on a Docker named volume (jobops-db), not in the
+# ./data bind mount: SQLite's file locks and WAL shared memory aren't reliable
+# across the Mac/VM file-sharing layer, which corrupted the app's view of the
+# database twice. PDFs, backups and other files stay in ./data.
 services:
   job-ops:
     image: job-ops:local
     pull_policy: build
     volumes:
       - ./config:/app/config
+      - jobops-db:/app/db
     environment:
       - PREFILTER_CONFIG_PATH=/app/config/prefilter.json
+      - DATABASE_PATH=/app/db/jobs.db
+
+volumes:
+  jobops-db:

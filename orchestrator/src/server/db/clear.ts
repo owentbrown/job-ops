@@ -3,12 +3,11 @@
  */
 
 import { existsSync, unlinkSync } from "node:fs";
-import { join } from "node:path";
 import Database from "better-sqlite3";
-import { getDataDir } from "../config/dataDir";
+import { getDatabasePath } from "../config/dataDir";
 
 // Database path - can be overridden via env for Docker
-const DB_PATH = join(getDataDir(), "jobs.db");
+const DB_PATH = getDatabasePath();
 
 /**
  * Clear all data from the database (keeps the schema intact).

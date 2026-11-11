@@ -6,9 +6,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as backup from "./index";
 
 // Mock the dataDir module
-vi.mock("@server/config/dataDir", () => ({
-  getDataDir: vi.fn(),
-}));
+vi.mock("@server/config/dataDir", async () => {
+  const { join } = await import("node:path");
+  const getDataDir = vi.fn();
+  return {
+    getDataDir,
+    getDatabasePath: () => join(getDataDir(), "jobs.db"),
+  };
+});
 
 import { getDataDir } from "@server/config/dataDir";
 

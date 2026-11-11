@@ -34,3 +34,15 @@ export function getDataDir(): string {
   process.env.DATA_DIR = cachedDir;
   return cachedDir;
 }
+
+/**
+ * The SQLite database file. DATABASE_PATH moves it out of the data folder
+ * (fork): in Docker it lives on a named volume so SQLite's locking and
+ * WAL shared memory never cross the Mac/VM file-sharing layer. Everything
+ * else (PDFs, backups, settings files) stays in the data folder.
+ */
+export function getDatabasePath(): string {
+  const fromEnv = (process.env.DATABASE_PATH || "").trim();
+  if (fromEnv) return fromEnv;
+  return join(getDataDir(), "jobs.db");
+}

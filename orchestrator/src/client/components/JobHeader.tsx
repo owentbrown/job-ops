@@ -85,19 +85,19 @@ const SponsorPill: React.FC<SponsorPillProps> = ({ score, names, onCheck }) => {
     if (s >= 95)
       return {
         label: "Confirmed Sponsor",
-        dot: "bg-emerald-500",
-        color: "text-emerald-400",
+        dot: "bg-success",
+        color: "text-success",
       };
     if (s >= 80)
       return {
         label: "Potential Sponsor",
-        dot: "bg-amber-500",
-        color: "text-amber-400",
+        dot: "bg-warning",
+        color: "text-warning",
       };
     return {
       label: "Sponsor Not Found",
-      dot: "bg-slate-500",
-      color: "text-slate-400",
+      dot: "bg-muted-foreground",
+      color: "text-muted-foreground",
     };
   };
 
@@ -155,9 +155,9 @@ const AppliedDuplicatePill: React.FC<{
 };
 
 const postingAgeDotColor = {
-  fresh: "bg-emerald-500",
-  aging: "bg-amber-500",
-  old: "bg-slate-500",
+  fresh: "bg-success",
+  aging: "bg-warning",
+  old: "bg-muted-foreground",
 };
 
 export const JobHeader: React.FC<JobHeaderProps> = ({
@@ -301,7 +301,7 @@ export const JobHeader: React.FC<JobHeaderProps> = ({
             <StatusIndicator
               variant="emerald"
               label="Remote"
-              dotColor="bg-emerald-400"
+              dotColor="bg-success"
               tooltip="The job claims to be remote"
             />
           )}

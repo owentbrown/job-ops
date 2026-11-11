@@ -382,12 +382,12 @@ export function DesignResumePdfPreview({
 
         {previewState === "error" ? (
           <div className="absolute inset-0 grid place-items-center bg-card backdrop-blur-[2px]">
-            <div className="flex max-w-sm flex-col items-center gap-3 rounded-2xl border border-rose-500/30 bg-rose-500/10 px-6 py-5 text-center">
-              <FileText className="h-6 w-6 text-rose-300" />
-              <div className="text-sm font-medium text-rose-200">
+            <div className="flex max-w-sm flex-col items-center gap-3 rounded-2xl border border-destructive/30 bg-destructive/10 px-6 py-5 text-center">
+              <FileText className="h-6 w-6 text-destructive" />
+              <div className="text-sm font-medium text-destructive">
                 Preview unavailable
               </div>
-              <div className="text-xs leading-6 text-rose-200/80">
+              <div className="text-xs leading-6 text-destructive/80">
                 {previewError ?? "Could not render the PDF preview."}
               </div>
             </div>

@@ -64,7 +64,7 @@ export const RecheckScoredPanel: React.FC<{
         </Button>
       </div>
       {rulesDirty ? (
-        <p className="text-xs text-amber-300">Save your rule changes first</p>
+        <p className="text-xs text-warning">Save your rule changes first</p>
       ) : null}
       {message ? (
         <p aria-live="polite" className="text-sm text-muted-foreground">

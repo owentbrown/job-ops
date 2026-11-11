@@ -160,11 +160,13 @@ function renderTextField(
     <div key={field.key} className="grid gap-2">
       <label className="text-sm font-medium" htmlFor={fieldId}>
         {field.label}
-        {field.required ? <span className="ml-1 text-rose-400">*</span> : null}
+        {field.required ? (
+          <span className="ml-1 text-destructive">*</span>
+        ) : null}
       </label>
       {iconPrefix ? (
         <div
-          className={`flex items-stretch overflow-hidden rounded-md border ${fieldErrors[field.key] ? "border-rose-500" : "border-input"} bg-background/60 focus-within:ring-1 focus-within:ring-ring`}
+          className={`flex items-stretch overflow-hidden rounded-md border ${fieldErrors[field.key] ? "border-destructive" : "border-input"} bg-background/60 focus-within:ring-1 focus-within:ring-ring`}
         >
           {/* icon square — borderless, flush left */}
           <div className="flex shrink-0 items-center border-r border-input">
@@ -230,7 +232,7 @@ function renderTextField(
             }}
             className={cn(
               fieldErrors[field.key]
-                ? "border-rose-500 bg-background/60"
+                ? "border-destructive bg-background/60"
                 : "bg-background/60",
               assistant && "pr-11",
             )}
@@ -243,7 +245,7 @@ function renderTextField(
         </div>
       )}
       {fieldErrors[field.key] ? (
-        <p className="text-xs text-rose-400">{fieldErrors[field.key]}</p>
+        <p className="text-xs text-destructive">{fieldErrors[field.key]}</p>
       ) : null}
     </div>
   );
@@ -551,7 +553,7 @@ export function ItemDialog({
               <Button
                 type="button"
                 variant="ghost"
-                className="text-rose-400 hover:bg-rose-500/10 hover:text-rose-300"
+                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                 onClick={onDelete}
               >
                 <Trash2 className="mr-2 h-4 w-4" />

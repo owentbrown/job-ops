@@ -387,13 +387,13 @@ describe("JobDetailPanel", () => {
       name: /mark applied/i,
     });
 
-    expect(openListing).toHaveClass("bg-emerald-600");
-    expect(markApplied).not.toHaveClass("bg-emerald-600");
+    expect(openListing).toHaveClass("bg-success");
+    expect(markApplied).not.toHaveClass("bg-success");
 
     fireEvent.click(openListing);
 
-    expect(openListing).not.toHaveClass("bg-emerald-600");
-    expect(markApplied).toHaveClass("bg-emerald-600");
+    expect(openListing).not.toHaveClass("bg-success");
+    expect(markApplied).toHaveClass("bg-success");
   });
 
   it("downloads PDFs with language-aware German transliteration", async () => {

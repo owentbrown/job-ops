@@ -43,19 +43,19 @@ const RoleStatus = ({ role }: { role: PipelineFanoutRoleProgress }) => (
   <div className="flex flex-wrap items-center justify-start gap-x-3 gap-y-1 font-mono text-[11px] tabular-nums @lg/fanout:justify-end">
     {role.complete > 0 ? (
       <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-        <span className="font-semibold text-emerald-400">{role.complete}</span>
+        <span className="font-semibold text-success">{role.complete}</span>
         <span className="font-sans text-muted-foreground">complete</span>
       </span>
     ) : null}
     {role.running > 0 ? (
       <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-        <span className="font-semibold text-amber-400">{role.running}</span>
+        <span className="font-semibold text-warning">{role.running}</span>
         <span className="font-sans text-muted-foreground">running</span>
       </span>
     ) : null}
     {role.check > 0 ? (
       <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
-        <span className="font-semibold text-amber-300">{role.check}</span>
+        <span className="font-semibold text-warning">{role.check}</span>
         <span className="font-sans text-muted-foreground">check</span>
       </span>
     ) : null}
@@ -86,13 +86,9 @@ const RoleRow = ({ role }: { role: PipelineFanoutRoleProgress }) => {
         aria-valuemin={0}
         aria-valuenow={role.complete}
       >
-        <Segment
-          className="bg-emerald-400"
-          count={role.complete}
-          total={total}
-        />
-        <Segment className="bg-amber-500" count={role.running} total={total} />
-        <Segment className="bg-amber-300" count={role.check} total={total} />
+        <Segment className="bg-success" count={role.complete} total={total} />
+        <Segment className="bg-warning" count={role.running} total={total} />
+        <Segment className="bg-warning" count={role.check} total={total} />
       </div>
     </div>
   );
@@ -174,9 +170,7 @@ export const PipelineFanoutCard = ({
           <div className="flex flex-col gap-3 @xl/fanout:flex-row @xl/fanout:items-end @xl/fanout:justify-between">
             <div className="flex flex-wrap items-center gap-2 font-mono text-xs tabular-nums">
               <span className="inline-flex items-baseline gap-2 whitespace-nowrap">
-                <span className="font-semibold text-emerald-400">
-                  {complete}
-                </span>
+                <span className="font-semibold text-success">{complete}</span>
                 <span className="font-sans text-muted-foreground">
                   {challenges.length > 0
                     ? complete === 1
@@ -187,7 +181,7 @@ export const PipelineFanoutCard = ({
               </span>
               <span className="text-muted-foreground/50">·</span>
               <span className="inline-flex items-baseline gap-2 whitespace-nowrap">
-                <span className="font-semibold text-amber-400">{running}</span>
+                <span className="font-semibold text-warning">{running}</span>
                 <span className="font-sans text-muted-foreground">running</span>
               </span>
               <span className="text-muted-foreground/50">·</span>
@@ -229,12 +223,12 @@ export const PipelineFanoutCard = ({
             aria-valuenow={complete}
           >
             <Segment
-              className="bg-emerald-400"
+              className="bg-success"
               count={complete}
               total={fanout.total}
             />
             <Segment
-              className="bg-amber-500"
+              className="bg-warning"
               count={running}
               total={fanout.total}
             />

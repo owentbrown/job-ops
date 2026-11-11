@@ -92,7 +92,7 @@ describe("BillingSettingsSection", () => {
       name: "Job-source searches usage",
     });
     expect(jobSearchMeter).toHaveAttribute("aria-valuetext", "80 of 100 used");
-    expect(jobSearchMeter).toHaveClass("[&>div]:bg-amber-500");
+    expect(jobSearchMeter).toHaveClass("[&>div]:bg-warning");
     expect(
       screen.getByRole("progressbar", { name: "PDF exports usage" }),
     ).toHaveClass("[&>div]:bg-destructive");

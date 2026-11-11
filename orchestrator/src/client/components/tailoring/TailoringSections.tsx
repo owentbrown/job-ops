@@ -124,17 +124,17 @@ const stateCopy: Record<
   ready: {
     label: "Ready",
     icon: CheckCircle2,
-    className: "border-emerald-500/20 bg-emerald-500/10 text-emerald-300",
+    className: "border-success/20 bg-success/10 text-success",
   },
   review: {
     label: "Needs review",
     icon: CircleAlert,
-    className: "border-amber-500/20 bg-amber-500/10 text-amber-300",
+    className: "border-warning/20 bg-warning/10 text-warning",
   },
   missing: {
     label: "Missing",
     icon: Circle,
-    className: "border-rose-500/20 bg-rose-500/10 text-rose-300",
+    className: "border-destructive/20 bg-destructive/10 text-destructive",
   },
   optional: {
     label: "Optional",
@@ -149,7 +149,7 @@ const stateCopy: Record<
   source: {
     label: "Source",
     icon: Circle,
-    className: "border-sky-500/20 bg-sky-500/10 text-sky-300",
+    className: "border-info/20 bg-info/10 text-info",
   },
 };
 

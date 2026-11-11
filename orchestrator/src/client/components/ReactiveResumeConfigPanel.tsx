@@ -104,7 +104,7 @@ function renderStatusPill(label: string, state: VersionValidationState) {
     : "Not tested";
   const dotColor = state.checked
     ? state.valid
-      ? "bg-emerald-500"
+      ? "bg-success"
       : "bg-destructive"
     : "bg-muted-foreground";
 

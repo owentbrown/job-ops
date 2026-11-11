@@ -143,7 +143,7 @@ const projectModeOptions: Array<{
     shortLabel: "AI can select",
     tooltip: "Let Job Tailoring select it when relevant to the job description",
     icon: Bot,
-    activeClassName: "border-sky-400/35 bg-sky-500/12 text-sky-300",
+    activeClassName: "border-info/35 bg-info/12 text-info",
   },
   {
     mode: "must-include",
@@ -152,7 +152,7 @@ const projectModeOptions: Array<{
     tooltip:
       "Always send this project to relevant AI contexts and include it in tailored resumes",
     icon: LockKeyhole,
-    activeClassName: "border-amber-200/35 bg-amber-300/12 text-amber-200",
+    activeClassName: "border-warning/35 bg-warning/12 text-warning",
   },
 ];
 
@@ -299,7 +299,7 @@ function DesignResumeListItemCard({
                 className={`inline-flex h-7 shrink-0 items-center gap-1.5 rounded-full border px-2.5 text-xs transition-colors ${
                   isHidden
                     ? "border-border/70 bg-muted/20 text-muted-foreground hover:bg-muted/30"
-                    : "border-emerald-500/20 bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/15"
+                    : "border-success/20 bg-success/10 text-success hover:bg-success/15"
                 }`}
                 onClick={() => onToggleHidden(index)}
               >
@@ -331,7 +331,7 @@ function DesignResumeListItemCard({
                 className={itemActionClassName}
                 onClick={() => onEdit(index)}
               >
-                <Pencil className="h-4 w-4 text-blue-400" />
+                <Pencil className="h-4 w-4 text-info" />
                 <span className={itemActionLabelClassName}>Edit</span>
               </Button>
               {showHideAction ? (
@@ -358,7 +358,7 @@ function DesignResumeListItemCard({
               <Button
                 type="button"
                 variant="ghost"
-                className="h-8 gap-2 rounded-md px-2 text-xs text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 2xl:px-3"
+                className="h-8 gap-2 rounded-md px-2 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive 2xl:px-3"
                 onClick={() => onRemove(index)}
               >
                 <Trash2 className="h-4 w-4" />

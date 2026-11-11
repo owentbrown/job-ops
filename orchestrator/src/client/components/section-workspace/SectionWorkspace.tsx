@@ -127,7 +127,7 @@ export function SectionWorkspaceNav<
                             className={cn(
                               "h-auto min-h-9 w-full justify-start gap-2 rounded-md px-3 py-2 text-left text-sm font-medium",
                               isActive
-                                ? "border border-primary/40 bg-primary/12 text-white hover:bg-primary/18"
+                                ? "border border-primary/40 bg-primary/12 text-foreground hover:bg-primary/18"
                                 : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
                             )}
                             onClick={() => onSectionSelect(item.id)}

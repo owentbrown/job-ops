@@ -19,7 +19,7 @@ const getSuitabilityScoreTokens = (
 ) => {
   if (score === null && isAwaitingAi) {
     return {
-      shell: "border-blue-300/55 bg-blue-500/10 text-blue-200",
+      shell: "border-info/55 bg-info/10 text-info",
       value: "loading",
       label: "Waiting for AI scoring to finish.",
     };
@@ -36,7 +36,7 @@ const getSuitabilityScoreTokens = (
 
   if (score >= 70) {
     return {
-      shell: "border-emerald-400/60 bg-emerald-500/10 text-emerald-100",
+      shell: "border-success/60 bg-success/10 text-success",
       value: `${Math.round(score)}`,
       label: `Suitability score ${Math.round(score)}`,
     };
@@ -44,14 +44,15 @@ const getSuitabilityScoreTokens = (
 
   if (score >= 60) {
     return {
-      shell: "border-amber-400/60 bg-amber-500/10 text-amber-100",
+      shell: "border-warning/60 bg-warning/10 text-warning",
       value: `${Math.round(score)}`,
       label: `Suitability score ${Math.round(score)}`,
     };
   }
 
   return {
-    shell: "border-slate-500/55 bg-slate-500/10 text-slate-200",
+    shell:
+      "border-muted-foreground/55 bg-muted-foreground/10 text-muted-foreground",
     value: `${Math.round(score)}`,
     label: `Suitability score ${Math.round(score)}`,
   };
@@ -115,7 +116,7 @@ export const ScoreRing: React.FC<{
             animate={{ scale: 1.4, opacity: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
           />
-          <div className="relative z-10 flex h-full w-full flex-col items-center justify-center rounded-full border border-white/5 bg-background/70 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+          <div className="relative z-10 flex h-full w-full flex-col items-center justify-center rounded-full border border-foreground/5 bg-background/70 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
             <div
               className={cn(
                 size === "sm" ? "text-lg" : "text-2xl",
@@ -163,10 +164,10 @@ export const ScoreRing: React.FC<{
               "transition-all duration-300 hover:scale-105 active:scale-95 cursor-pointer outline-none focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
               score !== null &&
                 (score >= 70
-                  ? "hover:shadow-[0_0_15px_rgba(16,185,129,0.45)] hover:border-emerald-400/80"
+                  ? "hover:shadow-[0_0_15px_color-mix(in_oklch,var(--color-success)_45%,transparent)] hover:border-success/80"
                   : score >= 60
-                    ? "hover:shadow-[0_0_15px_rgba(245,158,11,0.45)] hover:border-amber-400/80"
-                    : "hover:shadow-[0_0_15px_rgba(148,163,184,0.45)] hover:border-slate-400/80"),
+                    ? "hover:shadow-[0_0_15px_color-mix(in_oklch,var(--color-warning)_45%,transparent)] hover:border-warning/80"
+                    : "hover:shadow-[0_0_15px_color-mix(in_oklch,var(--color-muted-foreground)_45%,transparent)] hover:border-muted-foreground/80"),
             )}
           >
             <motion.span
@@ -179,7 +180,7 @@ export const ScoreRing: React.FC<{
               animate={{ scale: 1.4, opacity: 0 }}
               transition={{ duration: 0.6, ease: "easeOut" }}
             />
-            <div className="relative z-10 flex h-full w-full flex-col items-center justify-center rounded-full border border-white/5 bg-background/70 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+            <div className="relative z-10 flex h-full w-full flex-col items-center justify-center rounded-full border border-foreground/5 bg-background/70 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
               <div
                 className={cn(
                   size === "sm" ? "text-lg" : "text-2xl",

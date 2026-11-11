@@ -91,6 +91,15 @@ When adding or updating user-facing docs:
 - Link related docs with `/docs/...` URLs.
 - Any user-visible behavior change should include corresponding docs updates.
 
+## UI Colors and Theming
+
+- All colors come from tokens in `orchestrator/src/index.css` (`:root` = light, `.dark` = dark; dark is the default via `index.html`).
+- Use token classes, never raw Tailwind hues (`emerald-*`, `amber-*`, `rose-*`, `sky-*`, `cyan-*`, `orange-*`, `slate-*`) or hex:
+  - `success` (done/good), `warning` (needs attention), `destructive` (error/rejected), `info` (neutral highlight/discovered), `progress` (in progress), `caution` (between warning and destructive), `muted-foreground` (inactive).
+  - Tints: `bg-success/10 border-success/30 text-success`. Solid fills pair with `text-<token>-foreground`.
+- No `dark:` color variants needed: tokens already switch per theme.
+- Re-branding: change `--primary` (the focus ring follows it).
+
 ## Extractor Deployment Note
 
 When adding a new extractor workspace under `extractors/`:

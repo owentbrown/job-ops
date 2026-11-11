@@ -101,7 +101,7 @@ export default function WatchlistJobRow({
   if (watchlistJob.workspaceJob) {
     signals.push({
       label: "Already in workspace",
-      dotClassName: "bg-emerald-400",
+      dotClassName: "bg-success",
     });
   }
 
@@ -122,14 +122,14 @@ export default function WatchlistJobRow({
   if (rankedJob.locationMatched) {
     signals.push({
       label: rankedJob.locationPriority > 0 ? "Location match" : "Remote match",
-      dotClassName: "bg-emerald-400",
+      dotClassName: "bg-success",
     });
   }
 
   if (watchlistJob.isNewSinceLastCheck) {
     signals.push({
       label: "New since last check",
-      dotClassName: "bg-sky-400",
+      dotClassName: "bg-info",
     });
   }
 

@@ -109,21 +109,20 @@ const tabCopy: Record<
   brief: {
     label: "Brief",
     description: "Read the role, fit, and job description.",
-    dotClassName: "bg-sky-500/70",
-    selectedClassName: "!border-sky-400/65 !bg-sky-500/20 !text-sky-100",
+    dotClassName: "bg-info/70",
+    selectedClassName: "!border-info/65 !bg-info/20 !text-info",
   },
   tailoring: {
     label: "Tailoring",
     description: "Shape the resume material for this job.",
-    dotClassName: "bg-amber-500/70",
-    selectedClassName: "!border-amber-400/65 !bg-amber-500/20 !text-amber-100",
+    dotClassName: "bg-warning/70",
+    selectedClassName: "!border-warning/65 !bg-warning/20 !text-warning",
   },
   apply: {
     label: "Apply",
     description: "Use the generated kit, Ghostwriter, and final actions.",
-    dotClassName: "bg-emerald-500/70",
-    selectedClassName:
-      "!border-emerald-400/65 !bg-emerald-500/20 !text-emerald-100",
+    dotClassName: "bg-success/70",
+    selectedClassName: "!border-success/65 !bg-success/20 !text-success",
   },
 };
 
@@ -175,39 +174,39 @@ const statusTone: Record<
   discovered: {
     shell: "border-border/45 bg-muted/10",
     eyebrow: "text-muted-foreground",
-    icon: "bg-sky-500/70",
+    icon: "bg-info/70",
   },
   processing: {
     shell: "border-border/45 bg-muted/10",
     eyebrow: "text-muted-foreground",
-    icon: "bg-amber-500/70",
+    icon: "bg-warning/70",
   },
   ready: {
     shell: "border-border/45 bg-muted/10",
     eyebrow: "text-muted-foreground",
-    icon: "bg-emerald-500/70",
-    button: "bg-emerald-600 text-white hover:bg-emerald-500",
+    icon: "bg-success/70",
+    button: "bg-success text-success-foreground hover:bg-success/90",
   },
   applied: {
     shell: "border-border/45 bg-muted/10",
     eyebrow: "text-muted-foreground",
-    icon: "bg-teal-500/70",
-    button: "bg-teal-600 text-white hover:bg-teal-500",
+    icon: "bg-progress/70",
+    button: "bg-progress text-progress-foreground hover:bg-progress/90",
   },
   in_progress: {
     shell: "border-border/45 bg-muted/10",
     eyebrow: "text-muted-foreground",
-    icon: "bg-cyan-500/70",
+    icon: "bg-progress/70",
   },
   skipped: {
     shell: "border-border/45 bg-muted/10",
     eyebrow: "text-muted-foreground",
-    icon: "bg-rose-500/70",
+    icon: "bg-destructive/70",
   },
   expired: {
     shell: "border-border/45 bg-muted/10",
     eyebrow: "text-muted-foreground",
-    icon: "bg-slate-500/70",
+    icon: "bg-muted-foreground/70",
   },
 };
 
@@ -239,9 +238,9 @@ const Stat: React.FC<{
   if (!value) return null;
   const toneClassName =
     tone === "blue"
-      ? "border-sky-400/10 bg-muted/5"
+      ? "border-info/10 bg-muted/5"
       : tone === "green"
-        ? "border-emerald-400/10 bg-muted/5"
+        ? "border-success/10 bg-muted/5"
         : "border-border/35 bg-muted/5";
   return (
     <div className={cn("min-w-0 rounded-md border px-3 py-2", toneClassName)}>
@@ -271,10 +270,10 @@ const KitStatus: React.FC<{
       className={cn(
         "shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide",
         ready
-          ? "bg-emerald-500/10 text-emerald-300"
+          ? "bg-success/10 text-success"
           : optional
-            ? "bg-sky-500/10 text-sky-300"
-            : "bg-amber-500/10 text-amber-300",
+            ? "bg-info/10 text-info"
+            : "bg-warning/10 text-warning",
       )}
     >
       {ready ? readyLabel : optional ? "Optional" : "Missing"}
@@ -701,7 +700,7 @@ export const JobDetailPanel: React.FC<JobDetailPanelProps> = ({
   const markAppliedIsPrimary =
     selectedJob.status === "ready" && (!hasJobListing || hasOpenedJobListing);
   const activeApplyCtaClassName =
-    "border-emerald-500/40 bg-emerald-600 text-white hover:bg-emerald-500 hover:text-white";
+    "border-success/40 bg-success text-success-foreground hover:bg-success/90 hover:text-success-foreground";
   return (
     <Tabs
       value={inspectorTab}
@@ -891,7 +890,7 @@ export const JobDetailPanel: React.FC<JobDetailPanelProps> = ({
         <TabsContent value="apply">
           <div className="space-y-5">
             {isStalePdf && (
-              <div className="flex items-start gap-2 rounded-md border border-amber-200/70 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-400/25 dark:bg-amber-400/10 dark:text-amber-100">
+              <div className="flex items-start gap-2 rounded-md border border-warning/25 bg-warning/10 px-3 py-2 text-xs text-warning">
                 <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                 <span>{STALE_PDF_MESSAGE}</span>
               </div>
@@ -902,8 +901,8 @@ export const JobDetailPanel: React.FC<JobDetailPanelProps> = ({
                 className={cn(
                   "flex min-h-16 flex-col gap-3 rounded-md border px-3 py-3 sm:flex-row sm:items-center sm:justify-between",
                   applicationKitReady
-                    ? "border-emerald-500/20 bg-emerald-500/[0.04]"
-                    : "border-amber-500/20 bg-amber-500/[0.04]",
+                    ? "border-success/20 bg-success/[0.04]"
+                    : "border-warning/20 bg-warning/[0.04]",
                 )}
               >
                 <div className="flex w-full min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -912,8 +911,8 @@ export const JobDetailPanel: React.FC<JobDetailPanelProps> = ({
                       className={cn(
                         "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border",
                         applicationKitReady
-                          ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-300"
-                          : "border-amber-500/45 bg-amber-500/10 text-amber-300",
+                          ? "border-success/50 bg-success/10 text-success"
+                          : "border-warning/45 bg-warning/10 text-warning",
                       )}
                     >
                       {applicationKitReady ? (

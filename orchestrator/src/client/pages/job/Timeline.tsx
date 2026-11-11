@@ -176,7 +176,7 @@ export const JobTimeline: React.FC<JobTimelineProps> = ({
                 <div className="text-sm text-muted-foreground">{note}</div>
               )}
               {salary && (
-                <div className="mt-1 flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400">
+                <div className="mt-1 flex items-center gap-1.5 text-xs text-success">
                   {salary}
                 </div>
               )}
@@ -295,7 +295,7 @@ const TimelineRow: React.FC<TimelineRowProps> = ({
       className={cn(
         "group relative",
         isCompact ? "pl-8" : "",
-        isOffer && "rounded-lg border border-amber-500/20 bg-amber-500/5 p-4",
+        isOffer && "rounded-lg border border-warning/20 bg-warning/5 p-4",
       )}
     >
       <div
@@ -313,12 +313,12 @@ const TimelineRow: React.FC<TimelineRowProps> = ({
           <div
             className={
               isCompact
-                ? "relative z-10 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-white"
+                ? "relative z-10 flex h-5 w-5 items-center justify-center rounded-full bg-success text-success-foreground"
                 : isHollow
-                  ? "relative z-10 flex h-6 w-6 items-center justify-center rounded-full border-2 border-emerald-500 bg-background text-emerald-600 animate-pulse"
+                  ? "relative z-10 flex h-6 w-6 items-center justify-center rounded-full border-2 border-success bg-background text-success animate-pulse"
                   : isOffer
-                    ? "relative z-10 flex h-6 w-6 items-center justify-center rounded-full bg-amber-500 text-white shadow-[0_0_15px_rgba(245,158,11,0.5)]"
-                    : "relative z-10 flex h-6 w-6 items-center justify-center rounded-full bg-emerald-500 text-white"
+                    ? "relative z-10 flex h-6 w-6 items-center justify-center rounded-full bg-warning text-warning-foreground shadow-[0_0_15px_color-mix(in_oklch,var(--color-warning)_50%,transparent)]"
+                    : "relative z-10 flex h-6 w-6 items-center justify-center rounded-full bg-success text-success-foreground"
             }
           >
             {isFilled && icon}

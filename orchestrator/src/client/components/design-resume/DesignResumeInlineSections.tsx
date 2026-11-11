@@ -164,7 +164,7 @@ export function PictureSection({
             <Button
               type="button"
               variant="ghost"
-              className="text-rose-400 hover:bg-rose-500/10 hover:text-rose-300"
+              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
               onClick={onDeletePicture}
               disabled={pictureUploading}
             >
@@ -408,7 +408,7 @@ export function BasicsCustomFieldsSection({
             <Button
               type="button"
               variant="ghost"
-              className="text-rose-400 hover:bg-rose-500/10 hover:text-rose-300"
+              className="text-destructive hover:bg-destructive/10 hover:text-destructive"
               onClick={() =>
                 onChange(
                   customFields.filter(

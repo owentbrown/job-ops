@@ -151,7 +151,7 @@ function LocationPreferences({
   return (
     <div className="flex flex-col gap-4">
       {values.locationMode === "cities" && countrySuggestion ? (
-        <Alert className="border-sky-500/20 bg-sky-500/5">
+        <Alert className="border-info/20 bg-info/5">
           <Info />
           <AlertTitle>Detected from your browser</AlertTitle>
           <AlertDescription>

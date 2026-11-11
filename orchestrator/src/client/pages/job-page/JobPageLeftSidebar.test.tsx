@@ -21,9 +21,9 @@ const renderSidebar = (jobOverrides: JobOverrides = {}) =>
 
 describe("JobPageLeftSidebar score ring", () => {
   it.each([
-    [70, "border-emerald-400/60"],
-    [65, "border-amber-400/60"],
-    [59, "border-slate-500/55"],
+    [70, "border-success/60"],
+    [65, "border-warning/60"],
+    [59, "border-muted-foreground/55"],
     [null, "border-destructive/40"],
   ])("uses the expected band for score %s", (score, expectedClass) => {
     renderSidebar({ suitabilityScore: score, suitabilityReason: null });

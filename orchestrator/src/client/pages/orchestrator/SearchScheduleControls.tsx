@@ -328,7 +328,7 @@ export const SearchScheduleControls: React.FC<SearchScheduleControlsProps> = ({
           </p>
 
           {status?.timeZone && status.timeZone !== browserTimeZone() ? (
-            <p className="text-xs text-amber-600">
+            <p className="text-xs text-warning">
               Saved for {status.timeZone}. Change any setting to switch to{" "}
               {browserTimeZone()}.
             </p>

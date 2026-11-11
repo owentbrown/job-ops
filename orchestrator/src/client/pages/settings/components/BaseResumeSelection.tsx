@@ -112,7 +112,7 @@ export const BaseResumeSelection: React.FC<BaseResumeSelectionProps> = ({
       </Select>
 
       {resumes.length === 0 && !isFetchingResumes && !fetchError && (
-        <div className="text-xs text-amber-600 dark:text-amber-400 mt-2">
+        <div className="text-xs text-warning mt-2">
           No resumes found in your account. Please create a resume on the{" "}
           <a
             href="https://rxresu.me"

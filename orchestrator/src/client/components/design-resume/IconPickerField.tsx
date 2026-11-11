@@ -117,7 +117,7 @@ export function IconPickerField({ id, value, onChange }: IconPickerFieldProps) {
                 onClick={() => handleSelect(key)}
                 className={`flex h-9 w-9 items-center justify-center rounded-md transition-colors ${
                   selectedKey === key
-                    ? "bg-[#F1703E] text-white"
+                    ? "bg-primary text-primary-foreground"
                     : "hover:bg-accent"
                 }`}
               >

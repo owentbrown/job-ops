@@ -58,7 +58,7 @@ function UsageMeter({ usage }: { usage: HostedUsageActionSummary }) {
         aria-valuetext={`${numberFormatter.format(usedUnits)} of ${numberFormatter.format(usage.limitUnits)} used`}
         className={cn(
           "h-1.5 bg-muted [&>div]:bg-foreground/50",
-          percentage >= 80 && percentage < 100 && "[&>div]:bg-amber-500",
+          percentage >= 80 && percentage < 100 && "[&>div]:bg-warning",
           percentage >= 100 && "[&>div]:bg-destructive",
         )}
       />
@@ -117,7 +117,7 @@ export function BillingSettingsSection({
               </div>
             )}
             {cancellationScheduled ? (
-              <p className="text-sm text-amber-700 dark:text-amber-400">
+              <p className="text-sm text-warning">
                 Your Pro access remains active
                 {periodEnd
                   ? ` until ${periodEnd}`

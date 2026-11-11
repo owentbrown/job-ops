@@ -61,9 +61,9 @@ const statusLabel: Record<PostApplicationProcessingStatus, string> = {
 };
 
 const statusClassName: Record<PostApplicationProcessingStatus, string> = {
-  auto_linked: "border-emerald-500/30 bg-emerald-500/10 text-emerald-300",
-  pending_user: "border-amber-500/30 bg-amber-500/10 text-amber-300",
-  manual_linked: "border-sky-500/30 bg-sky-500/10 text-sky-300",
+  auto_linked: "border-success/30 bg-success/10 text-success",
+  pending_user: "border-warning/30 bg-warning/10 text-warning",
+  manual_linked: "border-info/30 bg-info/10 text-info",
   ignored: "border-border/60 bg-muted/25 text-muted-foreground",
 };
 

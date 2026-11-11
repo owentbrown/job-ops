@@ -34,11 +34,11 @@ const statusStyles: Record<
   ready: { variant: "default" },
   applied: {
     variant: "outline",
-    className: "text-emerald-400 border-emerald-500/30",
+    className: "text-success border-success/30",
   },
   in_progress: {
     variant: "outline",
-    className: "text-cyan-400 border-cyan-500/30",
+    className: "text-progress border-progress/30",
   },
   skipped: { variant: "destructive" },
   expired: { variant: "outline", className: "text-muted-foreground" },

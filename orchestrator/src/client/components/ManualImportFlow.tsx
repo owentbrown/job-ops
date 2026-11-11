@@ -907,7 +907,7 @@ export const ManualImportFlow: React.FC<ManualImportFlowProps> = ({
                 </div>
 
                 {fetchNotice && (
-                  <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-200">
+                  <div className="rounded-lg border border-success/30 bg-success/10 px-3 py-2 text-xs text-success">
                     {fetchNotice}
                   </div>
                 )}
@@ -962,7 +962,7 @@ export const ManualImportFlow: React.FC<ManualImportFlowProps> = ({
         {step === "review" && (
           <div className="space-y-5 pb-4">
             {warning && (
-              <div className="rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+              <div className="rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning">
                 {warning}
               </div>
             )}
@@ -1100,7 +1100,7 @@ export const ManualImportFlow: React.FC<ManualImportFlowProps> = ({
                         {item.draft?.employer || item.url}
                       </div>
                       {item.warning && (
-                        <div className="mt-2 text-xs text-amber-200">
+                        <div className="mt-2 text-xs text-warning">
                           {item.warning}
                         </div>
                       )}
@@ -1261,7 +1261,7 @@ const ReviewStatusBadge: React.FC<{
 }> = ({ hasValue, needsReview }) => {
   if (needsReview) {
     return (
-      <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-1 text-[11px] font-medium text-amber-200">
+      <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-warning/30 bg-warning/10 px-2 py-1 text-[11px] font-medium text-warning">
         <CircleAlert className="h-3 w-3" />
         Review
       </span>
@@ -1270,7 +1270,7 @@ const ReviewStatusBadge: React.FC<{
 
   if (hasValue) {
     return (
-      <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2 py-1 text-[11px] font-medium text-emerald-200">
+      <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-success/25 bg-success/10 px-2 py-1 text-[11px] font-medium text-success">
         <CheckCircle2 className="h-3 w-3" />
         Looks good
       </span>

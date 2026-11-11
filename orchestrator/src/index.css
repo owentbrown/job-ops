@@ -30,6 +30,17 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  /* Status colors: use these instead of raw Tailwind hues (emerald, amber...) */
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-progress: var(--progress);
+  --color-progress-foreground: var(--progress-foreground);
+  --color-caution: var(--caution);
+  --color-caution-foreground: var(--caution-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -75,10 +86,15 @@
   --color-destructive-foreground: var(--destructive-foreground);
 }
 
+/*
+ * Theme tokens. Dark is the default (index.html sets class="dark").
+ * :root holds the light theme; .dark overrides it.
+ * To re-brand, change --primary: the focus ring follows it.
+ */
 :root {
   --radius: 0.5rem;
-  --background: #20201e;
-  --foreground: oklch(28.815% 0.01599 96.892);
+  --background: oklch(0.9663 0.008 98.8792);
+  --foreground: oklch(0.2671 0.0196 98.939);
   --card: oklch(0.9818 0.0054 95.0986);
   --card-foreground: oklch(0.1908 0.002 106.5859);
   --popover: oklch(1 0 0);
@@ -91,10 +107,20 @@
   --muted-foreground: oklch(0.6059 0.0075 97.4233);
   --accent: oklch(0.9245 0.0138 92.9892);
   --accent-foreground: oklch(0.2671 0.0196 98.939);
-  --destructive: oklch(0.1908 0.002 106.5859);
+  --destructive: oklch(0.577 0.245 27.325);
+  --success: oklch(0.596 0.145 163.225);
+  --success-foreground: oklch(1 0 0);
+  --warning: oklch(0.555 0.163 48.998);
+  --warning-foreground: oklch(1 0 0);
+  --info: oklch(0.588 0.158 241.966);
+  --info-foreground: oklch(1 0 0);
+  --progress: oklch(0.52 0.105 223.128);
+  --progress-foreground: oklch(1 0 0);
+  --caution: oklch(0.646 0.222 41.116);
+  --caution-foreground: oklch(1 0 0);
   --border: oklch(0.8847 0.0069 97.3627);
   --input: oklch(0.7621 0.0156 98.3528);
-  --ring: oklch(0.6171 0.1375 39.0427);
+  --ring: var(--primary);
   --chart-1: oklch(0.5583 0.1276 42.9956);
   --chart-2: oklch(0.6898 0.1581 290.4107);
   --chart-3: oklch(0.8816 0.0276 93.128);
@@ -148,9 +174,19 @@
   --accent: oklch(0.213 0.0078 95.4245);
   --accent-foreground: oklch(0.9663 0.008 98.8792);
   --destructive: oklch(0.6368 0.2078 25.3313);
+  --success: oklch(0.765 0.177 163.223);
+  --success-foreground: oklch(0.262 0.051 172.552);
+  --warning: oklch(0.828 0.189 84.429);
+  --warning-foreground: oklch(0.279 0.077 45.635);
+  --info: oklch(0.746 0.16 232.661);
+  --info-foreground: oklch(0.293 0.066 243.157);
+  --progress: oklch(0.789 0.154 211.53);
+  --progress-foreground: oklch(0.302 0.056 229.695);
+  --caution: oklch(0.75 0.183 55.934);
+  --caution-foreground: oklch(0.266 0.079 36.259);
   --border: oklch(0.3618 0.0101 106.8928);
   --input: oklch(0.4336 0.0113 100.2195);
-  --ring: oklch(0.6724 0.1308 38.7559);
+  --ring: var(--primary);
   --chart-1: oklch(0.6916 0.1719 40.93);
   --chart-2: oklch(0.6898 0.1581 290.4107);
   --chart-3: oklch(0.213 0.0078 95.4245);

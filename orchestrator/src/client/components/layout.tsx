@@ -245,7 +245,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
                       <span className="truncate">Version {version}</span>
                       {updateAvailable && (
                         <Tip asChild content={<p>Update available</p>}>
-                          <span className="h-2 w-2 shrink-0 cursor-pointer rounded-full bg-emerald-500" />
+                          <span className="h-2 w-2 shrink-0 cursor-pointer rounded-full bg-success" />
                         </Tip>
                       )}
                     </a>
@@ -445,10 +445,10 @@ interface ScoreMeterProps {
 }
 
 const getScoreTokens = (score: number) => {
-  if (score >= 90) return { bar: "bg-emerald-500/80" };
-  if (score >= 70) return { bar: "bg-amber-500/80" };
-  if (score >= 50) return { bar: "bg-orange-500/80" };
-  return { bar: "bg-rose-500/80" };
+  if (score >= 90) return { bar: "bg-success/80" };
+  if (score >= 70) return { bar: "bg-warning/80" };
+  if (score >= 50) return { bar: "bg-caution/80" };
+  return { bar: "bg-destructive/80" };
 };
 
 export const ScoreMeter: React.FC<ScoreMeterProps> = ({

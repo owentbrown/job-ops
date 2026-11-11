@@ -47,13 +47,13 @@ const makeJob = (overrides: Partial<JobListItem> = {}): JobListItem => ({
 /** Mirrors `getCardLeftAccentClass` in InProgressBoardPage (kept here to avoid touching that file). */
 const cardAccentClass = (stage: ApplicationStage) => {
   if (stage === "technical_interview") {
-    return "border-l-2 border-l-amber-400/45";
+    return "border-l-2 border-l-warning/45";
   }
   if (stage === "onsite") {
-    return "border-l-2 border-l-amber-400/65";
+    return "border-l-2 border-l-warning/65";
   }
   if (stage === "offer") {
-    return "border-2 border-amber-300/50 shadow-[0_4px_12px_-4px_rgba(251,191,36,0.7)]";
+    return "border-2 border-warning/50 shadow-[0_4px_12px_-4px_color-mix(in_oklch,var(--color-warning)_70%,transparent)]";
   }
   return "";
 };

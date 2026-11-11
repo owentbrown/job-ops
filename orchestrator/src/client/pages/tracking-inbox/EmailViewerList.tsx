@@ -51,7 +51,7 @@ function getSenderLabel(
 
 function scoreTextClass(score: number | null): string {
   if (score === null) return "text-muted-foreground/60";
-  if (score >= 95) return "text-emerald-400/90";
+  if (score >= 95) return "text-success/90";
   if (score >= 50) return "text-foreground/70";
   return "text-muted-foreground/60";
 }
@@ -107,7 +107,7 @@ const EmailViewerRow: React.FC<EmailViewerRowProps> = ({
 
         <p className="truncate text-sm font-medium">{item.message.subject}</p>
         {item.message.matchedJobId ? null : (
-          <p className="text-xs text-amber-600">
+          <p className="text-xs text-warning">
             Relevant email with no reliable job match. Please select the correct
             job.
           </p>

@@ -110,7 +110,7 @@ export const App: React.FC = () => {
     <>
       <OnboardingGate />
       {showDemoBanners && (
-        <div className="sticky top-0 z-50 w-full border-b border-amber-400/50 bg-amber-500/20 px-4 py-2 text-xs text-amber-100 shadow-sm backdrop-blur">
+        <div className="sticky top-0 z-50 w-full border-b border-warning/50 bg-warning/20 px-4 py-2 text-xs text-warning shadow-sm backdrop-blur">
           <div className="mx-auto flex items-center justify-center gap-3">
             <p className="flex-1 text-center">
               <span className="font-medium">
@@ -123,7 +123,7 @@ export const App: React.FC = () => {
                   This is a read-only demo. Want JobOps without the Docker
                   setup?{" "}
                   <a
-                    className="font-semibold underline underline-offset-2 hover:text-amber-50"
+                    className="font-semibold underline underline-offset-2 hover:text-foreground"
                     href="https://try.jobops.app?utm_source=demo&utm_medium=banner&utm_campaign=waitlist"
                     target="_blank"
                     rel="noreferrer"
@@ -138,7 +138,7 @@ export const App: React.FC = () => {
                 type="button"
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 shrink-0 rounded-full text-amber-100 hover:bg-amber-400/20 hover:text-amber-50"
+                className="h-7 w-7 shrink-0 rounded-full text-warning hover:bg-warning/20 hover:text-foreground"
                 onClick={() => {
                   setDemoWaitlistBannerDismissed(true);
                   try {

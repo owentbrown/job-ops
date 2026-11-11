@@ -32,7 +32,7 @@ function deriveStatus(
   if (isChecking) {
     return {
       label: "Checking",
-      className: "border-blue-300 text-blue-700",
+      className: "border-info text-info",
       icon: <Loader2 className="h-3.5 w-3.5 animate-spin" />,
     };
   }
@@ -49,7 +49,7 @@ function deriveStatus(
   if (ageMs > STALE_AFTER_MS) {
     return {
       label: "Stale",
-      className: "border-amber-300 text-amber-700",
+      className: "border-warning text-warning",
       icon: <AlertCircle className="h-3.5 w-3.5" />,
     };
   }
@@ -57,7 +57,7 @@ function deriveStatus(
   if (readiness.status === "ready") {
     return {
       label: "Ready",
-      className: "border-emerald-300 text-emerald-700",
+      className: "border-success text-success",
       icon: <CheckCircle2 className="h-3.5 w-3.5" />,
     };
   }

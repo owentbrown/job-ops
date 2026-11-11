@@ -191,7 +191,7 @@ export const CoverLetterPanel: React.FC<{
       </div>
 
       {isAiDraft && dirty ? (
-        <p className="rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-xs text-amber-200">
+        <p className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning">
           AI draft: check the facts and tone, edit anything, then Save.
         </p>
       ) : null}

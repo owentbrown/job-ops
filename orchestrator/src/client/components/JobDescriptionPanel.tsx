@@ -199,7 +199,7 @@ export const JobDescriptionPanel: React.FC<JobDescriptionPanelProps> = ({
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between w-[calc(100%_-_24px)]">
             <div className="min-w-0">
               <div className="flex items-center gap-2 text-sm font-semibold text-foreground/90">
-                <FileText className="h-3.5 w-3.5 text-sky-400/80" />
+                <FileText className="h-3.5 w-3.5 text-info/80" />
                 Job description
               </div>
               <p className="mt-0.5 text-xs text-muted-foreground/65">
@@ -232,7 +232,7 @@ export const JobDescriptionPanel: React.FC<JobDescriptionPanelProps> = ({
           <AccordionTrigger className="flex items-center justify-between gap-2 border-b border-border/35 bg-muted/5 cursor-pointer hover:bg-muted/40 px-3 py-2.5 pr-4 text-left hover:no-underline">
             <div className="min-w-0">
               <div className="flex items-center gap-2 text-sm font-semibold text-foreground/90">
-                <FileText className="h-3.5 w-3.5 text-sky-400/80" />
+                <FileText className="h-3.5 w-3.5 text-info/80" />
                 Job description
               </div>
               <p className="mt-0.5 text-xs text-muted-foreground/65 max-w-3/5">

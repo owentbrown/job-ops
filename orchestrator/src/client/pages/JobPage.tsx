@@ -582,7 +582,7 @@ export const JobPage: React.FC = () => {
           <div className="flex items-center gap-2">
             <Badge
               variant="outline"
-              className="border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
+              className="border-success/30 bg-success/10 text-success"
             >
               {currentStage
                 ? STAGE_LABELS[currentStage as ApplicationStage] || currentStage
@@ -872,7 +872,7 @@ export const JobPage: React.FC = () => {
                       {job.salary && (
                         <Badge
                           variant="outline"
-                          className="border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
+                          className="border-success/30 bg-success/10 text-success"
                         >
                           <DollarSign className="mr-1 h-3.5 w-3.5" />
                           {job.salary}

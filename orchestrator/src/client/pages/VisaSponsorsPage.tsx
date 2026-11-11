@@ -53,13 +53,13 @@ import {
 const getScoreTokens = (score: number) => {
   if (score >= 90)
     return {
-      badge: "border-emerald-500/30 bg-emerald-500/10 text-emerald-200",
+      badge: "border-success/30 bg-success/10 text-success",
     };
   if (score >= 70)
-    return { badge: "border-amber-500/30 bg-amber-500/10 text-amber-200" };
+    return { badge: "border-warning/30 bg-warning/10 text-warning" };
   if (score >= 50)
-    return { badge: "border-orange-500/30 bg-orange-500/10 text-orange-200" };
-  return { badge: "border-rose-500/30 bg-rose-500/10 text-rose-200" };
+    return { badge: "border-caution/30 bg-caution/10 text-caution" };
+  return { badge: "border-destructive/30 bg-destructive/10 text-destructive" };
 };
 
 const ALL_SOURCES_VALUE = "__all_sources__";
@@ -279,7 +279,7 @@ export const VisaSponsorsPage: React.FC = () => {
       {/* Header */}
       <div>
         <div className="flex items-center gap-2 mb-2">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-emerald-200">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-success/30 bg-success/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-success">
             <CheckCircle2 className="h-3 w-3" />
             Licensed Sponsor
           </span>
@@ -344,11 +344,9 @@ export const VisaSponsorsPage: React.FC = () => {
       </div>
 
       {/* Info box */}
-      <div className="rounded-lg border border-sky-500/30 bg-sky-500/10 p-3 text-sm">
-        <div className="font-medium text-sky-200 mb-1">
-          What does this mean?
-        </div>
-        <p className="text-xs text-sky-300/80">
+      <div className="rounded-lg border border-info/30 bg-info/10 p-3 text-sm">
+        <div className="font-medium text-info mb-1">What does this mean?</div>
+        <p className="text-xs text-info/80">
           This organisation appears in the selected sponsor source and may be
           able to sponsor workers on the routes listed above. Always verify the
           latest source entry before relying on it.

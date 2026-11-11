@@ -59,11 +59,11 @@ const chartConfig = {
 
 // Stage definitions for funnel
 const FUNNEL_STAGES = [
-  { key: "applied", label: "Applied", color: "#3b82f6" },
-  { key: "screening", label: "Screening", color: "#8b5cf6" },
-  { key: "interview", label: "Interview", color: "#f59e0b" },
-  { key: "offer", label: "Offer", color: "#10b981" },
-  { key: "rejected", label: "Rejected", color: "#ef4444" },
+  { key: "applied", label: "Applied", color: "var(--color-info)" },
+  { key: "screening", label: "Screening", color: "var(--chart-2)" },
+  { key: "interview", label: "Interview", color: "var(--color-warning)" },
+  { key: "offer", label: "Offer", color: "var(--color-success)" },
+  { key: "rejected", label: "Rejected", color: "var(--color-destructive)" },
 ] as const;
 
 // Stages that count as "screening"

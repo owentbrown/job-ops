@@ -33,7 +33,7 @@ export function ChartKpiPanel({
           {rate < lowThreshold ? (
             <TrendingDown className="h-4 w-4 text-destructive" />
           ) : rate > highThreshold ? (
-            <TrendingUp className="h-4 w-4 text-emerald-500" />
+            <TrendingUp className="h-4 w-4 text-success" />
           ) : null}
         </div>
         <span className="text-xs text-muted-foreground">{subtext}</span>

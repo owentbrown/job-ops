@@ -34,33 +34,33 @@ export const statusTokens: Record<
 > = {
   discovered: {
     label: "Discovered",
-    badge: "border-sky-500/30 bg-sky-500/10 text-sky-200",
-    dot: "bg-sky-400",
+    badge: "border-info/30 bg-info/10 text-info",
+    dot: "bg-info",
   },
   processing: {
     label: "Processing",
-    badge: "border-amber-500/30 bg-amber-500/10 text-amber-200",
-    dot: "bg-amber-400",
+    badge: "border-warning/30 bg-warning/10 text-warning",
+    dot: "bg-warning",
   },
   ready: {
     label: "Ready",
-    badge: "border-emerald-500/30 bg-emerald-500/10 text-emerald-200",
-    dot: "bg-emerald-400",
+    badge: "border-success/30 bg-success/10 text-success",
+    dot: "bg-success",
   },
   applied: {
     label: "Applied",
-    badge: "border-emerald-500/30 bg-emerald-500/10 text-emerald-200",
-    dot: "bg-emerald-400",
+    badge: "border-success/30 bg-success/10 text-success",
+    dot: "bg-success",
   },
   in_progress: {
     label: "In Progress",
-    badge: "border-cyan-500/30 bg-cyan-500/10 text-cyan-200",
-    dot: "bg-cyan-400",
+    badge: "border-progress/30 bg-progress/10 text-progress",
+    dot: "bg-progress",
   },
   skipped: {
     label: "Skipped",
-    badge: "border-rose-500/30 bg-rose-500/10 text-rose-200",
-    dot: "bg-rose-400",
+    badge: "border-destructive/30 bg-destructive/10 text-destructive",
+    dot: "bg-destructive",
   },
   expired: {
     label: "Expired",
@@ -77,7 +77,7 @@ export const defaultStatusToken = {
 
 export const appliedDuplicateIndicator = {
   label: "Previously Applied",
-  dot: "bg-yellow-400",
+  dot: "bg-warning",
 };
 
 export type FilterTab = "ready" | "discovered" | "all";

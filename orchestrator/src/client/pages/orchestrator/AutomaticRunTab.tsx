@@ -846,7 +846,7 @@ export const AutomaticRunTab: React.FC<AutomaticRunTabProps> = ({
             {planSource === "fallback" ? (
               <p
                 role="alert"
-                className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 text-sm"
+                className="rounded-lg border border-warning/30 bg-warning/5 p-3 text-sm"
               >
                 AI couldn’t build this search. Review the existing details or
                 try again.

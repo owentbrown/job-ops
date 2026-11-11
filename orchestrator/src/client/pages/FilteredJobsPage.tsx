@@ -95,7 +95,7 @@ export const FilteredJobsPage: React.FC = () => {
                 : "Filter & score backlog"}
             </Button>
             {rulesDirty ? (
-              <span className="text-xs text-amber-300">
+              <span className="text-xs text-warning">
                 Save your rule changes first
               </span>
             ) : null}

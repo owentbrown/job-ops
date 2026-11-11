@@ -16,7 +16,7 @@ interface JobRowContentProps {
 }
 
 function getSuitabilityScoreTone(score: number): string {
-  if (score >= 70) return "text-emerald-400/90";
+  if (score >= 70) return "text-success/90";
   if (score >= 50) return "text-foreground/60";
   return "text-muted-foreground/60";
 }
@@ -72,13 +72,13 @@ export const JobRowContent = ({
               </span>
             )}
             {showRegeneratingPdf && (
-              <span className="inline-flex shrink-0 items-center gap-1 rounded-sm border border-blue-200/70 bg-blue-50 px-1.5 py-0.5 text-[10px] font-medium leading-none text-blue-700 dark:border-blue-400/25 dark:bg-blue-400/10 dark:text-blue-200">
+              <span className="inline-flex shrink-0 items-center gap-1 rounded-sm border border-info/25 bg-info/10 px-1.5 py-0.5 text-[10px] font-medium leading-none text-info">
                 <Loader2 className="h-2.5 w-2.5 animate-spin" />
                 Generating PDF
               </span>
             )}
             {showStalePdf && (
-              <span className="inline-flex shrink-0 rounded-sm border border-amber-200/70 bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium leading-none text-amber-700 dark:border-amber-400/25 dark:bg-amber-400/10 dark:text-amber-200">
+              <span className="inline-flex shrink-0 rounded-sm border border-warning/25 bg-warning/10 px-1.5 py-0.5 text-[10px] font-medium leading-none text-warning">
                 Regenerate PDF
               </span>
             )}

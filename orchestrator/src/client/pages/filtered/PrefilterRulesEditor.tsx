@@ -85,9 +85,9 @@ const DECISION_CLASS: Record<
   PrefilterPreview["items"][number]["decision"],
   string
 > = {
-  drop: "text-rose-400",
-  undecided: "text-amber-300",
-  keep: "text-emerald-400",
+  drop: "text-destructive",
+  undecided: "text-warning",
+  keep: "text-success",
 };
 
 const Section: React.FC<{ title: string; children: React.ReactNode }> = ({
@@ -221,7 +221,7 @@ export const PrefilterRulesEditor: React.FC<{
 
   if (configQuery.isError) {
     return (
-      <div className="space-y-3 rounded-md border border-rose-500/30 bg-rose-500/10 p-4 text-sm">
+      <div className="space-y-3 rounded-md border border-destructive/30 bg-destructive/10 p-4 text-sm">
         <p role="alert">
           {formatUserFacingError(
             configQuery.error,
@@ -259,13 +259,13 @@ export const PrefilterRulesEditor: React.FC<{
   return (
     <div className="space-y-6">
       {status === "missing" ? (
-        <p className="rounded-md border border-amber-500/30 bg-amber-500/10 p-3 text-sm">
+        <p className="rounded-md border border-warning/30 bg-warning/10 p-3 text-sm">
           No rules file yet. These are defaults; Save creates{" "}
           {configQuery.data?.path}.
         </p>
       ) : null}
       {status === "invalid" ? (
-        <p className="rounded-md border border-rose-500/30 bg-rose-500/10 p-3 text-sm">
+        <p className="rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm">
           The rules file is invalid ({configQuery.data?.error}). Showing
           defaults; Save overwrites it.
         </p>
@@ -297,7 +297,7 @@ export const PrefilterRulesEditor: React.FC<{
           Resume paused run
         </Button>
         {dirty ? (
-          <span className="self-center text-sm text-amber-300">
+          <span className="self-center text-sm text-warning">
             Unsaved changes
           </span>
         ) : null}

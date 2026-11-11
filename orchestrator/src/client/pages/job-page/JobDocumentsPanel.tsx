@@ -67,10 +67,10 @@ function DocumentIcon({
   document: Pick<JobDocument, "fileName" | "mediaType">;
 }) {
   if (isJobDocumentPdf(document) || isJobDocumentTextLike(document)) {
-    return <FileText className="h-3.5 w-3.5 text-sky-400/80" />;
+    return <FileText className="h-3.5 w-3.5 text-info/80" />;
   }
   if (isJobDocumentSafeInlineImage(document)) {
-    return <ImageIcon className="h-3.5 w-3.5 text-emerald-400/80" />;
+    return <ImageIcon className="h-3.5 w-3.5 text-success/80" />;
   }
   return <FileIcon className="h-3.5 w-3.5 text-muted-foreground" />;
 }
@@ -317,7 +317,7 @@ export const JobDocumentsPanel: React.FC<JobDocumentsPanelProps> = ({
                   <AccordionTrigger className="flex items-center justify-between gap-2 border-b border-border/35 bg-muted/5 px-3 py-2.5 pr-4 text-left hover:bg-muted/40 hover:no-underline">
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 text-sm font-semibold text-foreground/90">
-                        <FileText className="h-3.5 w-3.5 text-sky-400/80" />
+                        <FileText className="h-3.5 w-3.5 text-info/80" />
                         Resume PDF
                         <Badge variant="secondary" className="text-[10px]">
                           {job.pdfFreshness}
@@ -380,7 +380,7 @@ export const JobDocumentsPanel: React.FC<JobDocumentsPanelProps> = ({
                 <AccordionContent className="p-0">
                   <div className="space-y-3 bg-background/20 p-4">
                     {isStalePdf ? (
-                      <div className="flex items-start gap-2 rounded-md border border-amber-200/70 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-400/25 dark:bg-amber-400/10 dark:text-amber-100">
+                      <div className="flex items-start gap-2 rounded-md border border-warning/25 bg-warning/10 px-3 py-2 text-xs text-warning">
                         <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                         <span>{stalePdfMessage}</span>
                       </div>

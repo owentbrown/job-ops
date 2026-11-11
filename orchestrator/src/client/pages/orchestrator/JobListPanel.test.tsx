@@ -241,9 +241,7 @@ describe("JobListPanel", () => {
     );
 
     expect(screen.queryByText("Previously Applied")).not.toBeInTheDocument();
-    expect(screen.getByTitle("Previously Applied")).toHaveClass(
-      "bg-yellow-400",
-    );
+    expect(screen.getByTitle("Previously Applied")).toHaveClass("bg-warning");
   });
 
   it("toggles row selection and select-all", () => {

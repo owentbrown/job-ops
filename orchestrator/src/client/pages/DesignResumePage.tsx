@@ -303,7 +303,7 @@ export const DesignResumePage: React.FC = () => {
                   {resumeImporting ? "Importing resume" : "Import resume"}
                 </Button>
                 {error ? (
-                  <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-4 py-2 text-sm text-rose-300">
+                  <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm text-destructive">
                     {formatUserFacingError(
                       error,
                       "Unable to load Resume Studio.",
@@ -673,7 +673,7 @@ export const DesignResumePage: React.FC = () => {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-[#F1703E] text-white hover:bg-[#d9612f]"
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
               onClick={() => {
                 setShowReimportConfirm(false);
                 void handleImport();

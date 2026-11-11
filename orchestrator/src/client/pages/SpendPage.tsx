@@ -190,7 +190,7 @@ export function SpendPage() {
 
         {data && data.unpricedModels.length > 0 ? (
           <SectionCard className="flex items-start gap-2 text-sm">
-            <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+            <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
             <div>
               No price set for {data.unpricedModels.join(", ")}, so those calls
               count as $0.{" "}
@@ -534,7 +534,7 @@ export function SpendPage() {
                             <TableCell className="font-mono text-xs">
                               {row.model}
                               {row.priced ? null : (
-                                <span className="ml-2 font-sans text-amber-600">
+                                <span className="ml-2 font-sans text-warning">
                                   no price
                                 </span>
                               )}

@@ -77,12 +77,12 @@ const AutosaveStatusIcon: React.FC<{ status: AutosaveStatus }> = ({
           : "Saved";
   const iconClassName =
     status === "error"
-      ? "text-rose-300"
+      ? "text-destructive"
       : status === "unsaved"
-        ? "text-amber-300"
+        ? "text-warning"
         : status === "saving"
           ? "text-muted-foreground"
-          : "text-emerald-400/80";
+          : "text-success/80";
 
   return (
     <Tip content={<p>{copy}</p>}>
@@ -621,16 +621,16 @@ export const TailoringWorkspace: React.FC<TailoringWorkspaceProps> = (
         <div
           className={`flex min-h-16 items-center justify-between gap-3 rounded-md border px-3 py-3 ${
             isDraftReady
-              ? "border-emerald-500/20 bg-emerald-500/[0.04]"
-              : "border-amber-500/20 bg-amber-500/[0.04]"
+              ? "border-success/20 bg-success/[0.04]"
+              : "border-warning/20 bg-warning/[0.04]"
           }`}
         >
           <div className="flex min-w-0 items-center gap-3">
             <span
               className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border ${
                 isDraftReady
-                  ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-300"
-                  : "border-amber-500/45 bg-amber-500/10 text-amber-300"
+                  ? "border-success/50 bg-success/10 text-success"
+                  : "border-warning/45 bg-warning/10 text-warning"
               }`}
             >
               {isDraftReady ? (

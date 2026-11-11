@@ -1,4 +1,5 @@
 import {
+  CircleDollarSign,
   Columns3,
   Eye,
   FilePenLine,
@@ -53,6 +54,7 @@ export const NAV_LINKS: NavLink[] = [
   { to: "/visa-sponsors", label: "Visa Sponsors", icon: Shield },
   { to: "/watchlist", label: "Watchlist", icon: Eye },
   { to: "/filtered", label: "Filtered", icon: Filter },
+  { to: "/spend", label: "Spend", icon: CircleDollarSign },
   { to: "/settings", label: "Settings", icon: Settings },
 ];
 

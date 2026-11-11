@@ -149,6 +149,7 @@ vi.mock("@client/api", () => ({
   generateJobPdf: vi.fn(),
   markAsApplied: vi.fn(),
   skipJob: vi.fn(),
+  saveSkipReason: vi.fn(),
   getProfile: vi.fn().mockResolvedValue({}),
   getResumeProjectsCatalog: vi.fn().mockResolvedValue([]),
 }));
@@ -350,14 +351,16 @@ describe("JobDetailPanel", () => {
         "PDF is out of date. A new one will regenerate automatically.",
       ),
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /download old pdf/i }),
-    ).toBeEnabled();
-    expect(
-      within(getApplyPanel()).queryByRole("button", { name: /view old pdf/i }),
-    ).not.toBeInTheDocument();
+    const apply = within(getApplyPanel());
+    // Documents bar: the resume is marked as an older version...
+    expect(apply.getByText(/Resume · older version/)).toBeInTheDocument();
+    expect(apply.getByRole("button", { name: /^download/i })).toBeEnabled();
+    // ...and the More menu still offers the old PDF.
     expect(
       screen.getByRole("menuitem", { name: /view old pdf/i }),
+    ).toBeEnabled();
+    expect(
+      screen.getByRole("menuitem", { name: /download old pdf/i }),
     ).toBeEnabled();
   });
 
@@ -426,7 +429,7 @@ describe("JobDetailPanel", () => {
       onJobUpdated: vi.fn().mockResolvedValue(undefined),
     });
 
-    fireEvent.click(screen.getByRole("button", { name: /download pdf/i }));
+    fireEvent.click(screen.getByRole("menuitem", { name: /download pdf/i }));
 
     await waitFor(() =>
       expect(privatePdf.downloadJobPdf).toHaveBeenCalledWith(
@@ -455,12 +458,14 @@ describe("JobDetailPanel", () => {
 
     fireEvent.click(screen.getByRole("tab", { name: /apply/i }));
 
+    const apply = within(getApplyPanel());
+    expect(apply.getByText(/Resume · updating/)).toBeInTheDocument();
+    for (const item of apply.getAllByRole("menuitem", { name: /^resume/i })) {
+      expect(item).toBeDisabled();
+    }
     expect(
-      screen.getByRole("button", { name: /download pdf/i }),
+      screen.getByRole("menuitem", { name: /download pdf/i }),
     ).toBeDisabled();
-    expect(
-      within(getApplyPanel()).queryByRole("button", { name: /view pdf/i }),
-    ).not.toBeInTheDocument();
   });
 
   it("shows an empty state when no job is selected", async () => {
@@ -677,8 +682,58 @@ describe("JobDetailPanel", () => {
     const skipItem = await screen.findByRole("menuitem", { name: /skip job/i });
     fireEvent.click(skipItem);
 
+    // A dialog asks for an optional reason first.
+    expect(api.skipJob).not.toHaveBeenCalled();
+    fireEvent.click(await screen.findByRole("button", { name: "Skip job" }));
+
     await waitFor(() => expect(api.skipJob).toHaveBeenCalledWith("job-1"));
     expect(onJobUpdated).toHaveBeenCalled();
+  });
+
+  it("leaves the page clickable after skipping with a reason", async () => {
+    const onJobUpdated = vi.fn().mockResolvedValue(undefined);
+    vi.mocked(api.skipJob).mockResolvedValue(undefined as any);
+    vi.mocked(api.saveSkipReason).mockResolvedValue({
+      id: "job-1",
+      skipReason: "too far",
+    });
+
+    const props = {
+      activeTab: "all" as const,
+      activeJobs: [],
+      selectedJob: createJob({ status: "ready" }),
+      onSelectJobId: vi.fn(),
+      onJobUpdated,
+    };
+    const view = await renderJobDetailPanel(props);
+
+    fireEvent.pointerDown(
+      screen.getByRole("button", { name: /more actions/i }),
+    );
+    fireEvent.click(await screen.findByRole("menuitem", { name: /skip job/i }));
+    fireEvent.change(await screen.findByLabelText("Reason (optional)"), {
+      target: { value: "too far" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Skip job" }));
+    await waitFor(() =>
+      expect(api.saveSkipReason).toHaveBeenCalledWith("job-1", "too far"),
+    );
+    // The parent moves on to no selected job, which unmounts the dialog.
+    view.rerender(
+      <MemoryRouter>
+        <JobDetailPanel
+          {...props}
+          selectedJob={null}
+          selectedJobListItem={null}
+          selectedJobLoadState="idle"
+          onRetrySelectedJob={vi.fn()}
+        />
+      </MemoryRouter>,
+    );
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument(),
+    );
+    await waitFor(() => expect(document.body.style.pointerEvents).toBe(""));
   });
 
   it("forwards tailoring dirty state to refresh pause callback", async () => {

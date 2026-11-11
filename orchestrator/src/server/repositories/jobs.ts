@@ -26,6 +26,7 @@ import {
   and,
   desc,
   eq,
+  gte,
   inArray,
   isNotNull,
   isNull,
@@ -550,6 +551,19 @@ async function tryInsertJob(input: CreateJobInput): Promise<Job | null> {
 /**
  * Create jobs (or return existing jobs for duplicate URLs).
  */
+/**
+ * Title + employer of every job discovered since `sinceIso`, for spotting
+ * reposts of a job already saved under a different URL.
+ */
+export async function getTitleEmployerPairsSince(
+  sinceIso: string,
+): Promise<Array<{ title: string; employer: string }>> {
+  return db
+    .select({ title: jobs.title, employer: jobs.employer })
+    .from(jobs)
+    .where(and(jobsScopeFilter(), gte(jobs.discoveredAt, sinceIso)));
+}
+
 export async function createJobs(input: CreateJobInput): Promise<Job>;
 export async function createJobs(
   inputs: CreateJobInput[],
@@ -918,6 +932,8 @@ function mapRowToJob(row: typeof jobs.$inferSelect): Job {
     filterReason: row.filterReason ?? null,
     filterLayer: (row.filterLayer as Job["filterLayer"]) ?? null,
     filteredAt: row.filteredAt ?? null,
+    skipReason: row.skipReason ?? null,
+    coverLetter: row.coverLetter ?? null,
     jobType: row.jobType ?? null,
     salarySource: row.salarySource ?? null,
     salaryInterval: row.salaryInterval ?? null,

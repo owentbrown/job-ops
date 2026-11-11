@@ -4,12 +4,13 @@ import {
   JobDescriptionPanel,
   JobHeader,
 } from "@client/components";
+import { ApplicationDocumentsBar } from "@client/components/DocumentActions";
 import { GhostwriterDrawer } from "@client/components/ghostwriter/GhostwriterDrawer";
 import { JobDetailsEditDrawer } from "@client/components/JobDetailsEditDrawer";
 import { KbdHint } from "@client/components/KbdHint";
 import { OpenJobListingButton } from "@client/components/OpenJobListingButton";
+import { SkipJobDialog } from "@client/components/SkipJobDialog";
 import { Tip } from "@client/components/Tip";
-import { TooltipWhenDisabled } from "@client/components/TooltipWhenDisabled";
 import { TailoringWorkspace } from "@client/components/tailoring/TailoringWorkspace";
 import {
   useMarkAsAppliedMutation,
@@ -78,6 +79,7 @@ import {
   formatJobForWebhook,
   safeFilenamePart,
 } from "@/lib/utils";
+import { CoverLetterPanel } from "../job-page/CoverLetterPanel";
 import type { FilterTab } from "./constants";
 import type { SelectedJobLoadState } from "./useOrchestratorData";
 
@@ -503,23 +505,34 @@ export const JobDetailPanel: React.FC<JobDetailPanelProps> = ({
     });
   }, [selectedJob]);
 
+  const [skipDialogOpen, setSkipDialogOpen] = useState(false);
+
   const handleSkip = useCallback(async () => {
     if (!selectedJob) return;
-    try {
-      await skipJobMutation.mutateAsync(selectedJob.id);
-      trackProductEvent("jobs_job_action_completed", {
-        action: "skip",
-        result: "success",
-        from_status: selectedJob.status,
-        to_status: "skipped",
-      });
-      toast.message("Job skipped");
-      handleJobMoved(selectedJob.id);
-      await onJobUpdated();
-    } catch (error) {
-      showErrorToast(error, "Failed to skip");
-    }
-  }, [handleJobMoved, onJobUpdated, selectedJob, skipJobMutation]);
+    setSkipDialogOpen(true);
+  }, [selectedJob]);
+
+  const confirmSkip = useCallback(
+    async (reason: string) => {
+      if (!selectedJob) return;
+      try {
+        await skipJobMutation.mutateAsync({ id: selectedJob.id, reason });
+        setSkipDialogOpen(false);
+        trackProductEvent("jobs_job_action_completed", {
+          action: "skip",
+          result: "success",
+          from_status: selectedJob.status,
+          to_status: "skipped",
+        });
+        toast.message("Job skipped");
+        handleJobMoved(selectedJob.id);
+        await onJobUpdated();
+      } catch (error) {
+        showErrorToast(error, "Failed to skip");
+      }
+    },
+    [handleJobMoved, onJobUpdated, selectedJob, skipJobMutation],
+  );
 
   const handleOpenPdf = useCallback(() => {
     if (!selectedJob || !selectedJob.pdfPath || isPdfRegenerating(selectedJob))
@@ -681,9 +694,6 @@ export const JobDetailPanel: React.FC<JobDetailPanelProps> = ({
   const isRegeneratingPdf = isPdfRegenerating(selectedJob);
   const isStalePdf = isPdfStale(selectedJob);
   const pdfLabels = getPdfActionLabels(selectedJob);
-  const pdfRegeneratingReason = isRegeneratingPdf
-    ? PDF_REGENERATING_MESSAGE
-    : null;
   const pdfActionDisabled = !selectedJob.pdfPath || isRegeneratingPdf;
   const tone = statusTone[selectedJob.status];
   const openListingIsPrimary =
@@ -860,12 +870,21 @@ export const JobDetailPanel: React.FC<JobDetailPanelProps> = ({
           />
         </TabsContent>
 
-        <TabsContent value="tailoring">
+        <TabsContent value="tailoring" className="space-y-4">
+          <ApplicationDocumentsBar
+            job={selectedJob}
+            resumeFileName={selectedPdfFilename}
+          />
           <TailoringWorkspace
             mode="editor"
             job={selectedJob}
             onUpdate={onJobUpdated}
             onDirtyChange={onPauseRefreshChange}
+          />
+          <CoverLetterPanel
+            key={selectedJob.id}
+            job={selectedJob}
+            resumeFileName={selectedPdfFilename}
           />
         </TabsContent>
 
@@ -930,22 +949,11 @@ export const JobDetailPanel: React.FC<JobDetailPanelProps> = ({
                 </div>
               </div>
             </div>
-            <div className="grid gap-2 sm:grid-cols-3">
-              <TooltipWhenDisabled
-                reason={pdfRegeneratingReason}
-                className="w-full"
-              >
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={handleDownloadPdf}
-                  disabled={pdfActionDisabled}
-                >
-                  <Download className="size-3.5" />
-                  {pdfLabels.download}
-                  <KbdHint shortcut="d" className="ml-auto" />
-                </Button>
-              </TooltipWhenDisabled>
+            <ApplicationDocumentsBar
+              job={selectedJob}
+              resumeFileName={selectedPdfFilename}
+            />
+            <div className="grid gap-2 sm:grid-cols-2">
               <OpenJobListingButton
                 href={jobLink}
                 size="sm"
@@ -1051,6 +1059,13 @@ export const JobDetailPanel: React.FC<JobDetailPanelProps> = ({
           }}
         />
       </div>
+      <SkipJobDialog
+        open={skipDialogOpen}
+        jobTitle={selectedJob?.title}
+        isPending={skipJobMutation.isPending}
+        onOpenChange={setSkipDialogOpen}
+        onConfirm={(reason) => void confirmSkip(reason)}
+      />
     </Tabs>
   );
 };

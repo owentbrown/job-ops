@@ -31,6 +31,7 @@ import {
   SheetTitle,
 } from "@/components/ui/sheet";
 import { formatDateTime } from "@/lib/utils";
+import { formatUsd } from "../spend/format";
 import {
   formatPipelineDuration,
   getPipelineRunDisplayStatus,
@@ -113,6 +114,14 @@ function RunsList(props: {
   selectedRunId: string | null;
   onSelectRun: (runId: string) => void;
 }) {
+  const runIds = props.runs.map((run) => run.id);
+  // AI cost per run (fork: spend). Polls while a run is active.
+  const { data: runCosts } = useQuery({
+    queryKey: queryKeys.spend.runCosts(runIds),
+    queryFn: () => api.getRunCosts(runIds),
+    enabled: runIds.length > 0,
+    refetchInterval: props.activeRunId ? 15_000 : false,
+  });
   return (
     <div className="space-y-2">
       <div className="hidden grid-cols-[minmax(0,1.6fr)_auto_auto_auto] gap-3 px-3 text-xs text-muted-foreground md:grid">
@@ -152,6 +161,9 @@ function RunsList(props: {
                 </div>
                 <div className="mt-1 text-sm text-muted-foreground">
                   Duration {duration}
+                  {runCosts?.costs[run.id] !== undefined
+                    ? ` · AI ≈ ${formatUsd(runCosts.costs[run.id])}`
+                    : null}
                 </div>
               </div>
               <div className="md:self-center">
@@ -187,6 +199,12 @@ function RunInsightsBody(props: {
 }) {
   const { run, exactMetrics, inferredMetrics } = props.insights;
   const savedDetails = props.insights.savedDetails;
+  const { data: runCosts } = useQuery({
+    queryKey: queryKeys.spend.runCosts([run.id]),
+    queryFn: () => api.getRunCosts([run.id]),
+    refetchInterval: props.isActiveRun ? 15_000 : false,
+  });
+  const runCost = runCosts?.costs[run.id];
   const displayStatus = getPipelineRunDisplayStatus(run, {
     isActive: props.isActiveRun,
   });
@@ -221,6 +239,10 @@ function RunInsightsBody(props: {
         <MetricCard
           label="Completed"
           value={formatDateTime(run.completedAt) ?? "Not recorded"}
+        />
+        <MetricCard
+          label="AI cost (estimate)"
+          value={runCost !== undefined ? formatUsd(runCost) : "Not recorded"}
         />
       </div>
 

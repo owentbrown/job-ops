@@ -9,13 +9,24 @@ const config = parsePrefilterConfig({
 });
 
 const jobs = [
-  createJob({ id: "pm", title: "Product Manager", jobDescription: "" }),
+  createJob({
+    id: "pm",
+    location: "Waterloo, ON",
+    title: "Product Manager",
+    jobDescription: "",
+  }),
   createJob({
     id: "ops",
+    location: "Waterloo, ON",
     title: "Operations Lead",
     jobDescription: "Quota applies",
   }),
-  createJob({ id: "ba", title: "Business Analyst", jobDescription: "" }),
+  createJob({
+    id: "ba",
+    location: "Waterloo, ON",
+    title: "Business Analyst",
+    jobDescription: "",
+  }),
 ];
 
 describe("previewRules", () => {

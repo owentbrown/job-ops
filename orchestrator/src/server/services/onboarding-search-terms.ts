@@ -194,6 +194,7 @@ async function suggestOnboardingSearchTermsImpl(): Promise<SearchTermsSuggestion
     const model = await resolveLlmModel("tailoring");
     const llm = await createConfiguredLlmService("tailoring");
     const result = await llm.callJson<SearchTermSuggestionModelResponse>({
+      feature: "search_terms",
       model,
       messages: [{ role: "user", content: buildPrompt(context) }],
       jsonSchema: SEARCH_TERMS_SCHEMA,

@@ -12,7 +12,9 @@ import type {
   PipelineSearchPreset,
   PipelineSearchPresetsResponse,
   PipelineStatusResponse,
+  SearchScheduleStatus,
   UpdatePipelineSearchPresetInput,
+  UpdateSearchScheduleInput,
 } from "@shared/types";
 import { fetchApi } from "./core";
 
@@ -198,5 +200,24 @@ export async function cancelPipeline(): Promise<{
     alreadyRequested: boolean;
   }>("/pipeline/cancel", {
     method: "POST",
+  });
+}
+
+export async function runLastSearch(): Promise<{ message: string }> {
+  return fetchApi<{ message: string }>("/pipeline/run-last", {
+    method: "POST",
+  });
+}
+
+export async function getSearchSchedule(): Promise<SearchScheduleStatus> {
+  return fetchApi<SearchScheduleStatus>("/pipeline/schedule");
+}
+
+export async function updateSearchSchedule(
+  input: UpdateSearchScheduleInput,
+): Promise<SearchScheduleStatus> {
+  return fetchApi<SearchScheduleStatus>("/pipeline/schedule", {
+    method: "PUT",
+    body: JSON.stringify(input),
   });
 }

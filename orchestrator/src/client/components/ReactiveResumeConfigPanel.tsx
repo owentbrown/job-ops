@@ -167,6 +167,8 @@ export const ReactiveResumeConfigPanel: React.FC<
     latex:
       "LaTeX renders PDFs locally with Jake's template and requires tectonic on the JobOps host.",
     typst: "Typst renders PDFs locally and supports selectable resume themes.",
+    "latex-personal":
+      "Renders PDFs locally with your own resume layout (two-tone name, contact bar, serif section headings).",
   };
 
   const rendererDefaultPaperSizeText: Record<PdfRenderer, string> = {
@@ -174,6 +176,7 @@ export const ReactiveResumeConfigPanel: React.FC<
       "Renderer default keeps the page format saved on the resume itself. Free-form resumes always stay continuous.",
     latex: "Renderer default is US Letter for the LaTeX template.",
     typst: "Renderer default is A4 for Typst themes.",
+    "latex-personal": "Renderer default is US Letter for your layout.",
   };
 
   return (

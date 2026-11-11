@@ -776,6 +776,7 @@ async function runAssistantReply(
     });
 
     const llmResult = await llm.callJson<{ response: string }>({
+      feature: "chat",
       model: llmConfig.model,
       messages: [
         {

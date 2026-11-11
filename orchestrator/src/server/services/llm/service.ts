@@ -29,6 +29,7 @@ import type {
   LlmValidationResult,
   ResponseMode,
 } from "./types";
+import { extractTokenUsage, type LlmFeature, recordLlmUsage } from "./usage";
 import {
   addQueryParam,
   buildHeaders,
@@ -141,6 +142,7 @@ export class LlmService {
         retryDelayMs,
         jobId,
         signal,
+        feature: options.feature,
       });
 
       if (result.success) {
@@ -455,6 +457,7 @@ export class LlmService {
     retryDelayMs: number;
     jobId?: string;
     signal?: AbortSignal;
+    feature?: LlmFeature;
   }): Promise<LlmResponse<T>> {
     const {
       mode,
@@ -519,6 +522,18 @@ export class LlmService {
         }
 
         const data = await response.json();
+        // Billed whether or not the reply parses, so record before parsing.
+        const usage = extractTokenUsage(data);
+        if (usage) {
+          recordLlmUsage({
+            provider: this.provider,
+            model,
+            feature: args.feature,
+            jobId,
+            usage,
+            success: true,
+          });
+        }
         const content = this.strategy.extractText(data);
 
         if (!content) {

@@ -47,5 +47,6 @@ export async function renderResumePdf(args: {
     outputPath: args.outputPath,
     jobId: args.jobId,
     paperSize: args.paperSize,
+    variant: args.renderer === "latex-personal" ? "personal" : "jake",
   });
 }

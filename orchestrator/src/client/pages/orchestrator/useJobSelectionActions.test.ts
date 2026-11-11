@@ -267,4 +267,45 @@ describe("useJobSelectionActions", () => {
     );
     expect(toast.success).toHaveBeenCalledWith("2 matches recalculated");
   });
+
+  it("shift-click selects every job between the last clicked and this one", () => {
+    const activeJobs = ["a", "b", "c", "d", "e"].map((id) =>
+      createJob({ id, status: "discovered" }),
+    );
+    const { result } = renderHook(() =>
+      useJobSelectionActions({
+        activeJobs,
+        activeTab: "discovered",
+        loadJobs: vi.fn(),
+      }),
+    );
+
+    act(() => result.current.toggleSelectJob("b"));
+    act(() => result.current.toggleSelectJob("e", { range: true }));
+    expect([...result.current.selectedJobIds].sort()).toEqual([
+      "b",
+      "c",
+      "d",
+      "e",
+    ]);
+
+    // Shift-click upward from e back to c on a checked job unchecks the range.
+    act(() => result.current.toggleSelectJob("c", { range: true }));
+    expect([...result.current.selectedJobIds]).toEqual(["b"]);
+  });
+
+  it("without a previous click, shift-click just toggles that job", () => {
+    const activeJobs = ["a", "b"].map((id) =>
+      createJob({ id, status: "discovered" }),
+    );
+    const { result } = renderHook(() =>
+      useJobSelectionActions({
+        activeJobs,
+        activeTab: "discovered",
+        loadJobs: vi.fn(),
+      }),
+    );
+    act(() => result.current.toggleSelectJob("b", { range: true }));
+    expect([...result.current.selectedJobIds]).toEqual(["b"]);
+  });
 });

@@ -5,6 +5,7 @@
 import "./config/env";
 import { logger } from "@infra/logger";
 import { sanitizeUnknown } from "@infra/sanitize";
+import { startSearchScheduler } from "@server/services/search-schedule";
 import { createApp } from "./app";
 import { initializeExtractorRegistry } from "./extractors/registry";
 import { deleteExpiredOrRevokedAuthSessions } from "./repositories/auth-sessions";
@@ -122,6 +123,14 @@ async function startServer() {
       }
     } catch (error) {
       logger.warn("Failed to initialize backup service", {
+        error: sanitizeUnknown(error),
+      });
+    }
+
+    try {
+      await startSearchScheduler();
+    } catch (error) {
+      logger.warn("Failed to start scheduled search", {
         error: sanitizeUnknown(error),
       });
     }

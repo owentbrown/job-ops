@@ -7,7 +7,14 @@ export type PrefilterFormState = {
   titleInclude: string;
   titleExclude: string;
   companyBlocklist: string;
+  /** "" = no limit */
+  maxPostingAgeDays: string;
   commuteBlocklist: string;
+  dropUsOnly: boolean;
+  companyNotes: string;
+  languageEnabled: boolean;
+  dropNonEnglishPostings: boolean;
+  blockedLanguages: string;
   hardDropPhrases: string;
   flagPhrases: string;
   salaryEnabled: boolean;
@@ -39,6 +46,19 @@ export function ratesFromText(value: string): Record<string, number> {
   return rates;
 }
 
+/** "Company: note" per line. Lines without a colon are skipped (validation reports them). */
+export function notesFromText(
+  value: string,
+): Array<{ company: string; note: string }> {
+  return fromLines(value).flatMap((line) => {
+    const colon = line.indexOf(":");
+    if (colon <= 0) return [];
+    const company = line.slice(0, colon).trim();
+    const note = line.slice(colon + 1).trim();
+    return company && note ? [{ company, note }] : [];
+  });
+}
+
 function ratesToText(rates: Record<string, number>): string {
   return Object.entries(rates)
     .map(([code, rate]) => `${code}=${rate}`)
@@ -52,7 +72,16 @@ export function configToForm(config: PrefilterConfigDto): PrefilterFormState {
     titleInclude: config.title.include.join("\n"),
     titleExclude: config.title.exclude.join("\n"),
     companyBlocklist: config.companyBlocklist.join("\n"),
+    maxPostingAgeDays:
+      config.maxPostingAgeDays == null ? "" : String(config.maxPostingAgeDays),
     commuteBlocklist: config.location.commuteBlocklist.join("\n"),
+    dropUsOnly: config.location.dropUsOnly ?? true,
+    companyNotes: (config.companyNotes ?? [])
+      .map((entry) => `${entry.company}: ${entry.note}`)
+      .join("\n"),
+    languageEnabled: config.language?.enabled ?? true,
+    dropNonEnglishPostings: config.language?.dropNonEnglishPostings ?? true,
+    blockedLanguages: (config.language?.blockedLanguages ?? []).join("\n"),
     hardDropPhrases: config.description.hardDropPhrases.join("\n"),
     flagPhrases: config.description.flagPhrases.join("\n"),
     salaryEnabled: config.salary.enabled,
@@ -84,9 +113,20 @@ export function formToConfig(
       exclude: fromLines(form.titleExclude),
     },
     companyBlocklist: fromLines(form.companyBlocklist),
+    maxPostingAgeDays: form.maxPostingAgeDays.trim()
+      ? Number(form.maxPostingAgeDays.trim())
+      : null,
     location: {
       ...base.location,
       commuteBlocklist: fromLines(form.commuteBlocklist),
+      dropUsOnly: form.dropUsOnly,
+    },
+    companyNotes: notesFromText(form.companyNotes),
+    language: {
+      ...base.language,
+      enabled: form.languageEnabled,
+      dropNonEnglishPostings: form.dropNonEnglishPostings,
+      blockedLanguages: fromLines(form.blockedLanguages),
     },
     salary: {
       ...base.salary,

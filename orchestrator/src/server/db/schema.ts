@@ -292,6 +292,8 @@ export const jobs = sqliteTable(
     filterReason: text("filter_reason"),
     filterLayer: text("filter_layer", { enum: ["rules", "llm", "restored"] }),
     filteredAt: text("filtered_at"),
+    skipReason: text("skip_reason"),
+    coverLetter: text("cover_letter"),
 
     // Timestamps
     discoveredAt: text("discovered_at")
@@ -1180,3 +1182,38 @@ export type TracerLinkRow = typeof tracerLinks.$inferSelect;
 export type NewTracerLinkRow = typeof tracerLinks.$inferInsert;
 export type TracerClickEventRow = typeof tracerClickEvents.$inferSelect;
 export type NewTracerClickEventRow = typeof tracerClickEvents.$inferInsert;
+
+/**
+ * One row per AI model call (fork: spend tracking). Tokens are exact, as
+ * reported by the provider; dollars are worked out at read time from the
+ * price table so a price edit re-prices history. job_id / pipeline_run_id
+ * have no foreign keys on purpose: spend stays on record after a job or run
+ * is deleted.
+ */
+export const llmUsage = sqliteTable(
+  "llm_usage",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull().default("tenant_default"),
+    userId: text("user_id"),
+    createdAt: text("created_at").notNull(),
+    provider: text("provider").notNull(),
+    model: text("model").notNull(),
+    feature: text("feature").notNull(),
+    jobId: text("job_id"),
+    pipelineRunId: text("pipeline_run_id"),
+    inputTokens: integer("input_tokens").notNull().default(0),
+    outputTokens: integer("output_tokens").notNull().default(0),
+    cacheWriteTokens: integer("cache_write_tokens").notNull().default(0),
+    cacheReadTokens: integer("cache_read_tokens").notNull().default(0),
+    success: integer("success", { mode: "boolean" }).notNull().default(true),
+  },
+  (table) => ({
+    tenantCreatedIndex: index("idx_llm_usage_tenant_created").on(
+      table.tenantId,
+      table.createdAt,
+    ),
+    jobIndex: index("idx_llm_usage_job").on(table.jobId),
+    runIndex: index("idx_llm_usage_run").on(table.pipelineRunId),
+  }),
+);

@@ -3,6 +3,7 @@ import type { JobSource } from "@shared/types.js";
 import { FileText, Loader2, Search, Square, X } from "lucide-react";
 import type React from "react";
 import { Button } from "@/components/ui/button";
+import { SearchScheduleControls } from "./SearchScheduleControls";
 
 interface OrchestratorHeaderProps {
   navOpen: boolean;
@@ -15,6 +16,7 @@ interface OrchestratorHeaderProps {
   onOpenAutomaticRun: () => void;
   onCancelPipeline: () => void;
   onOpenManualImport: () => void;
+  onRunLastSearch?: () => void;
 }
 
 export const OrchestratorHeader: React.FC<OrchestratorHeaderProps> = ({
@@ -28,6 +30,7 @@ export const OrchestratorHeader: React.FC<OrchestratorHeaderProps> = ({
   onOpenAutomaticRun,
   onCancelPipeline,
   onOpenManualImport,
+  onRunLastSearch,
 }) => {
   const primaryAction = hideRunAction ? null : isPipelineRunning ? (
     <Button
@@ -65,6 +68,12 @@ export const OrchestratorHeader: React.FC<OrchestratorHeaderProps> = ({
   const actions = (
     <div className="flex items-center gap-2">
       {primaryAction}
+      {onRunLastSearch && !hideRunAction ? (
+        <SearchScheduleControls
+          isPipelineRunning={isPipelineRunning}
+          onRunLastSearch={onRunLastSearch}
+        />
+      ) : null}
       <Button
         type="button"
         variant="ghost"

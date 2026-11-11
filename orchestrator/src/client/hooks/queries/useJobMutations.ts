@@ -6,6 +6,7 @@ import type {
 } from "@shared/types";
 import type { QueryClient } from "@tanstack/react-query";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { queryKeys } from "@/client/lib/queryKeys";
 import { invalidateJobData } from "./invalidate";
 
@@ -57,11 +58,32 @@ export function useMarkAsAppliedMutation() {
   });
 }
 
+export type SkipJobInput = string | { id: string; reason?: string | null };
+
+function skipInputId(input: SkipJobInput): string {
+  return typeof input === "string" ? input : input.id;
+}
+
 export function useSkipJobMutation() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => api.skipJob(id),
-    onMutate: async (id) => {
+    mutationFn: async (input: SkipJobInput) => {
+      const id = skipInputId(input);
+      const job = await api.skipJob(id);
+      const reason =
+        typeof input === "string" ? "" : (input.reason ?? "").trim();
+      if (!reason) return job;
+      try {
+        const saved = await api.saveSkipReason(id, reason);
+        return { ...job, skipReason: saved.skipReason };
+      } catch {
+        // The skip itself worked; only the note failed.
+        toast.error("Job skipped, but the reason could not be saved.");
+        return job;
+      }
+    },
+    onMutate: async (input) => {
+      const id = skipInputId(input);
       await queryClient.cancelQueries({ queryKey: queryKeys.jobs.detail(id) });
       const previousJob = queryClient.getQueryData<Job>(
         queryKeys.jobs.detail(id),
@@ -71,7 +93,7 @@ export function useSkipJobMutation() {
       );
       return { previousJob, id };
     },
-    onError: (_error, _id, context) => {
+    onError: (_error, _input, context) => {
       if (context?.id) {
         queryClient.setQueryData(
           queryKeys.jobs.detail(context.id),
@@ -79,8 +101,8 @@ export function useSkipJobMutation() {
         );
       }
     },
-    onSettled: async (_data, _error, id) => {
-      await invalidateJobData(queryClient, id);
+    onSettled: async (_data, _error, input) => {
+      await invalidateJobData(queryClient, skipInputId(input));
     },
   });
 }

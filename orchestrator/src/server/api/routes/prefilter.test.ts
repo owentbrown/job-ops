@@ -289,4 +289,61 @@ describe.sequential("Prefilter API routes", () => {
       );
     }
   });
+
+  it("re-checks scored jobs with the saved rules: lists first, moves on apply", async () => {
+    await request("/config", {
+      method: "PUT",
+      body: JSON.stringify({ config: VALID_CONFIG }),
+    });
+    const { updateJob, getJobById } = await import("@server/repositories/jobs");
+    const analyst = await seedJob("Data Analyst", "https://example.com/s1");
+    const pm = await seedJob("Product Manager", "https://example.com/s2");
+    const unscored = await seedJob("Data Analyst", "https://example.com/s3");
+    await updateJob(analyst.id, {
+      suitabilityScore: 40,
+      suitabilityReason: "meh",
+      location: "Waterloo, ON",
+    });
+    await updateJob(pm.id, { suitabilityScore: 80, location: "Waterloo, ON" });
+
+    const dry = await (
+      await request("/recheck-scored", { method: "POST", body: "{}" })
+    ).json();
+    expect(dry.data.checked).toBe(2);
+    expect(dry.data.moved).toBe(0);
+    expect(dry.data.drops.map((d: { id: string }) => d.id)).toEqual([
+      analyst.id,
+    ]);
+    expect((await getJobById(analyst.id))?.status).toBe("discovered");
+
+    const applied = await (
+      await request("/recheck-scored", {
+        method: "POST",
+        body: JSON.stringify({ apply: true }),
+      })
+    ).json();
+    expect(applied.data.moved).toBe(1);
+    const after = await getJobById(analyst.id);
+    expect(after?.status).toBe("skipped");
+    expect(after?.suitabilityReason).toBe("meh");
+    expect((await getJobById(unscored.id))?.status).toBe("discovered");
+    expect((await getJobById(pm.id))?.status).toBe("discovered");
+  });
+
+  it("saves a skip reason for a skipped job and 404s otherwise", async () => {
+    const job = await seedJob("Product Manager", "https://example.com/k");
+    const missing = await request(`/jobs/${job.id}/skip-reason`, {
+      method: "PUT",
+      body: JSON.stringify({ reason: "too junior" }),
+    });
+    expect(missing.status).toBe(404);
+    const { updateJob, getJobById } = await import("@server/repositories/jobs");
+    await updateJob(job.id, { status: "skipped" });
+    const res = await request(`/jobs/${job.id}/skip-reason`, {
+      method: "PUT",
+      body: JSON.stringify({ reason: "  too junior  " }),
+    });
+    expect(res.status).toBe(200);
+    expect((await getJobById(job.id))?.skipReason).toBe("too junior");
+  });
 });

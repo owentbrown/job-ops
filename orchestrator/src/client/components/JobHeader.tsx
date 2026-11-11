@@ -260,6 +260,11 @@ export const JobHeader: React.FC<JobHeaderProps> = ({
             tooltipClassName="max-w-xs"
             className={jobStatusTooltip ? "cursor-help" : undefined}
           />
+          {job.status === "skipped" && fullJob?.skipReason ? (
+            <span className="break-words text-xs text-muted-foreground">
+              Skip reason: {fullJob.skipReason}
+            </span>
+          ) : null}
           {tracerStatus && (
             <StatusIndicator
               dotColor={tracerStatus.dotColor}

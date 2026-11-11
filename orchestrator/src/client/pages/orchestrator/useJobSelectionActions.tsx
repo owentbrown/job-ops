@@ -83,17 +83,36 @@ export function useJobSelectionActions({
     });
   }, [activeJobs]);
 
-  const toggleSelectJob = useCallback((jobId: string) => {
-    setSelectedJobIds((previous) => {
-      const next = new Set(previous);
-      if (next.has(jobId)) {
-        next.delete(jobId);
-      } else {
-        next.add(jobId);
-      }
-      return next;
-    });
-  }, []);
+  // Last checkbox the user clicked: the start of a shift-click range.
+  const selectionAnchorRef = useRef<string | null>(null);
+
+  /**
+   * Toggles one job. With range=true (shift-click), every job between the
+   * last clicked one and this one (in list order) gets this job's new state.
+   */
+  const toggleSelectJob = useCallback(
+    (jobId: string, options?: { range?: boolean }) => {
+      const anchorId = selectionAnchorRef.current;
+      selectionAnchorRef.current = jobId;
+      setSelectedJobIds((previous) => {
+        const next = new Set(previous);
+        const select = !previous.has(jobId);
+        const ids = activeJobs.map((job) => job.id);
+        const from = anchorId ? ids.indexOf(anchorId) : -1;
+        const to = ids.indexOf(jobId);
+        const range =
+          options?.range && from !== -1 && to !== -1
+            ? ids.slice(Math.min(from, to), Math.max(from, to) + 1)
+            : [jobId];
+        for (const id of range) {
+          if (select) next.add(id);
+          else next.delete(id);
+        }
+        return next;
+      });
+    },
+    [activeJobs],
+  );
 
   const toggleSelectAll = useCallback(
     (checked: boolean) => {

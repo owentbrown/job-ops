@@ -48,6 +48,24 @@ export function validateForm(
       const rate = parts[1].trim();
       return code === "" || rate === "" || !Number.isFinite(Number(rate));
     });
+  const badNote = form.companyNotes
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0)
+    .find((line) => {
+      const colon = line.indexOf(":");
+      return colon <= 0 || line.slice(colon + 1).trim() === "";
+    });
+  const age = form.maxPostingAgeDays.trim();
+  if (age !== "" && !/^\d+$/.test(age)) {
+    errors.maxPostingAgeDays =
+      "Posting age must be a whole number of days, or empty.";
+  } else if (age !== "" && (Number(age) < 1 || Number(age) > 365)) {
+    errors.maxPostingAgeDays = "Posting age must be between 1 and 365 days.";
+  }
+  if (badNote) {
+    errors.companyNotes = `Company notes must look like Company: note (got "${badNote}").`;
+  }
   if (badRate) {
     errors.ratesToCad = `Rate lines must look like CODE=number (got "${badRate}").`;
   }
@@ -109,16 +127,20 @@ const NumberField: React.FC<{
   label: string;
   value: string;
   error?: string;
+  hint?: string;
+  placeholder?: string;
   onChange: (value: string) => void;
-}> = ({ id, label, value, error, onChange }) => (
+}> = ({ id, label, value, error, hint, placeholder, onChange }) => (
   <div className="space-y-1.5">
     <Label htmlFor={id}>{label}</Label>
     <Input
       id={id}
       inputMode="decimal"
       value={value}
+      placeholder={placeholder}
       onChange={(e) => onChange(e.target.value)}
     />
+    {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
     <FieldError message={error} />
   </div>
 );
@@ -331,6 +353,17 @@ export const PrefilterRulesEditor: React.FC<{
           checked={form.pauseBeforeScoring}
           onChange={(v) => update("pauseBeforeScoring", v)}
         />
+        <div className="max-w-xs">
+          <NumberField
+            id="pf-max-age"
+            label="Max posting age (days)"
+            hint="Drops jobs posted longer ago than this. Leave empty for no limit. Jobs without a posting date always pass."
+            placeholder="No limit"
+            value={form.maxPostingAgeDays}
+            error={errors.maxPostingAgeDays}
+            onChange={(v) => update("maxPostingAgeDays", v)}
+          />
+        </div>
       </Section>
 
       <Section title="Job title">
@@ -370,6 +403,46 @@ export const PrefilterRulesEditor: React.FC<{
             onChange={(v) => update("commuteBlocklist", v)}
           />
         </div>
+        <ToggleField
+          id="pf-us-only"
+          label="Drop US-only jobs"
+          hint="Drops jobs whose location is only in the US. If the posting mentions Canada, the AI check decides whether it can be done from Canada."
+          checked={form.dropUsOnly}
+          onChange={(v) => update("dropUsOnly", v)}
+        />
+        <TextField
+          id="pf-company-notes"
+          label="Company notes"
+          hint="One per line, as Company: note. Things you know that the posting may not say, e.g. Float: hybrid, 3 days a week in the Toronto office. The AI check treats them as true for that company's jobs."
+          value={form.companyNotes}
+          error={errors.companyNotes}
+          onChange={(v) => update("companyNotes", v)}
+        />
+      </Section>
+
+      <Section title="Language">
+        <ToggleField
+          id="pf-language"
+          label="Drop jobs that need another language"
+          hint="Drops jobs that make a language on the list mandatory, e.g. 'Bilingual French/English required' or a title like 'Bilingual Product Manager'. A language that's only an asset or nice to have is flagged for the AI check instead. Scoring also fails these jobs as a backstop."
+          checked={form.languageEnabled}
+          onChange={(v) => update("languageEnabled", v)}
+        />
+        <ToggleField
+          id="pf-language-posting"
+          label="Drop postings written in another language"
+          hint="Drops listings written mostly in French, Spanish, German or Portuguese. Bilingual postings with a full English version are kept and checked for a requirement."
+          checked={form.dropNonEnglishPostings}
+          onChange={(v) => update("dropNonEnglishPostings", v)}
+        />
+        <TextField
+          id="pf-languages"
+          label="Languages you don't speak"
+          hint="One per line. Remove a language to allow jobs that need it."
+          value={form.blockedLanguages}
+          rows={5}
+          onChange={(v) => update("blockedLanguages", v)}
+        />
       </Section>
 
       <Section title="Salary">

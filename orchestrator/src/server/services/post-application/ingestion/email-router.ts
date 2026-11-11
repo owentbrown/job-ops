@@ -194,6 +194,7 @@ ${llmEmailText}`,
     stageEventPayload: Record<string, unknown> | null;
     reason: string;
   }>({
+    feature: "email_triage",
     model,
     messages,
     jsonSchema: SMART_ROUTER_SCHEMA,

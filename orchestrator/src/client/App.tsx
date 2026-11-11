@@ -31,6 +31,7 @@ import { OnboardingPage } from "./pages/OnboardingPage";
 import { OrchestratorPage } from "./pages/OrchestratorPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { SignInPage } from "./pages/SignInPage";
+import { SpendPage } from "./pages/SpendPage";
 import { SsoCallbackPage } from "./pages/SsoCallbackPage";
 import { TracerLinksPage } from "./pages/TracerLinksPage";
 import { TrackingInboxPage } from "./pages/TrackingInboxPage";
@@ -210,6 +211,7 @@ export const App: React.FC = () => {
                 />
                 <Route path="/watchlist" element={<WatchlistPage />} />
                 <Route path="/filtered" element={<FilteredJobsPage />} />
+                <Route path="/spend" element={<SpendPage />} />
                 <Route path="/jobs/:tab" element={<OrchestratorPage />} />
                 <Route
                   path="/jobs/:tab/:jobId"

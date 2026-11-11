@@ -43,6 +43,17 @@ export const queryKeys = {
       options?: { from?: number; to?: number; includeBots?: boolean },
     ) => [...queryKeys.tracer.all, "job-links", jobId, options ?? {}] as const,
   },
+  spend: {
+    all: ["spend"] as const,
+    report: (options: {
+      from?: string | null;
+      to?: string | null;
+      timeZone: string;
+    }) => [...queryKeys.spend.all, "report", options] as const,
+    runCosts: (runIds: string[]) =>
+      [...queryKeys.spend.all, "run-costs", runIds] as const,
+    pricing: () => [...queryKeys.spend.all, "pricing"] as const,
+  },
   demo: {
     all: ["demo"] as const,
     info: () => [...queryKeys.demo.all, "info"] as const,
@@ -74,6 +85,7 @@ export const queryKeys = {
     status: () => [...queryKeys.pipeline.all, "status"] as const,
     runs: () => [...queryKeys.pipeline.all, "runs"] as const,
     searchPresets: () => [...queryKeys.pipeline.all, "search-presets"] as const,
+    schedule: () => [...queryKeys.pipeline.all, "schedule"] as const,
     runInsights: (id: string) =>
       [...queryKeys.pipeline.all, "run-insights", id] as const,
   },

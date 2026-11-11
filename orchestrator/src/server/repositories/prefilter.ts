@@ -1,5 +1,5 @@
 import type { PrefilterLayer } from "@shared/types";
-import { and, desc, eq, inArray, isNull, ne, or } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, ne, or, sql } from "drizzle-orm";
 import { db, schema } from "../db/index";
 import { privateDataScopeFilter } from "../tenancy/private-scope";
 
@@ -33,7 +33,9 @@ export async function markJobFiltered(input: {
     .update(jobs)
     .set({
       status: "skipped",
-      suitabilityReason: `Filtered (${input.layer}): ${input.reason}`,
+      // A job that was already scored keeps its scoring reason, so a restore
+      // brings it back intact.
+      suitabilityReason: sql`CASE WHEN ${jobs.suitabilityScore} IS NULL THEN ${`Filtered (${input.layer}): ${input.reason}`} ELSE ${jobs.suitabilityReason} END`,
       filterReason: input.reason,
       filterLayer: input.layer,
       filteredAt: now,
@@ -86,7 +88,7 @@ export async function restoreFilteredJob(id: string): Promise<boolean> {
     .update(jobs)
     .set({
       status: "discovered",
-      suitabilityReason: null,
+      suitabilityReason: sql`CASE WHEN ${jobs.suitabilityReason} LIKE 'Filtered (%' THEN NULL ELSE ${jobs.suitabilityReason} END`,
       filterLayer: "restored",
       updatedAt: now,
     })
@@ -96,6 +98,24 @@ export async function restoreFilteredJob(id: string): Promise<boolean> {
         eq(jobs.id, id),
         eq(jobs.status, "skipped"),
         inArray(jobs.filterLayer, [...ACTIVE_FILTER_LAYERS]),
+      ),
+    );
+  return result.changes > 0;
+}
+
+/** Saves (or clears, with null) the note typed when skipping a job. Only skipped jobs. */
+export async function setSkipReason(
+  id: string,
+  reason: string | null,
+): Promise<boolean> {
+  const result = await db
+    .update(jobs)
+    .set({ skipReason: reason, updatedAt: new Date().toISOString() })
+    .where(
+      and(
+        privateDataScopeFilter(jobs),
+        eq(jobs.id, id),
+        eq(jobs.status, "skipped"),
       ),
     );
   return result.changes > 0;

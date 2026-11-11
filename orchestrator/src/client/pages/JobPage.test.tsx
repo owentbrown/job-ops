@@ -75,6 +75,7 @@ vi.mock("@/components/ui/dropdown-menu", () => ({
 }));
 
 vi.mock("../api", () => ({
+  getSignatureStatus: vi.fn().mockResolvedValue({ exists: false }),
   getJob: vi.fn(),
   deleteJob: vi.fn(),
   getJobStageEvents: vi.fn(),

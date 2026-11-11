@@ -12,6 +12,8 @@ import type { AppErrorCode } from "@infra/errors";
 import { logger } from "@infra/logger";
 import { trackServerProductEvent } from "@infra/product-analytics";
 import { runWithRequestContext } from "@infra/request-context";
+import { setCoverLetter } from "@server/repositories/cover-letter";
+import { generateCoverLetter } from "@server/services/cover-letter/generate";
 import { getPrivateDataScope } from "@server/tenancy/private-scope";
 import { createLocationIntentFromLegacyInputs } from "@shared/location-domain.js";
 import { resolveResumeProjectSelection } from "@shared/resume-projects";
@@ -355,6 +357,13 @@ export async function runPipeline(
      * run instead of waiting for a Resume that can never come.
      */
     nonInteractive?: boolean;
+    /** Scheduled runs: cap how many jobs get LLM-scored this run. */
+    maxJobsToScore?: number;
+    /**
+     * Scheduled runs: nobody is around to solve a bot challenge, so drop the
+     * challenged sources for this run instead of pausing forever.
+     */
+    skipChallenges?: boolean;
   },
 ): Promise<{
   success: boolean;
@@ -460,6 +469,18 @@ export async function runPipeline(
               shouldCancel: () =>
                 getPipelineState(scopeKey).cancelRequestedAt !== null,
             });
+      if (options?.skipChallenges && pendingChallenges.length > 0) {
+        const skipped = pendingChallenges.flatMap((c) => c.sources);
+        pipelineLogger.warn("Skipping challenged sources (unattended run)", {
+          sources: skipped,
+        });
+        sourceErrors = [
+          ...sourceErrors,
+          `Skipped ${skipped.join(", ")}: bot challenge needs a person (scheduled run)`,
+        ];
+        pendingChallenges = [];
+      }
+
       await persistResultSummary({
         stage: "discovery",
         sourceErrors,
@@ -625,12 +646,17 @@ export async function runPipeline(
             scoringInstructions: mergedConfig.scoringInstructions,
             visaSponsorCountryKey: mergedConfig.locationIntent?.selectedCountry,
             hostedUsageReserved: true,
+            maxJobsToScore: options?.maxJobsToScore,
             shouldCancel: () =>
               getPipelineState(scopeKey).cancelRequestedAt !== null,
           }));
           break;
         } catch (error) {
-          if (!(error instanceof LlmNotConfiguredError)) {
+          // Unattended runs can't wait for someone to fix the LLM config.
+          if (
+            !(error instanceof LlmNotConfiguredError) ||
+            options?.nonInteractive
+          ) {
             throw error;
           }
 
@@ -1178,6 +1204,29 @@ export async function generateFinalPdf(
 /**
  * Process a single job (runs both steps in sequence).
  */
+/**
+ * Draft and save a cover letter for a job that has none yet (fork). Logs and
+ * moves on if drafting fails: the user can still write one from the job page.
+ */
+export async function ensureCoverLetter(jobId: string): Promise<void> {
+  await runWithRequestContext({ jobId }, async () => {
+    try {
+      const job = await jobsRepo.getJobById(jobId);
+      if (!job || job.coverLetter?.trim() || !job.jobDescription?.trim()) {
+        return;
+      }
+      const text = await generateCoverLetter(job);
+      await setCoverLetter(job.id, text);
+      logger.info("Drafted cover letter with the resume", { jobId });
+    } catch (error) {
+      logger.warn("Cover letter draft failed; resume continues", {
+        jobId,
+        error: error instanceof Error ? error.message.slice(0, 300) : error,
+      });
+    }
+  });
+}
+
 export async function processJob(
   jobId: string,
   options?: ProcessJobOptions,
@@ -1189,6 +1238,10 @@ export async function processJob(
     // Step 1: Summarize & Select Projects
     const sumResult = await summarizeJob(jobId, options);
     if (!sumResult.success) return sumResult;
+
+    // Step 1b (fork): draft the cover letter alongside the resume. Never
+    // overwrites a saved letter, and a failure here doesn't block the resume.
+    await ensureCoverLetter(jobId);
 
     // Step 2: Generate PDF
     const pdfResult = await generateFinalPdf(jobId, options);

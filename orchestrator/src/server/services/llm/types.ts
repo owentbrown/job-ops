@@ -1,3 +1,5 @@
+import type { LlmFeature } from "./usage";
+
 export type LlmProvider =
   | "atlascloud"
   | "litellm"
@@ -59,6 +61,8 @@ export interface LlmRequestOptions<_T> {
   jobId?: string;
   /** Optional abort signal for cancellation */
   signal?: AbortSignal;
+  /** What the call is for, so spend can be broken down by task */
+  feature?: LlmFeature;
 }
 
 export interface LlmResult<T> {

@@ -133,6 +133,81 @@ prefilterRouter.post(
   }),
 );
 
+const recheckBodySchema = z.object({ apply: z.boolean().default(false) });
+const skipReasonBodySchema = z.object({
+  reason: z.string().trim().max(1000).nullable(),
+});
+
+/**
+ * Runs the saved rules (no AI, no cost) over jobs that were already scored
+ * and are still waiting in Discovered. apply=false lists what would move;
+ * apply=true moves those jobs to Filtered (restorable).
+ */
+prefilterRouter.post(
+  "/recheck-scored",
+  handle("POST /api/prefilter/recheck-scored", async (req, res) => {
+    const { apply } = recheckBodySchema.parse(req.body ?? {});
+    if (apply && isDemoMode()) {
+      throw forbidden("Re-checking jobs is disabled in demo mode.");
+    }
+    if (apply && getPipelineStatus().isRunning) {
+      throw conflict("Wait for the current run to finish first.");
+    }
+    const load = await readPrefilterConfig();
+    if (load.status !== "ok") {
+      throw badRequest(
+        load.status === "invalid"
+          ? `Filter rules are invalid: ${load.error}`
+          : "No filter rules saved yet. Save your rules first.",
+      );
+    }
+    const jobs = (await jobsRepo.getAllJobs(["discovered"])).filter(
+      (job) =>
+        job.suitabilityScore !== null &&
+        job.suitabilityScore !== undefined &&
+        job.filterLayer !== "restored" &&
+        job.source !== "manual",
+    );
+    const preview = previewRules(jobs, load.config, jobs.length);
+    const drops = preview.items.filter((item) => item.decision === "drop");
+    let moved = 0;
+    if (apply) {
+      for (const item of drops) {
+        if (
+          await prefilterRepo.markJobFiltered({
+            id: item.id,
+            layer: "rules",
+            reason: item.detail,
+          })
+        ) {
+          moved += 1;
+        }
+      }
+      logger.info("Scored jobs re-checked with rules", {
+        checked: jobs.length,
+        moved,
+        requestId: getRequestId(res),
+      });
+    }
+    ok(res, { checked: jobs.length, drops, moved });
+  }),
+);
+
+prefilterRouter.put(
+  "/jobs/:id/skip-reason",
+  handle("PUT /api/prefilter/jobs/:id/skip-reason", async (req, res) => {
+    if (isDemoMode()) {
+      throw forbidden("Saving skip reasons is disabled in demo mode.");
+    }
+    const { reason } = skipReasonBodySchema.parse(req.body ?? {});
+    const value = reason ? reason : null;
+    if (!(await prefilterRepo.setSkipReason(req.params.id, value))) {
+      throw notFound("Skipped job not found");
+    }
+    ok(res, { id: req.params.id, skipReason: value });
+  }),
+);
+
 prefilterRouter.post(
   "/score-backlog",
   handle("POST /api/prefilter/score-backlog", async (_req, res) => {

@@ -1,0 +1,113 @@
+% Owen's cover letter layout (from his Overleaf coverletter-style.tex), used
+% by the cover letter PDF. JobOps fills in the body and, for the one-file
+% download, adds the resume pages after the letter (placeholders below
+% \begin{document}; don't name them in comments).
+\documentclass[10pt,letterpaper]{article}
+
+\usepackage[margin=1.5in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{iftex}
+\IfFileExists{ClearSans.sty}{%
+  \usepackage[sfdefault]{ClearSans}
+}{%
+  \usepackage{helvet}
+}
+\usepackage{tgtermes}
+\usepackage[hidelinks]{hyperref}
+\usepackage{xcolor}
+\usepackage{setspace}
+\usepackage{etoolbox}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{xstring}
+\usepackage{pdfpages}
+
+\renewcommand{\familydefault}{\sfdefault}
+\newcommand{\titlefont}[1]{{\fontfamily{qtm}\selectfont #1}}
+\ifPDFTeX\else
+  % Under XeTeX \fontfamily{qtm} falls back to thin Latin Modern; load the
+  % Times clone (TeX Gyre Termes) by file name so the name stays bold Times.
+  \usepackage{fontspec}
+  \newfontfamily\titleseriffont{texgyretermes}[
+    Extension=.otf,
+    UprightFont=*-regular,
+    BoldFont=*-bold,
+    ItalicFont=*-italic,
+    BoldItalicFont=*-bolditalic]
+  \renewcommand{\titlefont}[1]{{\titleseriffont #1}}
+\fi
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+\setstretch{1.08}
+\definecolor{resumeaccent}{HTML}{1A1A1A}
+\definecolor{bodytext}{HTML}{1F1F1F}
+\definecolor{namedark}{HTML}{596439}
+\definecolor{namelight}{HTML}{B1B6A3}
+\definecolor{contactbg}{HTML}{E5E7E1}
+\color{bodytext}
+\AtBeginDocument{\vspace*{-52pt}\fontsize{10.5}{13}\selectfont}
+
+\newcommand{\letterNameTwoTone}[1]{%
+  \begingroup
+  \def\FirstName{}%
+  \def\RemainingName{}%
+  \expandafter\letterNameSplit#1 \relax
+  \ifstrempty{\RemainingName}{%
+    \textcolor{namedark}{\MakeUppercase{#1}}%
+  }{%
+    \textcolor{namedark}{\MakeUppercase{\FirstName}}\space
+    \textcolor{namelight}{\MakeUppercase{\RemainingName}}%
+  }%
+  \endgroup
+}
+
+\def\letterNameSplit#1 #2\relax{%
+  \def\FirstName{#1}%
+  \def\RemainingName{#2}%
+}
+
+% JobOps: #1 is the first contact line, #2 the second (either may be empty),
+% #3 the link text, #4 the full link target, #5 the location.
+\newcommand{\letterContactBlock}[5]{%
+  \begingroup
+  \setlength{\parskip}{0pt}%
+  \setlength{\parindent}{0pt}%
+  \fontsize{8.0}{8.8}\selectfont
+  {\bfseries\titlefont{\fontsize{9.2}{9.8}\selectfont CONTACT}}\par
+  \ifstrempty{#1}{}{#1\par}%
+  \ifstrempty{#2}{}{#2\par}%
+  \ifstrempty{#3}{}{{\href{#4}{#3}}\par}%
+  \ifstrempty{#5}{}{#5\par}%
+  \endgroup
+}
+
+\newcommand{\letterHeader}[6]{%
+  \begin{flushright}
+    \letterContactBlock{#3}{#4}{#5}{#6}{#2}
+  \end{flushright}
+  \vspace{14pt}%
+  {\centering\fontsize{28}{32}\selectfont\bfseries\titlefont{\letterNameTwoTone{#1}}\par}
+  \vspace{18pt}%
+}
+
+\newcommand{\letterDate}[1]{#1\par}
+\newcommand{\letterGreeting}[1]{#1\par}
+\newcommand{\letterParagraph}[1]{#1\par}
+\newcommand{\letterBulletListStart}{\begin{itemize}[leftmargin=1.25em,itemsep=2pt,topsep=2pt,parsep=0pt,partopsep=0pt]}
+\newcommand{\letterBullet}[1]{\item #1}
+\newcommand{\letterBulletListEnd}{\end{itemize}\vspace{2pt}}
+\newcommand{\letterSignoff}[3]{%
+  \vspace{4pt}%
+  \ifstrempty{#1}{}{#1\par}
+  \vspace{2pt}#2\par
+  \ifstrempty{#3}{}{\vspace{4pt}\includegraphics[height=0.550in]{#3}\par}
+}
+
+\pagestyle{empty}
+
+\begin{document}
+__BODY__
+__APPEND_PDF__
+\end{document}

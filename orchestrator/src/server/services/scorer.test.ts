@@ -906,6 +906,7 @@ describe("salary penalty", () => {
                 "jobBrief",
                 "jobPatches",
                 "jobWarnings",
+                "requiredLanguage",
               ],
             }),
           }),
@@ -1149,5 +1150,87 @@ describe("salary penalty", () => {
         ScoringUnavailableError,
       );
     });
+  });
+});
+
+describe("language requirement auto-fail (fork)", () => {
+  const brief = {
+    role_summary: "Own the product roadmap.",
+    they_want: [],
+    specifics: [],
+    company_offers: [],
+    practical_details: [],
+    missing_or_unclear: [],
+    repeated_signals: [],
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    resolveLlmModelMock.mockResolvedValue("test-model");
+    createConfiguredLlmServiceMock.mockResolvedValue({
+      callJson: callJsonMock,
+    });
+    getEffectiveSettingsMock.mockResolvedValue({
+      penalizeMissingSalary: { value: false, default: false, override: null },
+      missingSalaryPenalty: { value: 10, default: 10, override: null },
+      scoringInstructions: { value: "", default: "", override: null },
+      scoringPromptTemplate: { value: null, default: "", override: null },
+    } as any);
+  });
+
+  const score = async (
+    description: string,
+    requiredLanguage: string,
+    title = "Product Manager",
+  ) => {
+    const { scoreJobSuitability } = await import("./scorer");
+    callJsonMock.mockResolvedValue({
+      success: true,
+      data: {
+        score: 82,
+        reason: "Strong product fit.",
+        jobBrief: brief,
+        jobPatches: [],
+        jobWarnings: [],
+        requiredLanguage,
+      },
+    });
+    return scoreJobSuitability(
+      createJob({ id: "lang-job", title, jobDescription: description }),
+      {},
+    );
+  };
+
+  it("fails a job whose listing makes French mandatory", async () => {
+    const result = await score(
+      "We need a product manager. Bilingual (English/French) is required.",
+      "",
+    );
+    expect(result.score).toBe(5);
+    expect(result.languageBlock?.language).toBe("French");
+    expect(result.reason).toMatch(/^Needs French/);
+  });
+
+  it("fails a job when only the AI check spots the requirement", async () => {
+    const result = await score("Lead our LATAM expansion.", "Spanish");
+    expect(result.score).toBe(5);
+    expect(result.languageBlock).toEqual({
+      language: "Spanish",
+      reason: "AI language check",
+    });
+  });
+
+  it("keeps the score when another language is only an asset", async () => {
+    const result = await score(
+      "We need a product manager. French is an asset.",
+      "",
+    );
+    expect(result.score).toBe(82);
+    expect(result.languageBlock).toBeNull();
+  });
+
+  it("ignores an AI answer of English", async () => {
+    const result = await score("We need a product manager.", "English");
+    expect(result.score).toBe(82);
   });
 });

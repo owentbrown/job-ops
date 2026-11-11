@@ -1263,6 +1263,29 @@ const migrations = [
   `ALTER TABLE jobs ADD COLUMN filter_reason TEXT`,
   `ALTER TABLE jobs ADD COLUMN filter_layer TEXT`,
   `ALTER TABLE jobs ADD COLUMN filtered_at TEXT`,
+  `ALTER TABLE jobs ADD COLUMN skip_reason TEXT`,
+  `ALTER TABLE jobs ADD COLUMN cover_letter TEXT`,
+
+  // AI spend tracking (fork: spend). No FKs on job/run so spend outlives them.
+  `CREATE TABLE IF NOT EXISTS llm_usage (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL DEFAULT 'tenant_default',
+    user_id TEXT,
+    created_at TEXT NOT NULL,
+    provider TEXT NOT NULL,
+    model TEXT NOT NULL,
+    feature TEXT NOT NULL,
+    job_id TEXT,
+    pipeline_run_id TEXT,
+    input_tokens INTEGER NOT NULL DEFAULT 0,
+    output_tokens INTEGER NOT NULL DEFAULT 0,
+    cache_write_tokens INTEGER NOT NULL DEFAULT 0,
+    cache_read_tokens INTEGER NOT NULL DEFAULT 0,
+    success INTEGER NOT NULL DEFAULT 1
+  )`,
+  `CREATE INDEX IF NOT EXISTS idx_llm_usage_tenant_created ON llm_usage(tenant_id, created_at)`,
+  `CREATE INDEX IF NOT EXISTS idx_llm_usage_job ON llm_usage(job_id)`,
+  `CREATE INDEX IF NOT EXISTS idx_llm_usage_run ON llm_usage(pipeline_run_id)`,
 ];
 
 console.log("🔧 Running database migrations...");

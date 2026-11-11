@@ -47,6 +47,7 @@ export async function pickProjectIdsForJob(args: {
       createConfiguredLlmService("projectSelection"),
     ]);
     const result = await llm.callJson<{ selectedProjectIds: string[] }>({
+      feature: "project_selection",
       model,
       messages: [
         {

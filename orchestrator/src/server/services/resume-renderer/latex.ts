@@ -8,6 +8,7 @@ import { logger } from "@infra/logger";
 import { sanitizeUnknown } from "@infra/sanitize";
 import type { PdfPaperSize } from "@shared/types";
 import { getLatexResumeSectionTitles } from "./document";
+import { buildPersonalLatexDocument } from "./latex-personal";
 import { materializeResumePicture } from "./picture";
 import type {
   LatexResumeContactItem,
@@ -21,16 +22,11 @@ import type {
   ResumeRenderer,
 } from "./types";
 
-function resolveTemplatePath(): string {
+export function resolveTemplatePath(fileName = "jake-resume.tex"): string {
   try {
     if (import.meta.url.startsWith("file:")) {
       const modulePath = fileURLToPath(import.meta.url);
-      const moduleRelativePath = join(
-        modulePath,
-        "..",
-        "templates",
-        "jake-resume.tex",
-      );
+      const moduleRelativePath = join(modulePath, "..", "templates", fileName);
       if (existsSync(moduleRelativePath)) {
         return moduleRelativePath;
       }
@@ -41,18 +37,20 @@ function resolveTemplatePath(): string {
 
   const cwd = process.cwd();
   if (cwd.endsWith("/orchestrator")) {
-    return join(
-      cwd,
-      "src/server/services/resume-renderer/templates/jake-resume.tex",
-    );
+    return join(cwd, "src/server/services/resume-renderer/templates", fileName);
   }
   return join(
     cwd,
-    "orchestrator/src/server/services/resume-renderer/templates/jake-resume.tex",
+    "orchestrator/src/server/services/resume-renderer/templates",
+    fileName,
   );
 }
 
 const TEMPLATE_PATH = resolveTemplatePath();
+const PERSONAL_TEMPLATE_PATH = resolveTemplatePath("personal-resume.tex");
+
+/** Which LaTeX layout to use: the bundled Jake resume or Owen's own layout. */
+export type LatexTemplateVariant = "jake" | "personal";
 const TECTONIC_TIMEOUT_MS = 120_000;
 const OUTPUT_FILENAME = "resume.pdf";
 const LATEX_PAPER_OPTIONS: Record<PdfPaperSize, string> = {
@@ -119,7 +117,7 @@ function escapeLatexText(value: string): string {
   return result.join("");
 }
 
-function escapeLatexUrl(value: string): string {
+export function escapeLatexUrl(value: string): string {
   return value
     .trim()
     .replace(/\\/g, "\\textbackslash{}")
@@ -128,7 +126,7 @@ function escapeLatexUrl(value: string): string {
     .replace(/\^/g, "\\textasciicircum{}");
 }
 
-function escapeForCommand(value: string): string {
+export function escapeForCommand(value: string): string {
   return escapeLatexText(value).replace(/\|/g, "{\\textbar}");
 }
 
@@ -207,7 +205,7 @@ function getIconForKindOrNetwork(kindOrNetwork: string, text?: string): string {
   }
 }
 
-function cleanUrlForDisplay(url: string): string {
+export function cleanUrlForDisplay(url: string): string {
   return url
     .replace(/^https?:\/\//i, "")
     .replace(/^www\./i, "")
@@ -565,7 +563,7 @@ function truncateOutput(value: string): string {
   return `${trimmed.slice(0, 1200)}…(truncated ${trimmed.length - 1200} chars)`;
 }
 
-async function runTectonic(args: {
+export async function runTectonic(args: {
   cwd: string;
   texPath: string;
   jobId: string;
@@ -639,74 +637,93 @@ async function runTectonic(args: {
   });
 }
 
-export const latexResumeRenderer: ResumeRenderer = {
-  async render({ document, outputPath, jobId, paperSize = "auto" }) {
-    const tempDir = await mkdtemp(
-      join(tmpdir(), `job-ops-resume-render-${jobId}-`),
-    );
-    const texPath = join(tempDir, "resume.tex");
-    const compiledPdfPath = join(tempDir, OUTPUT_FILENAME);
-
-    try {
-      const template = await loadTemplate();
-      const renderableDocument = await materializeResumePicture(
-        document,
-        tempDir,
+export function createLatexResumeRenderer(
+  variant: LatexTemplateVariant = "jake",
+): ResumeRenderer {
+  return {
+    async render({ document, outputPath, jobId, paperSize = "auto" }) {
+      const tempDir = await mkdtemp(
+        join(tmpdir(), `job-ops-resume-render-${jobId}-`),
       );
-      const latex = buildLatexDocument(renderableDocument, template, paperSize);
+      const texPath = join(tempDir, "resume.tex");
+      const compiledPdfPath = join(tempDir, OUTPUT_FILENAME);
 
-      await writeFile(texPath, latex, "utf8");
-      await runTectonic({ cwd: tempDir, texPath, jobId });
-      await copyFile(compiledPdfPath, outputPath);
+      try {
+        const renderableDocument = await materializeResumePicture(
+          document,
+          tempDir,
+        );
+        const latex =
+          variant === "personal"
+            ? buildPersonalLatexDocument(
+                renderableDocument,
+                await readFile(PERSONAL_TEMPLATE_PATH, "utf8"),
+                LATEX_PAPER_OPTIONS[paperSize],
+              )
+            : buildLatexDocument(
+                renderableDocument,
+                await loadTemplate(),
+                paperSize,
+              );
 
-      logger.info("Rendered LaTeX resume PDF", {
-        jobId,
-        outputPath,
-      });
-    } catch (error) {
-      logger.error("Failed to render LaTeX resume PDF", {
-        jobId,
-        outputPath,
-        error,
-        document: sanitizeUnknown({
-          name: document.name,
-          headline: document.headline,
-          location: document.location,
-          experienceCount: document.experience.length,
-          educationCount: document.education.length,
-          projectCount: document.projects.length,
-          skillGroupCount: document.skillGroups.length,
-          languageCount: document.languages.length,
-          interestCount: document.interests.length,
-          awardCount: document.awards.length,
-          certificationCount: document.certifications.length,
-          publicationCount: document.publications.length,
-          volunteerCount: document.volunteer.length,
-          referenceCount: document.references.length,
-        }),
-      });
-      throw error;
-    } finally {
-      await rm(tempDir, { recursive: true, force: true }).catch(
-        (cleanupError) => {
-          logger.warn("Failed to cleanup temporary LaTeX render directory", {
-            jobId,
-            tempDir,
-            error: cleanupError,
-          });
-        },
-      );
-    }
-  },
-};
+        await writeFile(texPath, latex, "utf8");
+        await runTectonic({ cwd: tempDir, texPath, jobId });
+        await copyFile(compiledPdfPath, outputPath);
+
+        logger.info("Rendered LaTeX resume PDF", {
+          jobId,
+          outputPath,
+          template: variant,
+        });
+      } catch (error) {
+        logger.error("Failed to render LaTeX resume PDF", {
+          jobId,
+          outputPath,
+          error,
+          document: sanitizeUnknown({
+            name: document.name,
+            headline: document.headline,
+            location: document.location,
+            experienceCount: document.experience.length,
+            educationCount: document.education.length,
+            projectCount: document.projects.length,
+            skillGroupCount: document.skillGroups.length,
+            languageCount: document.languages.length,
+            interestCount: document.interests.length,
+            awardCount: document.awards.length,
+            certificationCount: document.certifications.length,
+            publicationCount: document.publications.length,
+            volunteerCount: document.volunteer.length,
+            referenceCount: document.references.length,
+          }),
+        });
+        throw error;
+      } finally {
+        await rm(tempDir, { recursive: true, force: true }).catch(
+          (cleanupError) => {
+            logger.warn("Failed to cleanup temporary LaTeX render directory", {
+              jobId,
+              tempDir,
+              error: cleanupError,
+            });
+          },
+        );
+      }
+    },
+  };
+}
+
+export const latexResumeRenderer: ResumeRenderer = createLatexResumeRenderer();
 
 export async function renderLatexPdf(args: {
   document: LatexResumeDocument;
   outputPath: string;
   jobId: string;
   paperSize?: PdfPaperSize;
+  variant?: LatexTemplateVariant;
 }): Promise<void> {
-  await latexResumeRenderer.render(args);
+  const { variant, ...rest } = args;
+  await createLatexResumeRenderer(variant).render(rest);
 }
 
 export function getLatexTemplatePath(): string {

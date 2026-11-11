@@ -205,6 +205,41 @@ export interface PipelineRunSavedDetails {
   resultSummary: PipelineRunResultSummary;
 }
 
+/** Daily repeat of the last "Find jobs" search (GET/PUT /api/pipeline/schedule). */
+export interface SearchScheduleStatus {
+  enabled: boolean;
+  /** Hour of day (0-23) in `timeZone`. */
+  hour: number;
+  /** Days of the week it runs on, 0 = Sunday … 6 = Saturday. */
+  days: number[];
+  timeZone: string;
+  /** Scheduled runs LLM-score at most this many jobs (newest first). */
+  maxJobsToScore: number;
+  nextRunAt: string | null;
+  lastScheduledRun: {
+    at: string;
+    outcome: "started" | "skipped" | "failed";
+    message?: string;
+  } | null;
+  lastSearch: {
+    /** recorded = last Find jobs run; history = rebuilt from an older run. */
+    source: "recorded" | "history" | "none";
+    at: string | null;
+    sources: string[];
+    country: string | null;
+    cityLocations: string[];
+    topN: number | null;
+  };
+}
+
+export interface UpdateSearchScheduleInput {
+  enabled?: boolean;
+  hour?: number;
+  days?: number[];
+  timeZone?: string;
+  maxJobsToScore?: number;
+}
+
 export interface PipelineStatusResponse {
   isRunning: boolean;
   lastRun: PipelineRun | null;

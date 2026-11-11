@@ -42,6 +42,7 @@ export type UsePipelineControlsResult = {
   isCancelling: boolean;
   openSearch: () => void;
   handleCancelPipeline: () => Promise<void>;
+  handleRunLastSearch: () => Promise<void>;
   handleSaveAndRunAutomatic: (values: AutomaticRunValues) => Promise<void>;
   handleManualImported: (result: ManualImportResult) => Promise<void>;
   refreshSettings: () => Promise<AppSettings | null>;
@@ -143,6 +144,21 @@ export function usePipelineControls(
     },
     [setIsPipelineRunning],
   );
+
+  const handleRunLastSearch = useCallback(async () => {
+    if (isPipelineRunning) return;
+    try {
+      setIsPipelineRunning(true);
+      setIsCancelling(false);
+      await api.runLastSearch();
+      toast.message("Search started", {
+        description: "Repeating your last search. This may take a few minutes.",
+      });
+    } catch (error) {
+      setIsPipelineRunning(false);
+      showErrorToast(error, "Failed to repeat last search");
+    }
+  }, [isPipelineRunning, setIsPipelineRunning]);
 
   const handleCancelPipeline = useCallback(async () => {
     if (isCancelling || !isPipelineRunning) return;
@@ -268,6 +284,7 @@ export function usePipelineControls(
     isCancelling,
     openSearch,
     handleCancelPipeline,
+    handleRunLastSearch,
     handleSaveAndRunAutomatic,
     handleManualImported,
     refreshSettings,

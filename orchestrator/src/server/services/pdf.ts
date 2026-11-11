@@ -25,7 +25,7 @@ import {
   getTenantJobPdfPath,
   getTenantPdfDir,
 } from "./pdf-storage";
-import { renderResumePdf } from "./resume-renderer";
+import { buildResumeRenderDocument, renderResumePdf } from "./resume-renderer";
 import {
   deleteResume as deleteRxResume,
   exportResumePdf as exportRxResumePdf,
@@ -431,6 +431,15 @@ export async function generatePdf(
       errorCode: classifyPdfGenerationError(error),
     };
   }
+}
+
+/**
+ * The base resume as a render document (name, contact details, profiles):
+ * used for the cover letter header so it always matches the resume.
+ */
+export async function loadBaseResumeDocument() {
+  const baseResume = await loadBaseResumeSource({ renderer: "latex-personal" });
+  return buildResumeRenderDocument(baseResume.data);
 }
 
 export async function generateDesignResumePdf(options?: {

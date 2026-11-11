@@ -25,6 +25,10 @@
       "strategy & ops"
     ],
     "exclude": [
+      "staff",
+      "principal",
+      "technical",
+      "engineer",
       "analyst",
       "intern",
       "internship",
@@ -95,9 +99,15 @@
       "hockey"
     ]
   },
-  "companyBlocklist": [],
+  "companyBlocklist": [
+    "Sun Life",
+    "Sunlife",
+    "Manulife",
+    "The Canada Life Assurance Company"
+  ],
+  "maxPostingAgeDays": 21,
   "location": {
-    "_comment": "Applies when the job is not flagged remote and the location mentions one of these. Weekly in-office signals (hybrid, N days a week, fully on-site) -> drop; remote or occasional-travel signals (remote role, quarterly) -> AI check; no signal -> drop.",
+    "_comment": "Commute: applies when the job is not flagged remote and the location mentions one of these. Weekly in-office signals (hybrid, N days a week, fully on-site) -> drop; remote or occasional-travel signals -> AI check; no signal -> drop. dropUsOnly: a location only in the US is dropped unless the posting mentions Canada (then the AI check decides).",
     "commuteBlocklist": [
       "toronto",
       "mississauga",
@@ -109,15 +119,27 @@
       "richmond hill",
       "brampton",
       "oakville"
-    ]
+    ],
+    "dropUsOnly": true
   },
+  "companyNotes": [
+    {
+      "company": "Float",
+      "note": "hybrid, 3 days a week in the Toronto office"
+    }
+  ],
   "salary": {
     "_comment": "Drop only when a listed MAX converts below the floor. Missing or ambiguous salary never drops. Update rates occasionally.",
     "enabled": true,
     "floorAnnualCad": 110000,
     "hoursPerYear": 2080,
     "defaultCurrency": "CAD",
-    "ratesToCad": { "CAD": 1, "USD": 1.37, "GBP": 1.72, "EUR": 1.5 }
+    "ratesToCad": {
+      "CAD": 1,
+      "USD": 1.37,
+      "GBP": 1.72,
+      "EUR": 1.5
+    }
   },
   "description": {
     "_comment": "hardDropPhrases drop. flagPhrases never drop; they are shown to the LLM check as hints.",
@@ -149,6 +171,6 @@
     "descriptionChars": 400,
     "model": null,
     "targetRoles": "Product Manager, Associate Product Manager, Product Operations, Product Strategy, Growth Manager, Growth Strategy, Go-to-Market Strategy, BizOps / Business Operations, Strategy and Operations, Product-Led Growth. Locations: fully remote in Canada, or hybrid in Kitchener-Waterloo, Ontario. Industries: tech, SaaS, fintech, health tech. Best fit: roles mixing strategy with hands-on execution ownership, zero-to-one building, fast-moving AI-forward teams.",
-    "hardPasses": "Sales-heavy roles (quota, commission, SDR/BDR, account executive); marketing execution (SEO, email, demand gen, content, social); agency or client-services studios; project management; pure operations roles with no strategy component (facilities, logistics, sports or event operations); roles requiring in-office presence in the Toronto area weekly or more often (remote roles with occasional, roughly quarterly, Toronto travel are fine); anything outside business and product functions (trades, clinical, legal, retail, hospitality, marine, software engineering)."
+    "hardPasses": "Sales-heavy roles (quota, commission, SDR/BDR, account executive); marketing execution (SEO, email, demand gen, content, social); agency or client-services studios; project management; pure operations roles with no strategy component (facilities, logistics, sports or event operations); roles requiring in-office presence in the Toronto area weekly or more often (remote roles with occasional, roughly quarterly, Toronto travel are fine); anything outside business and product functions (trades, clinical, legal, retail, hospitality, marine, software engineering); roles restricted to US residents or requiring US work authorization (US-based roles that can be done remotely from Canada are fine)."
   }
 }

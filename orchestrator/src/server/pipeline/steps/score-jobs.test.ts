@@ -477,3 +477,42 @@ describe("scoreJobsStep auto-skip behavior", () => {
     expect(vi.mocked(jobsRepo.updateJob)).not.toHaveBeenCalled();
   });
 });
+
+describe("scoreJobsStep scoring cap", () => {
+  it("passes the cap to the unscored-jobs query and scores only those", async () => {
+    vi.clearAllMocks();
+    const jobsRepo = await import("@server/repositories/jobs");
+    const settingsRepo = await import("@server/repositories/settings");
+    const scorer = await import("@server/services/scorer");
+    const visaSponsors = await import("@server/services/visa-sponsors/index");
+    vi.mocked(jobsRepo.getUnscoredDiscoveredJobs).mockResolvedValue([
+      createJob({ status: "discovered", suitabilityScore: null }),
+      createJob({ status: "discovered", suitabilityScore: null }),
+    ]);
+    vi.mocked(jobsRepo.updateJob).mockResolvedValue(null);
+    vi.mocked(settingsRepo.getSetting).mockResolvedValue(null);
+    vi.mocked(scorer.scoreJobSuitability).mockResolvedValue({
+      score: 70,
+      reason: "ok",
+      jobBrief: null,
+    });
+    vi.mocked(visaSponsors.searchSponsors).mockResolvedValue([]);
+    vi.mocked(visaSponsors.calculateSponsorMatchSummary).mockReturnValue({
+      sponsorMatchScore: 0,
+      sponsorMatchNames: null,
+    });
+
+    const result = await scoreJobsStep({ profile: {}, maxJobsToScore: 2 });
+
+    expect(jobsRepo.getUnscoredDiscoveredJobs).toHaveBeenCalledWith(2);
+    expect(scorer.scoreJobSuitability).toHaveBeenCalledTimes(2);
+    expect(result.scoredJobs).toHaveLength(2);
+  });
+
+  it("is uncapped by default", async () => {
+    const jobsRepo = await import("@server/repositories/jobs");
+    vi.mocked(jobsRepo.getUnscoredDiscoveredJobs).mockClear();
+    await scoreJobsStep({ profile: {} });
+    expect(jobsRepo.getUnscoredDiscoveredJobs).toHaveBeenCalledWith(undefined);
+  });
+});

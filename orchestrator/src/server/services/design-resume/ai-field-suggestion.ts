@@ -249,6 +249,7 @@ async function generateDesignResumeFieldSuggestionImpl(
     message: string;
     suggestion: string | string[];
   }>({
+    feature: "resume_suggestion",
     model,
     messages: [{ role: "user", content: prompt }],
     jsonSchema: FIELD_SUGGESTION_SCHEMA,

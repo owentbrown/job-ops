@@ -32,28 +32,38 @@ describe("prefilterJobsStep", () => {
     const jobsRepo = await import("@server/repositories/jobs");
     vi.mocked(jobsRepo.getUnscoredDiscoveredJobs).mockResolvedValue([
       createJob({
+        location: "Waterloo, ON",
         id: "analyst",
         title: "Business Analyst",
         jobDescription: "",
       }),
-      createJob({ id: "pm", title: "Product Manager", jobDescription: "" }),
       createJob({
+        location: "Waterloo, ON",
+        id: "pm",
+        title: "Product Manager",
+        jobDescription: "",
+      }),
+      createJob({
+        location: "Waterloo, ON",
         id: "bball",
         title: "Basketball Operations",
         jobDescription: "",
       }),
       createJob({
+        location: "Waterloo, ON",
         id: "vague",
         title: "Operations Lead",
         jobDescription: "quota",
       }),
       createJob({
+        location: "Waterloo, ON",
         id: "manual",
         title: "Business Analyst",
         source: "manual",
         jobDescription: "",
       }),
       createJob({
+        location: "Waterloo, ON",
         id: "restored",
         title: "Business Analyst",
         filterLayer: "restored",

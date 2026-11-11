@@ -42,7 +42,8 @@ const where = flags.includes("--all")
 const rows = db
   .prepare(
     `SELECT id, title, employer, location, is_remote, work_from_home_type, salary,
-            salary_max_amount, salary_interval, salary_currency, job_description
+            salary_max_amount, salary_interval, salary_currency, job_description,
+            date_posted
      FROM jobs WHERE ${where} ORDER BY discovered_at DESC`,
   )
   .all() as Array<Record<string, unknown>>;
@@ -60,6 +61,7 @@ const jobs: PrefilterJob[] = rows.map((row) => ({
   salaryInterval: (row.salary_interval as string | null) ?? null,
   salaryCurrency: (row.salary_currency as string | null) ?? null,
   jobDescription: (row.job_description as string | null) ?? null,
+  datePosted: (row.date_posted as string | null) ?? null,
 }));
 
 const result = previewRules(jobs, config, Number.POSITIVE_INFINITY);

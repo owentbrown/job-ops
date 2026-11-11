@@ -9,6 +9,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PrefilterRulesEditor } from "./filtered/PrefilterRulesEditor";
+import { RecheckScoredPanel } from "./filtered/RecheckScoredPanel";
 
 const FILTERED_JOBS_KEY = ["prefilter", "filtered-jobs"] as const;
 
@@ -118,6 +119,10 @@ export const FilteredJobsPage: React.FC = () => {
             <TabsTrigger value="rules">Rules</TabsTrigger>
           </TabsList>
           <TabsContent value="filtered" className="space-y-4">
+            <RecheckScoredPanel
+              rulesDirty={rulesDirty}
+              filteredJobsKey={FILTERED_JOBS_KEY}
+            />
             {isLoading ? (
               <p className="text-sm text-muted-foreground">Loading…</p>
             ) : null}

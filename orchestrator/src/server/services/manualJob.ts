@@ -109,6 +109,7 @@ async function inferManualJobDetailsImpl(
 
   const llm = await createConfiguredLlmService();
   const result = await llm.callJson<ManualJobApiResponse>({
+    feature: "manual_job",
     model,
     messages: [{ role: "user", content: prompt }],
     jsonSchema: MANUAL_JOB_SCHEMA,

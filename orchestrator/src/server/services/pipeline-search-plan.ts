@@ -509,6 +509,7 @@ export async function planPipelineSearch(
       const model = await resolveLlmModel("tailoring");
       const llm = await createConfiguredLlmService("tailoring");
       const result = await llm.callJson<SearchPlanModelResponse>({
+        feature: "search_plan",
         model,
         messages: [
           {

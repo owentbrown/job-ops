@@ -69,7 +69,7 @@ interface OrchestratorJobsWorkspaceProps {
   onSortChange: (sort: JobSort) => void;
   onResetFilters: () => void;
   onSelectJob: (jobId: string) => void;
-  onToggleSelectJob: (jobId: string) => void;
+  onToggleSelectJob: (jobId: string, options?: { range?: boolean }) => void;
   onToggleSelectAll: (checked: boolean) => void;
   onSelectJobId: (jobId: string | null) => void;
   onJobUpdated: (job?: Job) => Promise<void>;

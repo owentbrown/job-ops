@@ -21,13 +21,20 @@ const config: PrefilterConfigDto = {
   pauseBeforeScoring: true,
   title: { include: ["growth"], exclude: ["analyst", "intern"] },
   companyBlocklist: [],
-  location: { commuteBlocklist: [] },
+  maxPostingAgeDays: null,
+  location: { commuteBlocklist: [], dropUsOnly: true },
+  companyNotes: [],
   salary: {
     enabled: true,
     floorAnnualCad: 110000,
     hoursPerYear: 2080,
     defaultCurrency: "CAD",
     ratesToCad: { CAD: 1 },
+  },
+  language: {
+    enabled: true,
+    dropNonEnglishPostings: true,
+    blockedLanguages: ["French"],
   },
   description: { hardDropPhrases: [], flagPhrases: [] },
   llm: {

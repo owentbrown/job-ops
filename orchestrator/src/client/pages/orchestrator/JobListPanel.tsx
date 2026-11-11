@@ -31,7 +31,7 @@ interface JobListPanelProps {
   selectedJobIds: Set<string>;
   activeTab: FilterTab;
   onSelectJob: (jobId: string) => void;
-  onToggleSelectJob: (jobId: string) => void;
+  onToggleSelectJob: (jobId: string, options?: { range?: boolean }) => void;
   onToggleSelectAll: (checked: boolean) => void;
   primaryEmptyStateAction?: EmptyStateAction;
   secondaryEmptyStateAction?: EmptyStateAction;
@@ -216,8 +216,12 @@ export const JobListPanel = forwardRef<VirtualListHandle, JobListPanelProps>(
                     />
                     <Checkbox
                       checked={isChecked}
-                      onCheckedChange={() => onToggleSelectJob(job.id)}
-                      onClick={(event) => event.stopPropagation()}
+                      onClick={(event) => {
+                        // Handle the toggle here so shift-click can select a range.
+                        event.stopPropagation();
+                        event.preventDefault();
+                        onToggleSelectJob(job.id, { range: event.shiftKey });
+                      }}
                       aria-label={`Select ${job.title}`}
                       className={cn(
                         "absolute inset-0 m-0 border-border/80 cursor-pointer text-muted-foreground/70 transition-opacity duration-150 ease-out data-[state=checked]:border-primary group-hover:border-primary data-[state=checked]:bg-primary/20 data-[state=checked]:text-primary",
@@ -229,7 +233,20 @@ export const JobListPanel = forwardRef<VirtualListHandle, JobListPanelProps>(
                   </div>
                   <button
                     type="button"
-                    onClick={() => onSelectJob(job.id)}
+                    onMouseDown={(event) => {
+                      // Stop shift-click from highlighting text across rows.
+                      if (event.shiftKey) event.preventDefault();
+                    }}
+                    onClick={(event) => {
+                      // Shift-click a row: select every job from the last
+                      // checked one to this one, without opening it.
+                      if (event.shiftKey) {
+                        event.preventDefault();
+                        onToggleSelectJob(job.id, { range: true });
+                        return;
+                      }
+                      onSelectJob(job.id);
+                    }}
                     data-testid={`select-${job.id}`}
                     className="flex min-w-0 flex-1 cursor-pointer text-left"
                     aria-pressed={isSelected}

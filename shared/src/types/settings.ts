@@ -64,12 +64,18 @@ export type LlmPurposeOverrides = Partial<
 export type LlmPurposeApiKeys = Partial<Record<LlmPurpose, string | null>>;
 export type LlmPurposeApiKeyHints = Partial<Record<LlmPurpose, string | null>>;
 
-export const PDF_RENDERER_VALUES = ["rxresume", "latex", "typst"] as const;
+export const PDF_RENDERER_VALUES = [
+  "rxresume",
+  "latex",
+  "typst",
+  "latex-personal",
+] as const;
 export type PdfRenderer = (typeof PDF_RENDERER_VALUES)[number];
 export const PDF_RENDERER_LABELS: Record<PdfRenderer, string> = {
   rxresume: "RxResume export",
   latex: "Local LaTeX (Jake template)",
   typst: "Local Typst",
+  "latex-personal": "Local LaTeX (my resume layout)",
 };
 
 export type TypstTheme = (typeof TYPST_THEME_VALUES)[number];

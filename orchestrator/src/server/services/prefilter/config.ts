@@ -4,6 +4,7 @@ import { mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { logger } from "@infra/logger";
 import { z } from "zod";
+import { DEFAULT_BLOCKED_LANGUAGES } from "./language";
 
 const comment = { _comment: z.string().optional() };
 const keywordList = z.array(z.string().trim().min(1)).default([]);
@@ -18,10 +19,33 @@ export const prefilterConfigSchema = z
       .strict()
       .default({}),
     companyBlocklist: keywordList,
+    // Drop jobs posted more than this many days ago (null = no limit).
+    // Jobs without a posting date always pass.
+    maxPostingAgeDays: z
+      .number()
+      .int()
+      .min(1)
+      .max(365)
+      .nullable()
+      .default(null),
     location: z
-      .object({ ...comment, commuteBlocklist: keywordList })
+      .object({
+        ...comment,
+        commuteBlocklist: keywordList,
+        dropUsOnly: z.boolean().default(true),
+      })
       .strict()
       .default({}),
+    companyNotes: z
+      .array(
+        z
+          .object({
+            company: z.string().trim().min(1),
+            note: z.string().trim().min(1).max(300),
+          })
+          .strict(),
+      )
+      .default([]),
     salary: z
       .object({
         ...comment,
@@ -51,6 +75,16 @@ export const prefilterConfigSchema = z
           });
         }
       })
+      .default({}),
+    // Drop jobs that need a language other than English (fork).
+    language: z
+      .object({
+        ...comment,
+        enabled: z.boolean().default(true),
+        dropNonEnglishPostings: z.boolean().default(true),
+        blockedLanguages: keywordList.default(DEFAULT_BLOCKED_LANGUAGES),
+      })
+      .strict()
       .default({}),
     description: z
       .object({

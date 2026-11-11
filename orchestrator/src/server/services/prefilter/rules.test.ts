@@ -313,4 +313,64 @@ describe("evaluateRules", () => {
       expect(WEEKLY_PATTERNS.length).toBeGreaterThan(0);
     });
   });
+
+  it("treats a '| Hybrid' work-model suffix as one place, not two", () => {
+    const outcome = evaluateRules(
+      job({
+        location: "Toronto, Canada | Hybrid",
+        jobDescription: "Hybrid work model with in-office days.",
+      }),
+      config,
+    );
+    expect(outcome).toEqual({
+      decision: "drop",
+      reason: "location 'toronto': weekly in-office (hybrid)",
+    });
+  });
+});
+
+describe("max posting age", () => {
+  const now = new Date("2026-11-10T12:00:00Z");
+  const aged = parsePrefilterConfig({ maxPostingAgeDays: 21 });
+
+  it("drops jobs posted longer ago than the limit", () => {
+    const outcome = evaluateRules(
+      job({ title: "Product Manager", datePosted: "2026-09-08T00:00:00.000Z" }),
+      aged,
+      now,
+    );
+    expect(outcome).toEqual({
+      decision: "drop",
+      reason: "posted 63 days ago (limit 21)",
+    });
+  });
+
+  it("keeps jobs on or inside the limit", () => {
+    const outcome = evaluateRules(
+      job({ title: "Product Manager", datePosted: "2026-10-20T12:00:00Z" }),
+      aged,
+      now,
+    );
+    expect(outcome.decision).not.toBe("drop");
+  });
+
+  it("lets jobs with no or unreadable dates through", () => {
+    for (const datePosted of [null, "", "sometime last month"]) {
+      const outcome = evaluateRules(
+        job({ title: "Product Manager", datePosted }),
+        aged,
+        now,
+      );
+      expect(outcome.decision).not.toBe("drop");
+    }
+  });
+
+  it("has no limit by default", () => {
+    const outcome = evaluateRules(
+      job({ title: "Product Manager", datePosted: "2025-01-01" }),
+      config,
+      now,
+    );
+    expect(outcome.decision).not.toBe("drop");
+  });
 });

@@ -1,5 +1,12 @@
 import { stripHtmlTags } from "@shared/utils/string";
 import type { PrefilterConfig } from "./config";
+import {
+  findUsResidencyPhrase,
+  isUsOnlyLocation,
+  locationIncludesCanada,
+  mentionsCanada,
+} from "./country";
+import { evaluateLanguageRequirement } from "./language";
 import { evaluateSalary } from "./salary";
 import {
   findKeyword,
@@ -86,6 +93,10 @@ export const WEEKLY_PATTERNS: RegExp[] = [
 
 const MULTI_LOCATION = /\s(or|&)\s|[/;|]|multiple/;
 
+/** Job boards append the work model ("Toronto, Canada | Hybrid"); that is not a second place. */
+const WORK_MODEL_SUFFIX =
+  /\s*\|\s*(?:remote|hybrid|on-?site|in[- ]office|in[- ]person)\s*$/;
+
 /** True when one of the 3 words before the match is a negation (not/no/non/never). */
 function isNegated(before: string, window = 3): boolean {
   const words = before
@@ -136,20 +147,115 @@ export function findWeeklySignal(description: string): string | null {
   return null;
 }
 
+/** Flag that marks a US-listed job the AI check must confirm is open to Canada. */
+export const US_LISTED_FLAG =
+  "US-listed: keep only if the role can be done from Canada";
+
+/** Company notes the user wrote that apply to this job's employer. */
+export function matchCompanyNotes(
+  employer: string | null | undefined,
+  notes: PrefilterConfig["companyNotes"],
+): string[] {
+  const compact = (value: string) =>
+    normalizeText(value).replace(/[^\p{L}\p{N}]/gu, "");
+  const employerCompact = compact(employer ?? "");
+  // Whole word ("Float" in "Float Financial") or the same name run together
+  // ("Floatfinancial"), since job boards spell employers inconsistently.
+  return notes
+    .filter(
+      (entry) =>
+        findKeyword(employer, [entry.company]) ||
+        (compact(entry.company).length >= 3 &&
+          employerCompact.startsWith(compact(entry.company))),
+    )
+    .map((entry) => `company note (${entry.company}): ${entry.note}`);
+}
+
 /**
- * Order: company → commute → salary → description hard-drop → title include
- * (keep) → title exclude (drop) → undecided. Pure function, no I/O.
+ * Order: company → company notes → US-only → commute → salary → description
+ * hard-drop → title include (keep) → title exclude (drop) → undecided. A US
+ * listing that mentions Canada, or a company note, always goes to the AI
+ * check, even when the title would have been an include. Pure, no I/O.
  */
+/** Whole days since the posting date; null when missing or unreadable. */
+export function postingAgeDays(
+  datePosted: string | null | undefined,
+  now: Date,
+): number | null {
+  if (!datePosted?.trim()) return null;
+  const posted = Date.parse(datePosted.trim());
+  if (Number.isNaN(posted)) return null;
+  const days = Math.floor((now.getTime() - posted) / 86_400_000);
+  return days >= 0 ? days : 0;
+}
+
 export function evaluateRules(
   job: PrefilterJob,
   config: PrefilterConfig,
+  now: Date = new Date(),
 ): RuleOutcome {
   const company = findKeyword(job.employer, config.companyBlocklist);
   if (company)
     return { decision: "drop", reason: `company blocklist '${company}'` };
 
+  const ageDays = postingAgeDays(job.datePosted, now);
+  if (
+    config.maxPostingAgeDays != null &&
+    ageDays != null &&
+    ageDays > config.maxPostingAgeDays
+  ) {
+    return {
+      decision: "drop",
+      reason: `posted ${ageDays} days ago (limit ${config.maxPostingAgeDays})`,
+    };
+  }
+
   const description = stripHtmlTags(job.jobDescription ?? "");
   const extraFlags: string[] = [];
+
+  if (config.language.enabled) {
+    const language = evaluateLanguageRequirement({
+      title: job.title,
+      description,
+      languages: config.language.blockedLanguages,
+      dropNonEnglishPostings: config.language.dropNonEnglishPostings,
+    });
+    if (language?.kind === "required") {
+      return { decision: "drop", reason: language.reason };
+    }
+    if (language?.kind === "asset") {
+      extraFlags.push(`${language.language} mentioned (asset?)`);
+    }
+  }
+  // Flags the AI check must see: these skip the title-include shortcut.
+  const mustCheck: string[] = matchCompanyNotes(
+    job.employer,
+    config.companyNotes,
+  );
+
+  if (config.location.dropUsOnly) {
+    const canadianPlaces = config.location.commuteBlocklist;
+    if (isUsOnlyLocation(job.location, canadianPlaces)) {
+      if (!mentionsCanada(description)) {
+        return {
+          decision: "drop",
+          reason: "US-only location (no mention of Canada)",
+        };
+      }
+      mustCheck.push(US_LISTED_FLAG);
+    } else {
+      const residency = findUsResidencyPhrase(description);
+      if (residency) {
+        if (
+          !locationIncludesCanada(job.location, canadianPlaces) &&
+          !mentionsCanada(description)
+        ) {
+          return { decision: "drop", reason: `description: '${residency}'` };
+        }
+        extraFlags.push(`mentions '${residency}'`);
+      }
+    }
+  }
   if (!isRemoteJob(job)) {
     const place = findKeyword(job.location, config.location.commuteBlocklist);
     if (place) {
@@ -165,10 +271,11 @@ export function evaluateRules(
       const occasional =
         findKeywords(description, OCCASIONAL_PHRASES).length > 0;
       const weekly = strong ?? (occasional ? null : weak);
-      const isMulti = MULTI_LOCATION.test(normalizeText(job.location));
+      const places = normalizeText(job.location).replace(WORK_MODEL_SUFFIX, "");
+      const isMulti = MULTI_LOCATION.test(places);
       const allCommute =
         isMulti &&
-        normalizeText(job.location)
+        places
           .split(/\s(?:or|&)\s|[/;|]/)
           .every((part) => findKeyword(part, config.location.commuteBlocklist));
       if (weekly && (!isMulti || allCommute)) {
@@ -210,10 +317,10 @@ export function evaluateRules(
   }
 
   const include = findKeyword(job.title, config.title.include);
-  if (include)
+  if (include && mustCheck.length === 0)
     return { decision: "keep", reason: `title include '${include}'` };
 
-  const exclude = findKeyword(job.title, config.title.exclude);
+  const exclude = include ? null : findKeyword(job.title, config.title.exclude);
   if (exclude)
     return { decision: "drop", reason: `title keyword '${exclude}'` };
 
@@ -221,6 +328,7 @@ export function evaluateRules(
     decision: "undecided",
     flags: [
       ...new Set([
+        ...mustCheck,
         ...findKeywords(description, config.description.flagPhrases),
         ...extraFlags,
       ]),

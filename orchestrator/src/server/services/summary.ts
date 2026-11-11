@@ -95,6 +95,7 @@ export async function generateTailoring(
 
   const llm = await createConfiguredLlmService("tailoring");
   const result = await llm.callJson<TailoredData>({
+    feature: "tailoring",
     model,
     messages: [{ role: "user", content: prompt }],
     jsonSchema: TAILORING_SCHEMA,

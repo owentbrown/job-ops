@@ -4,6 +4,7 @@ import {
   configToForm,
   formToConfig,
   fromLines,
+  notesFromText,
   ratesFromText,
 } from "./prefilter-form";
 
@@ -13,13 +14,20 @@ const base: PrefilterConfigDto = {
   pauseBeforeScoring: true,
   title: { _comment: "t", include: ["growth"], exclude: ["analyst", "intern"] },
   companyBlocklist: [],
-  location: { commuteBlocklist: ["toronto"] },
+  maxPostingAgeDays: null,
+  location: { commuteBlocklist: ["toronto"], dropUsOnly: true },
+  companyNotes: [{ company: "Float", note: "3 days in office" }],
   salary: {
     enabled: true,
     floorAnnualCad: 110000,
     hoursPerYear: 2080,
     defaultCurrency: "CAD",
     ratesToCad: { CAD: 1, USD: 1.37 },
+  },
+  language: {
+    enabled: true,
+    dropNonEnglishPostings: true,
+    blockedLanguages: ["French"],
   },
   description: { hardDropPhrases: ["commission only"], flagPhrases: ["quota"] },
   llm: {
@@ -37,8 +45,28 @@ describe("prefilter form helpers", () => {
     expect(formToConfig(configToForm(base), base)).toEqual(base);
   });
 
+  it("maps the posting age limit, with empty meaning no limit", () => {
+    const form = configToForm({ ...base, maxPostingAgeDays: 21 });
+    expect(form.maxPostingAgeDays).toBe("21");
+    expect(formToConfig(form, base).maxPostingAgeDays).toBe(21);
+    expect(
+      formToConfig({ ...form, maxPostingAgeDays: " " }, base).maxPostingAgeDays,
+    ).toBeNull();
+  });
+
   it("splits one keyword per line, trimming blanks", () => {
     expect(fromLines(" analyst \n\n intern\n")).toEqual(["analyst", "intern"]);
+  });
+
+  it("parses company notes as Company: note, skipping lines without a colon", () => {
+    expect(
+      notesFromText(
+        "Float: 3 days in office\nno colon here\n Acme : remote ok ",
+      ),
+    ).toEqual([
+      { company: "Float", note: "3 days in office" },
+      { company: "Acme", note: "remote ok" },
+    ]);
   });
 
   it("parses currency rates", () => {

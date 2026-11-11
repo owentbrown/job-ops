@@ -222,6 +222,8 @@ export interface Job {
   filterReason?: string | null; // Pre-score filter reason (kept after restore for history)
   filterLayer?: PrefilterLayer | null; // rules | llm | restored
   filteredAt?: string | null; // ISO timestamp when filtered
+  skipReason?: string | null; // Optional note the user typed when skipping
+  coverLetter?: string | null; // Approved cover letter draft (plain text)
   appliedDuplicateMatch?: AppliedDuplicateMatch | null; // Included on detail responses and may be omitted on list responses
 
   // JobSpy fields (nullable for non-JobSpy sources)

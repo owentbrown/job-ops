@@ -1,0 +1,148 @@
+% Owen's resume layout (from his Overleaf resume-style.tex), used by the
+% "latex-personal" PDF renderer. JobOps fills in the paper size and the body.
+\documentclass[10pt,__PAPER_SIZE__]{article}
+
+\usepackage[margin=0.65in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{lmodern}
+\usepackage{iftex}
+\IfFileExists{ClearSans.sty}{%
+  \usepackage[sfdefault]{ClearSans}
+}{%
+  \usepackage{helvet}
+}
+\usepackage{tgtermes}
+\usepackage[hidelinks]{hyperref}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{setspace}
+\usepackage{etoolbox}
+\usepackage{needspace}
+
+\renewcommand{\familydefault}{\sfdefault}
+\newcommand{\serifstyle}[1]{{\rmfamily #1}}
+\newcommand{\titlefont}[1]{{\fontfamily{qtm}\selectfont #1}}
+\newif\iffirstsubheadinginsection
+
+\ifPDFTeX
+  % pdfLaTeX fallback for section/subheading serif treatment
+  \newcommand{\headerfont}[1]{{\rmfamily #1}}
+\else
+  % XeLaTeX/LuaLaTeX path for DM Serif Display
+  \usepackage{fontspec}
+  % Tectonic finds bundled fonts by file name, not by display name.
+  \IfFontExistsTF{DM Serif Display}{%
+    \newfontfamily\headerseriffont{DM Serif Display}
+  }{%
+    \newfontfamily\headerseriffont{texgyretermes}[
+      Extension=.otf,
+      UprightFont=*-regular,
+      BoldFont=*-bold,
+      ItalicFont=*-italic,
+      BoldItalicFont=*-bolditalic]
+  }
+  \newcommand{\headerfont}[1]{{\headerseriffont #1}}
+  % The name uses bold Times (TeX Gyre Termes), matching the pdfLaTeX "qtm"
+  % look of the original. \fontfamily{qtm} doesn't exist under XeTeX and
+  % falls back to thin Latin Modern.
+  \newfontfamily\titleseriffont{texgyretermes}[
+    Extension=.otf,
+    UprightFont=*-regular,
+    BoldFont=*-bold,
+    ItalicFont=*-italic,
+    BoldItalicFont=*-bolditalic]
+  \renewcommand{\titlefont}[1]{{\titleseriffont #1}}
+\fi
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{2.5pt}
+\setlist[itemize]{leftmargin=1.6em, itemsep=2pt, topsep=0pt, parsep=0pt, partopsep=0pt, label={\textbullet}}
+\setstretch{1.02}
+\emergencystretch=2em
+
+\definecolor{resumeaccent}{HTML}{1A1A1A}
+\definecolor{resumetext}{HTML}{1F1F1F}
+\definecolor{namedark}{HTML}{596439}
+\definecolor{namelight}{HTML}{B1B6A3}
+\definecolor{contactbg}{HTML}{E5E7E1}
+\color{resumetext}
+
+\newcommand{\resumeNameTwoTone}[1]{%
+  \begingroup
+  \def\FirstName{}%
+  \def\RemainingName{}%
+  \expandafter\resumeNameSplit#1 \relax
+  \ifstrempty{\RemainingName}{%
+    \textcolor{namedark}{\MakeUppercase{#1}}%
+  }{%
+    \textcolor{namedark}{\MakeUppercase{\FirstName}}\space
+    \textcolor{namelight}{\MakeUppercase{\RemainingName}}%
+  }%
+  \endgroup
+}
+
+\def\resumeNameSplit#1 #2\relax{%
+  \def\FirstName{#1}%
+  \def\RemainingName{#2}%
+}
+
+\newcommand{\resumeFullWidthBox}[1]{%
+  \noindent\makebox[0pt][l]{%
+    \hspace*{-\dimexpr 1in+\hoffset+\oddsidemargin\relax}#1%
+  }\par
+}
+
+\newcommand{\resumeSection}[1]{%
+  \Needspace{5\baselineskip}%
+  \vspace{14pt}%
+  {\fontsize{11}{13}\selectfont\bfseries\color{resumeaccent}\headerfont{\MakeUppercase{#1}}}\par
+  \vspace{4pt}%
+  \global\firstsubheadinginsectiontrue
+}
+
+% JobOps: #2 (location) and #4 (link) may be empty; #4 is shown without https://
+% and #5 is the full link target. #6 is the optional tailored headline.
+\newcommand{\resumeHeader}[6]{%
+  {\centering\fontsize{26}{30}\selectfont\bfseries\titlefont{\resumeNameTwoTone{#1}}\par}
+  \ifstrempty{#6}{}{%
+    \vspace{4pt}%
+    {\centering\small\color{namedark}\headerfont{#6}\par}%
+  }%
+  \vspace{14pt}%
+  \resumeFullWidthBox{%
+    \colorbox{contactbg}{%
+      \parbox{\dimexpr\paperwidth-2\fboxsep\relax}{%
+        \centering\vspace{4pt}\small #3%
+        \ifstrempty{#2}{}{\enspace\enspace\textbar\enspace\enspace #2}%
+        \ifstrempty{#4}{}{\enspace\enspace\textbar\enspace\enspace \href{#5}{#4}}%
+        \vspace{4pt}%
+      }%
+    }%
+  }
+  \vspace{12pt}%
+}
+
+\newcommand{\resumeParagraph}[1]{#1\par}
+
+\newcommand{\resumeSubheading}[3]{%
+  \Needspace{4\baselineskip}%
+  \iffirstsubheadinginsection
+    \global\firstsubheadinginsectionfalse
+  \else
+    \vspace{10pt}%
+  \fi
+  \ifstrempty{#2}{%
+    \headerfont{\textbf{#1}}\\[-9pt]
+  }{%
+    \headerfont{\textbf{#2} \hfill \textit{#3}}\\[-1pt]
+    {\small\headerfont{#1}}\\[-9pt]
+  }%
+}
+
+\newenvironment{resumebullets}{\begin{itemize}}{\end{itemize}}
+\newcommand{\resumeBullet}[1]{\item #1}
+
+\begin{document}
+__BODY__
+\end{document}

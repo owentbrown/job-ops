@@ -14,4 +14,5 @@ export type PrefilterJob = Pick<
   | "salaryInterval"
   | "salaryCurrency"
   | "jobDescription"
+  | "datePosted"
 >;

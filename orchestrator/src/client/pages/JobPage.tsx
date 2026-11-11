@@ -1,3 +1,5 @@
+import { DocumentActions } from "@client/components/DocumentActions";
+import { SkipJobDialog } from "@client/components/SkipJobDialog";
 import { resolveResumeProjectSelection } from "@shared/resume-projects";
 import {
   type ApplicationStage,
@@ -79,6 +81,7 @@ import {
 } from "../components/LogEventModal";
 import { getDeleteEventDescription } from "./job/deleteEventDescription";
 import { JobTimeline } from "./job/Timeline";
+import { CoverLetterPanel } from "./job-page/CoverLetterPanel";
 import { JobDocumentsPanel } from "./job-page/JobDocumentsPanel";
 import { JobEmailsPanel } from "./job-page/JobEmailsPanel";
 import { JobNotesCard } from "./job-page/JobNotesCard";
@@ -386,10 +389,18 @@ export const JobPage: React.FC = () => {
     });
   };
 
+  const [skipDialogOpen, setSkipDialogOpen] = React.useState(false);
+
   const handleSkip = async () => {
+    if (!job || activeAction !== null) return;
+    setSkipDialogOpen(true);
+  };
+
+  const confirmSkip = async (reason: string) => {
     await runAction("skip", async () => {
       if (!job) return;
-      await skipJobMutation.mutateAsync(job.id);
+      await skipJobMutation.mutateAsync({ id: job.id, reason });
+      setSkipDialogOpen(false);
       toast.message("Job skipped");
     });
   };
@@ -684,8 +695,18 @@ export const JobPage: React.FC = () => {
                       </div>
                       <Badge variant="secondary" className="text-[10px]">
                         {job.pdfPath ? "Resume ready" : "No resume PDF"}
+                        {job.coverLetter ? " · Letter saved" : ""}
                       </Badge>
                     </div>
+                    <DocumentActions
+                      job={job}
+                      resumeFileName={`${safeFilenamePart(job.employer, {
+                        language: filenameLanguage,
+                      })}-${safeFilenamePart(job.title, {
+                        language: filenameLanguage,
+                      })}-resume.pdf`}
+                      className="mt-3"
+                    />
                     <div className="mt-4 grid gap-3 sm:grid-cols-2">
                       <div className="rounded-lg border border-border/50 bg-background/25 p-3">
                         <div className="text-xs uppercase tracking-wide text-muted-foreground">
@@ -825,6 +846,8 @@ export const JobPage: React.FC = () => {
                   onRegeneratePdf={() => void handleRegeneratePdf()}
                 />
 
+                <CoverLetterPanel key={job.id} job={job} />
+
                 <JobBriefPane job={job} />
 
                 <div id="job-description-panel">
@@ -961,6 +984,14 @@ export const JobPage: React.FC = () => {
           )}
         </div>
       )}
+
+      <SkipJobDialog
+        open={skipDialogOpen}
+        jobTitle={job?.title}
+        isPending={activeAction === "skip"}
+        onOpenChange={setSkipDialogOpen}
+        onConfirm={(reason) => void confirmSkip(reason)}
+      />
 
       <LogEventModal
         isOpen={isLogModalOpen}

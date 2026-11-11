@@ -30,9 +30,18 @@ export async function scoreJobsStep(args: {
   visaSponsorCountryKey?: string | null;
   shouldCancel?: () => boolean;
   hostedUsageReserved?: boolean;
+  /**
+   * Scheduled runs: score at most this many jobs (newest first). The rest stay
+   * unscored in the backlog and are picked up by a later run.
+   */
+  maxJobsToScore?: number;
 }): Promise<{ unprocessedJobs: Job[]; scoredJobs: ScoredJob[] }> {
-  logger.info("Running scoring step");
-  const unprocessedJobs = await jobsRepo.getUnscoredDiscoveredJobs();
+  logger.info("Running scoring step", {
+    maxJobsToScore: args.maxJobsToScore ?? null,
+  });
+  const unprocessedJobs = await jobsRepo.getUnscoredDiscoveredJobs(
+    args.maxJobsToScore,
+  );
 
   // Check if auto-skip threshold is configured
   const autoSkipThresholdRaw = await settingsRepo.getSetting(
@@ -152,12 +161,16 @@ export async function scoreJobsStep(args: {
       }
 
       // Check if job should be auto-skipped based on score threshold
+      // Jobs that need a non-English language are always skipped (fork).
+      const languageSkip =
+        job.status !== "applied" && Boolean(scoringResult.languageBlock);
       const shouldAutoSkip =
-        job.status !== "applied" &&
-        score !== null &&
-        autoSkipThreshold !== null &&
-        !Number.isNaN(autoSkipThreshold) &&
-        score < autoSkipThreshold;
+        languageSkip ||
+        (job.status !== "applied" &&
+          score !== null &&
+          autoSkipThreshold !== null &&
+          !Number.isNaN(autoSkipThreshold) &&
+          score < autoSkipThreshold);
 
       await jobsRepo.updateJob(job.id, {
         ...jobUpdates,
@@ -167,6 +180,11 @@ export async function scoreJobsStep(args: {
         sponsorMatchScore,
         sponsorMatchNames,
         ...(shouldAutoSkip ? { status: "skipped" } : {}),
+        ...(languageSkip && scoringResult.languageBlock
+          ? {
+              skipReason: `Needs ${scoringResult.languageBlock.language}`,
+            }
+          : {}),
       });
 
       if (shouldAutoSkip) {

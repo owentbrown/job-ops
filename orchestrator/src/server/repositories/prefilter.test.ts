@@ -156,4 +156,51 @@ describe.sequential("prefilter repository", () => {
       ),
     ).toEqual([other.id]);
   });
+
+  it("keeps a scored job's reason when filtering and restoring it", async () => {
+    const job = await makeJob("scored");
+    await jobsRepo.updateJob(job.id, {
+      suitabilityScore: 70,
+      suitabilityReason: "Strong product fit",
+    });
+    await prefilterRepo.markJobFiltered({
+      id: job.id,
+      layer: "rules",
+      reason: "US-only location",
+    });
+    const filtered = await jobsRepo.getJobById(job.id);
+    expect(filtered?.status).toBe("skipped");
+    expect(filtered?.suitabilityReason).toBe("Strong product fit");
+
+    await prefilterRepo.restoreFilteredJob(job.id);
+    const restored = await jobsRepo.getJobById(job.id);
+    expect(restored?.status).toBe("discovered");
+    expect(restored?.suitabilityScore).toBe(70);
+    expect(restored?.suitabilityReason).toBe("Strong product fit");
+  });
+
+  it("clears the filter reason on restore of an unscored job", async () => {
+    const job = await makeJob("unscored");
+    await prefilterRepo.markJobFiltered({
+      id: job.id,
+      layer: "rules",
+      reason: "title",
+    });
+    await prefilterRepo.restoreFilteredJob(job.id);
+    expect((await jobsRepo.getJobById(job.id))?.suitabilityReason).toBeNull();
+  });
+
+  it("saves a skip reason only on skipped jobs", async () => {
+    const job = await makeJob("skip");
+    expect(await prefilterRepo.setSkipReason(job.id, "3 days in office")).toBe(
+      false,
+    );
+    await jobsRepo.updateJob(job.id, { status: "skipped" });
+    expect(await prefilterRepo.setSkipReason(job.id, "3 days in office")).toBe(
+      true,
+    );
+    expect((await jobsRepo.getJobById(job.id))?.skipReason).toBe(
+      "3 days in office",
+    );
+  });
 });

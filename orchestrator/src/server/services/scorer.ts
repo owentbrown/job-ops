@@ -16,6 +16,8 @@ import { isConfigurationFailure } from "./llm/policies/configuration-error";
 import type { JsonSchemaDefinition } from "./llm/types";
 import { stripMarkdownCodeFences } from "./llm/utils/json";
 import { createConfiguredLlmService, resolveLlmModel } from "./modelSelection";
+import { parsePrefilterConfig, readPrefilterConfig } from "./prefilter/config";
+import { evaluateLanguageRequirement } from "./prefilter/language";
 import { renderPromptTemplate } from "./prompt-templates";
 import { filterProfileProjectsForAi } from "./resumeProjects";
 import { getEffectiveSettings } from "./settings";
@@ -44,6 +46,52 @@ interface SuitabilityResult {
   reason: string; // Explanation
   jobBrief: string | null;
   jobUpdates?: UpdateJobInput;
+  /** Set when the job needs a non-English language (fork): auto-fail. */
+  languageBlock?: { language: string; reason: string } | null;
+}
+
+/** Score given to jobs that need a language other than English (fork). */
+export const LANGUAGE_FAIL_SCORE = 5;
+
+/**
+ * Backstop for the pre-score language rule (fork): the rules filter can be
+ * off, or a job can be scored without it (manual import, restore, rescore).
+ * Fails the job when the rule's own check, or the model's language check,
+ * finds a mandatory non-English language. Honours the Rules editor's
+ * language setting; uses its defaults when there's no rules file.
+ */
+async function findLanguageBlock(
+  job: Job,
+  aiRequiredLanguage: string | undefined,
+): Promise<{ language: string; reason: string } | null> {
+  const load = await readPrefilterConfig();
+  const language =
+    load.status === "ok"
+      ? load.config.language
+      : parsePrefilterConfig({}).language;
+  if (!language.enabled) return null;
+
+  const verdict = evaluateLanguageRequirement({
+    title: job.title,
+    description: stripHtmlTags(job.jobDescription ?? ""),
+    languages: language.blockedLanguages,
+    dropNonEnglishPostings: language.dropNonEnglishPostings,
+  });
+  if (verdict?.kind === "required") {
+    return { language: verdict.language, reason: verdict.reason };
+  }
+
+  const ai = aiRequiredLanguage?.trim() ?? "";
+  if (ai && !/^(english|none|n\/a|null)$/i.test(ai)) {
+    const blocked = language.blockedLanguages.some((name) =>
+      ai.toLowerCase().includes(name.toLowerCase()),
+    );
+    // Languages the user removed from the list are allowed.
+    if (blocked) {
+      return { language: ai, reason: "AI language check" };
+    }
+  }
+  return null;
 }
 
 type ScoringPreferences = {
@@ -150,8 +198,16 @@ const SCORING_SCHEMA: JsonSchemaDefinition = {
         maxItems: 10,
         items: { type: "string" },
       },
+      requiredLanguage: { type: "string" },
     },
-    required: ["score", "reason", "jobBrief", "jobPatches", "jobWarnings"],
+    required: [
+      "score",
+      "reason",
+      "jobBrief",
+      "jobPatches",
+      "jobWarnings",
+      "requiredLanguage",
+    ],
     additionalProperties: false,
   },
 };
@@ -161,6 +217,7 @@ Perform these tasks in one response:
 1. JOB FACT REVIEW (candidate-independent): compare JOB DATA with the original listing. Use only those sources, never the candidate profile. Propose a patch only for a missing or clearly incorrect whitelisted field with an exact supporting listing excerpt. Do not guess, infer from general knowledge, estimate, annualise compensation, or paraphrase/invent evidence. Use high confidence for clear corrections; medium may only fill missing values; omit ambiguous corrections. Candidate evaluation must use the proposed corrected facts.
 2. JOB BRIEF: use only stated job information, remain neutral, remove employer fluff, never judge candidate fit, and use "Not stated" for missing practical details. Write specifics (Highlights) as concise phrases of at most 4 words each. Preserve negations, numbers, and essential qualifiers; omit a highlight if it cannot be shortened accurately.
 3. CANDIDATE EVALUATION: score the candidate against the listing, corrected facts, and scoring instructions.
+4. LANGUAGE CHECK: set requiredLanguage to the name of any language other than English that the listing makes mandatory (for example "bilingual French/English required", "must be fluent in Spanish", or a listing written in French). Use "" when other languages are only an asset, nice to have or preferred, or are not mentioned.
 
 Patchable fields: ${PATCHABLE_JOB_FIELDS.join(", ")}.
 Value conventions: salaryInterval is hourly|daily|weekly|monthly|yearly; salary amounts and vacancyCount are numbers without annualisation; salaryCurrency is a 3-letter code; isRemote is boolean; workFromHomeType is remote|hybrid|onsite; all other patch values are strings. Return only changed fields. Put unsupported distinctions or explicit contradictions that cannot be represented safely in jobWarnings.
@@ -179,7 +236,8 @@ Respond with ONLY valid JSON in this exact shape:
     "repeated_signals": ["<up to 5 repeated themes>"]
   },
   "jobPatches": [{"field":"<whitelisted field>","value":<string|number|boolean>,"confidence":"high|medium|low","evidence":"<exact listing excerpt>"}],
-  "jobWarnings": ["<unrepresentable or contradictory stated fact>"]
+  "jobWarnings": ["<unrepresentable or contradictory stated fact>"],
+  "requiredLanguage": "<mandatory non-English language, or empty string>"
 }
 No markdown, code fences, or text outside the JSON.`.trim();
 
@@ -301,7 +359,9 @@ export async function scoreJobSuitability(
     jobBrief?: JobBrief;
     jobPatches?: JobFactPatch[];
     jobWarnings?: string[];
+    requiredLanguage?: string;
   }>({
+    feature: "scoring",
     model,
     messages: [{ role: "user", content: prompt }],
     jsonSchema: SCORING_SCHEMA,
@@ -370,9 +430,25 @@ export async function scoreJobSuitability(
     },
   );
 
+  const languageBlock = await findLanguageBlock(
+    patchResult.patchedJob,
+    result.data.requiredLanguage,
+  );
+  if (languageBlock) {
+    logger.info("Language requirement fails job", {
+      jobId: job.id,
+      languageBlock,
+    });
+  }
+
   return {
-    score: penaltyResult.score,
-    reason: penaltyResult.reason,
+    score: languageBlock
+      ? Math.min(penaltyResult.score, LANGUAGE_FAIL_SCORE)
+      : penaltyResult.score,
+    reason: languageBlock
+      ? `Needs ${languageBlock.language} (${languageBlock.reason}), so this is an automatic fail. ${penaltyResult.reason}`
+      : penaltyResult.reason,
+    languageBlock,
     jobBrief:
       job.jobDescription?.trim() && result.data.jobBrief
         ? JSON.stringify(result.data.jobBrief)

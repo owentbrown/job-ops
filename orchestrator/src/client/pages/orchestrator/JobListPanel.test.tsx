@@ -269,7 +269,17 @@ describe("JobListPanel", () => {
     );
 
     fireEvent.click(screen.getByLabelText("Select Backend Engineer"));
-    expect(onToggleSelectJob).toHaveBeenCalledWith("job-1");
+    expect(onToggleSelectJob).toHaveBeenCalledWith("job-1", { range: false });
+
+    fireEvent.click(screen.getByLabelText("Select Frontend Engineer"), {
+      shiftKey: true,
+    });
+    expect(onToggleSelectJob).toHaveBeenCalledWith("job-2", { range: true });
+
+    fireEvent.click(screen.getByTestId("select-job-2"), { shiftKey: true });
+    expect(onToggleSelectJob).toHaveBeenLastCalledWith("job-2", {
+      range: true,
+    });
 
     fireEvent.click(screen.getByLabelText("Select all filtered jobs"));
     expect(onToggleSelectAll).toHaveBeenCalledWith(true);

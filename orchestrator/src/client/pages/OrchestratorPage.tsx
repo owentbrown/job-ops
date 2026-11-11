@@ -76,6 +76,7 @@ export const OrchestratorPage: React.FC = () => {
     isCancelling,
     openSearch,
     handleCancelPipeline,
+    handleRunLastSearch,
     handleSaveAndRunAutomatic,
     handleManualImported,
   } = usePipelineControls({
@@ -137,6 +138,9 @@ export const OrchestratorPage: React.FC = () => {
         }
         onOpenAutomaticRun={handleToggleAutomaticRun}
         onCancelPipeline={handleCancelPipeline}
+        onRunLastSearch={() => {
+          void handleRunLastSearch();
+        }}
         onOpenManualImport={() => {
           setIsManualImportOpen(true);
         }}

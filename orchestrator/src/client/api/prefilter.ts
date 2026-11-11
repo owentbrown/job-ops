@@ -21,7 +21,13 @@ export type PrefilterConfigDto = {
   pauseBeforeScoring: boolean;
   title: { _comment?: string; include: string[]; exclude: string[] };
   companyBlocklist: string[];
-  location: { _comment?: string; commuteBlocklist: string[] };
+  maxPostingAgeDays?: number | null;
+  location: {
+    _comment?: string;
+    commuteBlocklist: string[];
+    dropUsOnly: boolean;
+  };
+  companyNotes: Array<{ company: string; note: string }>;
   salary: {
     _comment?: string;
     enabled: boolean;
@@ -29,6 +35,12 @@ export type PrefilterConfigDto = {
     hoursPerYear: number;
     defaultCurrency: string;
     ratesToCad: Record<string, number>;
+  };
+  language: {
+    _comment?: string;
+    enabled: boolean;
+    dropNonEnglishPostings: boolean;
+    blockedLanguages: string[];
   };
   description: {
     _comment?: string;
@@ -109,4 +121,30 @@ export async function scoreBacklog(): Promise<{ started: boolean }> {
   return fetchApi<{ started: boolean }>("/prefilter/score-backlog", {
     method: "POST",
   });
+}
+
+export type RecheckScoredResult = {
+  checked: number;
+  moved: number;
+  drops: PrefilterPreview["items"];
+};
+
+/** Rules only (free). apply=false lists what would move; apply=true moves them. */
+export async function recheckScoredJobs(
+  apply: boolean,
+): Promise<RecheckScoredResult> {
+  return fetchApi<RecheckScoredResult>("/prefilter/recheck-scored", {
+    method: "POST",
+    body: JSON.stringify({ apply }),
+  });
+}
+
+export async function saveSkipReason(
+  id: string,
+  reason: string | null,
+): Promise<{ id: string; skipReason: string | null }> {
+  return fetchApi<{ id: string; skipReason: string | null }>(
+    `/prefilter/jobs/${encodeURIComponent(id)}/skip-reason`,
+    { method: "PUT", body: JSON.stringify({ reason }) },
+  );
 }

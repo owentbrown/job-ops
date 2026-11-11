@@ -3,6 +3,7 @@ import { sanitizeUnknown } from "@infra/sanitize";
 import { getExtractorRegistry } from "@server/extractors/registry";
 import { getUserId } from "@server/infra/request-context";
 import { getAllJobUrls } from "@server/repositories/jobs";
+import * as pipelineRepo from "@server/repositories/pipeline";
 import * as settingsRepo from "@server/repositories/settings";
 import {
   closeHiringCafeBrowser,
@@ -40,6 +41,7 @@ import {
   progressHelpers,
   updateProgress,
 } from "../progress";
+import { computeSearchWindowHours, findLastSearchRun } from "../search-window";
 import { discoverWatchlistJobsForPipeline } from "./watchlist-jobs";
 
 const DISCOVERY_CONCURRENCY = 3;
@@ -185,6 +187,20 @@ export async function discoverJobsStep(args: {
 
   const settings = await settingsRepo.getAllSettings();
   const registry = await getExtractorRegistry();
+
+  // Indeed / LinkedIn look back only to the last search + 12h (fork).
+  const lastSearch = findLastSearchRun(
+    await pipelineRepo.getRecentPipelineRuns(25).catch(() => []),
+  );
+  const searchWindowHours = computeSearchWindowHours(
+    lastSearch?.startedAt ?? null,
+  );
+  (settings as Record<string, unknown>).jobspyHoursOld =
+    String(searchWindowHours);
+  logger.info("Search window for Indeed/LinkedIn", {
+    hours: searchWindowHours,
+    lastSearchStartedAt: lastSearch?.startedAt ?? null,
+  });
 
   const searchTermsSetting = settings.searchTerms;
   let searchTerms: string[] = [];

@@ -105,7 +105,7 @@
     "Manulife",
     "The Canada Life Assurance Company"
   ],
-  "maxPostingAgeDays": 21,
+  "maxPostingAgeDays": 7,
   "location": {
     "_comment": "Commute: applies when the job is not flagged remote and the location mentions one of these. Weekly in-office signals (hybrid, N days a week, fully on-site) -> drop; remote or occasional-travel signals -> AI check; no signal -> drop. dropUsOnly: a location only in the US is dropped unless the posting mentions Canada (then the AI check decides).",
     "commuteBlocklist": [
@@ -140,6 +140,26 @@
       "GBP": 1.72,
       "EUR": 1.5
     }
+  },
+  "language": {
+    "enabled": true,
+    "dropNonEnglishPostings": true,
+    "blockedLanguages": [
+      "French",
+      "Spanish",
+      "German",
+      "Portuguese",
+      "Italian",
+      "Dutch",
+      "Mandarin",
+      "Cantonese",
+      "Chinese",
+      "Japanese",
+      "Korean",
+      "Arabic",
+      "Hindi",
+      "Punjabi"
+    ]
   },
   "description": {
     "_comment": "hardDropPhrases drop. flagPhrases never drop; they are shown to the LLM check as hints.",

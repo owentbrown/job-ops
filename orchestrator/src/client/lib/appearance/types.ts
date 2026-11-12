@@ -122,6 +122,16 @@ export interface ColourPair {
 }
 
 /** Output of `resolveTokens` (the reference `tok()`), before CSS naming. */
+/** Status colours used as text, borders and fills across the app. */
+export const SEMANTIC_IDS = [
+  "success",
+  "info",
+  "caution",
+  "warning",
+  "progress",
+] as const;
+export type SemanticId = (typeof SEMANTIC_IDS)[number];
+
 export interface ResolvedTokens {
   theme: ThemeDefinition;
   mode: ResolvedMode;
@@ -164,4 +174,9 @@ export interface ResolvedTokens {
    * 3:1 against `side` (WCAG 1.4.11 non-text contrast).
    */
   sideRing: string;
+  /**
+   * Semantic status colours (not in the reference): `colour` is readable as
+   * text on both `bg` and `surf`; `ink` is text on a `colour` fill.
+   */
+  sem: Record<SemanticId, { colour: string; ink: string }>;
 }

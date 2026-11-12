@@ -17,6 +17,7 @@ import type {
   ColourPair,
   ResolvedMode,
   ResolvedTokens,
+  SemanticId,
   ThemeDefinition,
   ThemeId,
 } from "./types";
@@ -283,6 +284,52 @@ export const DANGER = {
   dark: { bg: "#3A1616", fg: "#FF9B9B", border: "#6B2A2A" },
 } as const;
 
+/**
+ * ADDED: semantic status colours (success, info, caution, warning, progress).
+ * Previously these came only from the legacy `:root` / `.dark` blocks in
+ * index.css (Tailwind 600 shades), which are ~2.7-4:1 as text in light mode.
+ * Fixed hues, never tinted by the colour pair: Tailwind 700 shades (amber 800
+ * for warning, so it stays distinct from orange caution) on white ink in
+ * light mode, 400 shades on 950 ink in dark mode. `semanticColours()` darkens
+ * (light) or lightens (dark) a colour only where a tinted page background
+ * would push it below 4.5:1.
+ */
+export const SEMANTIC: Record<
+  ResolvedMode,
+  Record<SemanticId, { colour: string; ink: string }>
+> = {
+  light: {
+    success: { colour: "#047857", ink: "#FFFFFF" },
+    info: { colour: "#0369A1", ink: "#FFFFFF" },
+    caution: { colour: "#C2410C", ink: "#FFFFFF" },
+    warning: { colour: "#92400E", ink: "#FFFFFF" },
+    progress: { colour: "#0E7490", ink: "#FFFFFF" },
+  },
+  dark: {
+    success: { colour: "#34D399", ink: "#022C22" },
+    info: { colour: "#38BDF8", ink: "#082F49" },
+    caution: { colour: "#FB923C", ink: "#431407" },
+    warning: { colour: "#FBBF24", ink: "#461901" },
+    progress: { colour: "#22D3EE", ink: "#083344" },
+  },
+};
+
+function semanticColours(
+  mode: ResolvedMode,
+  bg: string,
+  surf: string,
+): ResolvedTokens["sem"] {
+  // Mixing toward black/white keeps the hue while changing lightness.
+  const toward = mode === "light" ? "#000000" : "#FFFFFF";
+  const entries = Object.entries(SEMANTIC[mode]).map(
+    ([id, { colour, ink }]) => {
+      const onBg = towardContrast(colour, bg, toward, 4.5);
+      return [id, { colour: towardContrast(onBg, surf, toward, 4.5), ink }];
+    },
+  );
+  return Object.fromEntries(entries) as ResolvedTokens["sem"];
+}
+
 /** Text on an action fill. */
 export const ACTION_INK: Record<ResolvedMode, string> = {
   light: "#FFFFFF",
@@ -329,6 +376,7 @@ export function resolveTokens(
     dFg: danger.fg,
     dLine: danger.border,
     st: STATUS[mode],
+    sem: semanticColours(mode, bg, surf),
   };
 
   if (th.sideStyle === "dark") {
@@ -521,6 +569,12 @@ export function buildTokens(
     "--danger-border": t.dLine,
     "--destructive": t.dFg,
     "--destructive-foreground": t.accInk,
+    ...Object.fromEntries(
+      Object.entries(t.sem).flatMap(([id, { colour, ink }]) => [
+        [`--${id}`, colour],
+        [`--${id}-foreground`, ink],
+      ]),
+    ),
 
     // Type
     "--heading-font": th.hf,

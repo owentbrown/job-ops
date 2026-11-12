@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { contrastRatio } from "./contrast";
 import { renderAppearanceCss } from "./css";
 import { buildTokens, mix, resolveTokens } from "./tokens";
-import { COLOUR_IDS, RESOLVED_MODES, THEME_IDS } from "./types";
+import { COLOUR_IDS, RESOLVED_MODES, SEMANTIC_IDS, THEME_IDS } from "./types";
 
 describe("mix", () => {
   it("returns the endpoints at k=0 and k=1 (lowercased)", () => {
@@ -49,6 +49,8 @@ describe("buildTokens", () => {
     expect(t["--primary-foreground"]).toBe("#0B0C14");
     expect(t["--bucket-rejected"]).toBe("#B9696A");
     expect(t["--destructive"]).toBe("#FF9B9B");
+    expect(t["--success"]).toBe("#34D399");
+    expect(t["--success-foreground"]).toBe("#022C22");
   });
 
   it("Soft · Slate · light carries the structural tokens", () => {
@@ -103,6 +105,13 @@ describe("contrast (WCAG AA 4.5:1) for all 36 combinations", () => {
       ["sideInk on side", t.sideInk, t.side],
       ["navOnInk on navOnBg (over side)", t.navOnInk, t.navOnBg, t.side],
       ["destructive-foreground on destructive", t.accInk, t.dFg],
+      ...SEMANTIC_IDS.flatMap(
+        (id): Array<[string, string, string]> => [
+          [`${id} on bg`, t.sem[id].colour, t.bg],
+          [`${id} on surf`, t.sem[id].colour, t.surf],
+          [`${id}-foreground on ${id}`, t.sem[id].ink, t.sem[id].colour],
+        ],
+      ),
     ];
     const failures = pairs
       .map(([label, fg, bg, base]) => ({

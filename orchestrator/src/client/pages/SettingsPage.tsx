@@ -10,6 +10,7 @@ import {
 import { useUpdateSettingsMutation } from "@client/hooks/queries/useSettingsMutation";
 import { useRxResumeConfigState } from "@client/hooks/useRxResumeConfigState";
 import { useTracerReadiness } from "@client/hooks/useTracerReadiness";
+import { useVersionCheck } from "@client/hooks/useVersionCheck";
 import {
   getRxResumeCredentialDrafts,
   getRxResumeCredentialPrecheckFailure,
@@ -19,6 +20,7 @@ import {
   toRxResumeValidationPayload,
   validateAndMaybePersistRxResumeMode,
 } from "@client/lib/rxresume-config";
+import { AboutSettingsSection } from "@client/pages/settings/components/AboutSettingsSection";
 import { BackupSettingsSection } from "@client/pages/settings/components/BackupSettingsSection";
 import { BillingSettingsSection } from "@client/pages/settings/components/BillingSettingsSection";
 import { ChatSettingsSection } from "@client/pages/settings/components/ChatSettingsSection";
@@ -150,6 +152,7 @@ type SettingsSectionId =
   | "environment"
   | "display"
   | "backup"
+  | "about"
   | "danger-zone";
 
 type SettingsGroupId =
@@ -160,6 +163,7 @@ type SettingsGroupId =
   | "workspaces"
   | "display"
   | "backups"
+  | "about"
   | "danger";
 
 type SettingsSectionDescriptor = {
@@ -337,6 +341,18 @@ const SETTINGS_NAV_GROUPS: SettingsNavGroup[] = [
     ],
   },
   {
+    id: "about",
+    label: "About",
+    items: [
+      {
+        id: "about",
+        label: "About JobOps",
+        description: "Version, updates and documentation.",
+        searchTerms: ["version", "update", "docs", "documentation", "about"],
+      },
+    ],
+  },
+  {
     id: "danger",
     label: "Danger Zone",
     items: [
@@ -358,6 +374,7 @@ const EMBEDDED_SECTION_IDS = new Set<SettingsSectionId>([
   "sources",
   "prefilter",
   "visa-sponsors",
+  "about",
 ]);
 
 const SECTION_FIELD_MAP: Record<
@@ -421,6 +438,7 @@ const SECTION_FIELD_MAP: Record<
     "autoTailorOnManualImport",
   ],
   backup: ["backupEnabled", "backupHour", "backupMaxCount"],
+  about: [],
   "danger-zone": [],
 };
 
@@ -886,6 +904,11 @@ export const SettingsPage: React.FC = () => {
     isChecking: isTracerReadinessChecking,
     refreshReadiness,
   } = useTracerReadiness();
+  const {
+    version: appVersion,
+    updateAvailable,
+    latestVersion,
+  } = useVersionCheck();
 
   const methods = useForm<UpdateSettingsInput>({
     resolver: zodResolver(
@@ -1716,6 +1739,10 @@ export const SettingsPage: React.FC = () => {
         return backup.backupEnabled.effective
           ? { label: "Scheduled", variant: "outline" as const }
           : { label: "Manual only", variant: "secondary" as const };
+      case "about":
+        return updateAvailable
+          ? { label: "Update available", variant: "outline" as const }
+          : null;
       case "spend":
       case "sources":
       case "prefilter":
@@ -1897,6 +1924,16 @@ export const SettingsPage: React.FC = () => {
           onDeleteBackup={handleDeleteBackup}
           isCreatingBackup={isCreatingBackup}
           isDeletingBackup={isDeletingBackup}
+          layoutMode="panel"
+        />
+      );
+      break;
+    case "about":
+      activeSectionContent = (
+        <AboutSettingsSection
+          version={appVersion}
+          updateAvailable={updateAvailable}
+          latestVersion={latestVersion}
           layoutMode="panel"
         />
       );

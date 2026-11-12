@@ -6,10 +6,10 @@ import { getAppStatus, logout } from "@client/api";
 import { PROFILE_BASE } from "@client/lib/routes";
 import { useQuery } from "@tanstack/react-query";
 import {
-  ExternalLink,
   LogOut,
   type LucideIcon,
   Menu,
+  Palette,
   UserRound,
 } from "lucide-react";
 import React, { useContext, useState } from "react";
@@ -32,7 +32,6 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import { useVersionCheck } from "../hooks/useVersionCheck";
 import { queryKeys } from "../lib/queryKeys";
 import {
   loadRememberedAuthUsers,
@@ -40,7 +39,6 @@ import {
 } from "../lib/remembered-auth-users";
 import { isNavActive, NAV_LINKS } from "./navigation";
 import { StatusBadgeIndicator } from "./StatusIndicator";
-import { Tip } from "./Tip";
 
 export const AppModeContext = React.createContext({
   appMode: "local" as "local" | "hosted",
@@ -84,11 +82,13 @@ const buildSignInPath = (username: string, nextPath: string): string => {
 // Sidebar navigation (shared by the slide-out Sheet and the fixed sidebar)
 // ============================================================================
 
+const SIDEBAR_ITEM_CLASS =
+  "flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground";
+
 /** True when the app shell renders the persistent (lg+) sidebar. */
 export const PersistentSidebarContext = React.createContext(false);
 
 interface SidebarNavProps {
-  showVersionFooter?: boolean;
   /** Called after any item is chosen (the Sheet uses this to close itself). */
   onNavigated?: () => void;
   /** Wait for the Sheet close animation before navigating. */
@@ -96,7 +96,6 @@ interface SidebarNavProps {
 }
 
 export const SidebarNav: React.FC<SidebarNavProps> = ({
-  showVersionFooter = true,
   onNavigated,
   delayNavigation = false,
 }) => {
@@ -105,7 +104,6 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
   const [rememberedUsers, setRememberedUsers] = useState<RememberedAuthUser[]>(
     () => loadRememberedAuthUsers(),
   );
-  const { version, updateAvailable } = useVersionCheck();
 
   const handleNavClick = (
     to: string,
@@ -121,6 +119,19 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
       setTimeout(() => navigate(to), 150);
     } else {
       navigate(to);
+    }
+  };
+
+  const appearanceActive =
+    location.pathname === "/settings" && location.hash === "#display";
+
+  const handleAppearanceClick = () => {
+    onNavigated?.();
+    if (appearanceActive) return;
+    if (delayNavigation) {
+      setTimeout(() => navigate("/settings#display"), 150);
+    } else {
+      navigate("/settings#display");
     }
   };
 
@@ -200,22 +211,17 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
         )}
       </nav>
       <div className="mt-auto space-y-4 pt-6 pb-2">
-        <div className="space-y-2 border-t border-border/60 pt-4">
+        <div className="flex flex-col gap-2 border-t border-border/60 pt-4">
           <DropdownMenu
             onOpenChange={(open) => {
               if (open) setRememberedUsers(loadRememberedAuthUsers());
             }}
           >
             <DropdownMenuTrigger asChild>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-8 w-full justify-start gap-2 px-2 text-xs"
-              >
-                <UserRound className="h-3.5 w-3.5" />
+              <button type="button" className={SIDEBAR_ITEM_CLASS}>
+                <UserRound className="h-4 w-4" />
                 <span>Account</span>
-              </Button>
+              </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-56">
               <DropdownMenuLabel>Remembered</DropdownMenuLabel>
@@ -256,37 +262,21 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          <button
+            type="button"
+            aria-current={appearanceActive ? "page" : undefined}
+            onClick={handleAppearanceClick}
+            className={cn(
+              SIDEBAR_ITEM_CLASS,
+              appearanceActive
+                ? "bg-accent text-accent-foreground"
+                : "text-muted-foreground",
+            )}
+          >
+            <Palette className="h-4 w-4" />
+            <span>Appearance</span>
+          </button>
         </div>
-        {showVersionFooter && (
-          <div className="flex flex-col items-start gap-2">
-            <a
-              href="https://github.com/DaKheera47/job-ops/releases"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <span className="truncate">Version {version}</span>
-              {updateAvailable && (
-                <Tip asChild content={<p>Update available</p>}>
-                  <span className="h-2 w-2 shrink-0 cursor-pointer rounded-full bg-success" />
-                </Tip>
-              )}
-            </a>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                onNavigated?.();
-                window.open("/docs", "_blank", "noopener,noreferrer");
-              }}
-              className="h-7 gap-1.5 px-2 text-xs"
-            >
-              <span>Documentation</span>
-              <ExternalLink className="h-3.5 w-3.5" />
-            </Button>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -311,7 +301,6 @@ interface PageHeaderProps {
   badge?: string;
   statusIndicator?: React.ReactNode;
   actions?: React.ReactNode;
-  showVersionFooter?: boolean;
   navOpen?: boolean;
   onNavOpenChange?: (open: boolean) => void;
 }
@@ -323,7 +312,6 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   badge,
   statusIndicator,
   actions,
-  showVersionFooter = true,
   navOpen: controlledNavOpen,
   onNavOpenChange,
 }) => {
@@ -352,7 +340,6 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
                 <SheetTitle>JobOps</SheetTitle>
               </SheetHeader>
               <SidebarNav
-                showVersionFooter={showVersionFooter}
                 onNavigated={() => setNavOpen(false)}
                 delayNavigation
               />

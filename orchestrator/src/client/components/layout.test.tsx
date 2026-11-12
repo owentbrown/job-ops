@@ -21,9 +21,15 @@ vi.mock("../hooks/useVersionCheck", () => ({
   useVersionCheck: () => ({ version: "test", updateAvailable: false }),
 }));
 
-const Path: React.FC = () => (
-  <div data-testid="path">{useLocation().pathname}</div>
-);
+const Path: React.FC = () => {
+  const location = useLocation();
+  return (
+    <>
+      <div data-testid="path">{location.pathname}</div>
+      <div data-testid="hash">{location.hash}</div>
+    </>
+  );
+};
 
 const renderAt = (path: string) =>
   renderWithQueryClient(
@@ -108,7 +114,22 @@ describe("PersistentSidebar", () => {
     expect(
       screen.getByRole("button", { name: /account/i }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Version test")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Appearance" }),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/documentation/i)).toBeNull();
+    expect(screen.queryByText(/version/i)).toBeNull();
+  });
+
+  it("Appearance opens settings display and is active there", () => {
+    renderSidebar("/overview");
+    fireEvent.click(screen.getByRole("button", { name: "Appearance" }));
+    expect(screen.getByTestId("path")).toHaveTextContent("/settings");
+    expect(screen.getByTestId("hash")).toHaveTextContent("#display");
+    expect(screen.getByRole("button", { name: "Appearance" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
   });
 
   it("navigates immediately on click", async () => {

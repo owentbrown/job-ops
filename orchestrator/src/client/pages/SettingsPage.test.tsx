@@ -9,6 +9,14 @@ import { _resetTracerReadinessCache } from "../hooks/useTracerReadiness";
 import { renderWithQueryClient } from "../test/renderWithQueryClient";
 import { SettingsPage } from "./SettingsPage";
 
+vi.mock("../hooks/useVersionCheck", () => ({
+  useVersionCheck: () => ({
+    version: "1.2.3",
+    updateAvailable: true,
+    latestVersion: "1.3.0",
+  }),
+}));
+
 const originalScrollIntoView = HTMLElement.prototype.scrollIntoView;
 
 const render = (ui: Parameters<typeof renderWithQueryClient>[0]) =>
@@ -719,6 +727,23 @@ describe("SettingsPage", () => {
 
     expect(screen.queryByRole("button", { name: /models/i })).toBeNull();
     expect(await screen.findByText("Current plan")).toBeInTheDocument();
+  });
+
+  it("renders the About section from the #about deep link", async () => {
+    vi.mocked(api.getSettings).mockResolvedValue(baseSettings);
+
+    render(
+      <MemoryRouter initialEntries={["/settings#about"]}>
+        <SettingsPage />
+      </MemoryRouter>,
+    );
+
+    expect(await screen.findByText("1.2.3")).toBeInTheDocument();
+    expect(screen.getByText(/Update available: 1\.3\.0/)).toBeInTheDocument();
+    const docs = screen.getByRole("link", { name: /open documentation/i });
+    expect(docs).toHaveAttribute("href", "/docs");
+    expect(docs).toHaveAttribute("target", "_blank");
+    expect(docs).toHaveAttribute("rel", "noopener noreferrer");
   });
 
   it("does not mark Reactive Resume settings dirty when project catalog hydration finishes", async () => {

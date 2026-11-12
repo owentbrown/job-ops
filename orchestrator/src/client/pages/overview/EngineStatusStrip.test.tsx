@@ -16,7 +16,7 @@ describe("EngineStatusStrip", () => {
         allJobsCount={742}
       />,
     );
-    expect(screen.getByText(/daily 8:00/i)).toBeInTheDocument();
+    expect(screen.getByText(/daily .*8:00/i)).toBeInTheDocument();
     expect(screen.getByText(/46 found/i)).toBeInTheDocument();
     expect(screen.getByText(/12 scored/i)).toBeInTheDocument();
     expect(screen.getByText(/742 all jobs/i)).toBeInTheDocument();

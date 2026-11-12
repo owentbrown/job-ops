@@ -21,7 +21,9 @@ export function normalizeStageTarget(
   if (STAGE_TARGET_VALUES.has(value as PostApplicationRouterStageTarget)) {
     return value as PostApplicationRouterStageTarget;
   }
-  return LEGACY_STAGE_MAP[value] ?? null;
+  return Object.hasOwn(LEGACY_STAGE_MAP, value)
+    ? LEGACY_STAGE_MAP[value]
+    : null;
 }
 
 export function messageTypeFromStageTarget(

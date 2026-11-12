@@ -72,3 +72,9 @@ describe("resolveStageTransitionForTarget", () => {
     });
   });
 });
+
+describe("normalizeStageTarget prototype safety", () => {
+  it.each(["toString", "constructor", "__proto__"])("rejects %s", (value) => {
+    expect(normalizeStageTarget(value)).toBeNull();
+  });
+});

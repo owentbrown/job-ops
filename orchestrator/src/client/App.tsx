@@ -192,7 +192,7 @@ export const App: React.FC = () => {
         </div>
       )}
       {showSidebar && <PersistentSidebar />}
-      <div className={showSidebar ? "lg:pl-60" : undefined}>
+      <div className={showSidebar ? "lg:pl-(--app-content-offset)" : undefined}>
         <PersistentSidebarContext.Provider value={showSidebar}>
           <SwitchTransition mode="out-in">
             <CSSTransition

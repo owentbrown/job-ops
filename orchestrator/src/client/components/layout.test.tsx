@@ -121,6 +121,48 @@ describe("PersistentSidebar", () => {
     expect(screen.queryByText(/version/i)).toBeNull();
   });
 
+  it("exposes theme-structure hooks driven by appearance variables", () => {
+    renderSidebar("/overview");
+    const nav = screen.getByRole("navigation", { name: "Main" });
+    const aside = nav.closest("aside");
+    expect(aside).toHaveAttribute("data-app-sidebar");
+    // Geometry comes from styles/appearance-structure.css per theme.
+    expect(aside).toHaveClass(
+      "w-(--app-sidebar-width)",
+      "left-(--app-sidebar-inset)",
+      "top-(--app-sidebar-inset)",
+      "bottom-(--app-sidebar-inset)",
+      "rounded-(--app-sidebar-radius)",
+      "bg-sidebar",
+      "text-sidebar-foreground",
+      "border-r-(length:--sidebar-border-width)",
+    );
+    expect(screen.getByText("JobOps")).toHaveAttribute("data-sidebar-brand");
+
+    const active = within(nav).getByRole("button", { name: "Overview" });
+    expect(active).toHaveAttribute("data-sidebar-item");
+    expect(active).toHaveAttribute("data-active", "true");
+    expect(active).toHaveClass(
+      "h-(--nav-item-height)",
+      "rounded-(--radius-nav)",
+      "bg-sidebar-accent",
+      "text-sidebar-accent-foreground",
+      "shadow-[inset_2px_0_0_var(--sidebar-primary)]",
+    );
+    const idle = within(nav).getByRole("button", { name: "Jobs" });
+    expect(idle).not.toHaveAttribute("data-active");
+    expect(idle).toHaveClass("text-sidebar-foreground");
+    expect(idle).not.toHaveClass("bg-sidebar-accent");
+
+    const account = screen.getByRole("button", { name: /account/i });
+    expect(account.closest("[data-sidebar-footer]")).not.toBeNull();
+    expect(account).toHaveClass(
+      "bg-(--sidebar-footer-bg)",
+      "text-(--sidebar-footer-foreground)",
+      "border-(color:--sidebar-footer-border)",
+    );
+  });
+
   it("Appearance opens settings display and is active there", () => {
     renderSidebar("/overview");
     fireEvent.click(screen.getByRole("button", { name: "Appearance" }));
@@ -145,6 +187,14 @@ describe("PageHeader hamburger", () => {
     expect(
       screen.getByRole("button", { name: /open navigation menu/i }),
     ).toHaveClass("lg:hidden");
+  });
+
+  it("the mobile Sheet uses the sidebar colours", async () => {
+    renderAt("/overview");
+    openNav();
+    const sheet = await screen.findByRole("dialog");
+    expect(sheet).toHaveAttribute("data-app-sidebar-sheet");
+    expect(sheet).toHaveClass("bg-sidebar", "text-sidebar-foreground");
   });
 
   it("stays visible when there is no persistent sidebar", () => {

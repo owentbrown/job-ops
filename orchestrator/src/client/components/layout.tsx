@@ -82,8 +82,21 @@ const buildSignInPath = (username: string, nextPath: string): string => {
 // Sidebar navigation (shared by the slide-out Sheet and the fixed sidebar)
 // ============================================================================
 
-const SIDEBAR_ITEM_CLASS =
-  "flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground";
+/*
+ * Sidebar styling is variable-driven (styles/appearance.generated.css):
+ * --sidebar* colours, --nav-item-height, --radius-nav. The active row gets
+ * --sidebar-accent(+foreground) and a 2px inset bar in --sidebar-primary,
+ * which is transparent in the Soft theme (pill, no bar).
+ */
+const SIDEBAR_NAV_ITEM_CLASS =
+  "flex h-(--nav-item-height) shrink-0 items-center gap-3 rounded-(--radius-nav) px-3.5 text-left text-sm transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-sidebar-ring";
+const SIDEBAR_NAV_ITEM_ACTIVE_CLASS =
+  "bg-sidebar-accent font-semibold text-sidebar-accent-foreground shadow-[inset_2px_0_0_var(--sidebar-primary)]";
+const SIDEBAR_NAV_ITEM_IDLE_CLASS = "font-medium text-sidebar-foreground";
+
+/** Footer rows (Account, Appearance): boxed in --sidebar-footer-* colours. */
+const SIDEBAR_FOOTER_ITEM_CLASS =
+  "flex h-(--nav-item-height) w-full items-center gap-3 rounded-(--radius-nav) border border-(color:--sidebar-footer-border) bg-(--sidebar-footer-bg) px-3.5 text-left text-sm font-semibold text-(--sidebar-footer-foreground) transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-sidebar-ring [&_svg]:text-(--sidebar-footer-muted) hover:[&_svg]:text-current";
 
 /** True when the app shell renders the persistent (lg+) sidebar. */
 export const PersistentSidebarContext = React.createContext(false);
@@ -148,77 +161,79 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <nav aria-label="Main" className="mt-6 flex flex-col gap-2">
+      <nav aria-label="Main" className="flex flex-col gap-1">
         {NAV_LINKS.map(
-          ({ to, label, icon: NavIcon, activePaths, children }) => (
-            <div key={to} className="flex flex-col gap-1">
-              <button
-                type="button"
-                aria-current={
-                  isNavActive(location.pathname, to, activePaths)
-                    ? "page"
-                    : undefined
-                }
-                onClick={() =>
-                  handleNavClick(
-                    children?.[0]?.to ?? to,
-                    activePaths,
-                    Boolean(children),
-                  )
-                }
-                className={cn(
-                  "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground text-left",
-                  isNavActive(location.pathname, to, activePaths)
-                    ? "bg-accent text-accent-foreground"
-                    : "text-muted-foreground",
-                )}
-              >
-                <NavIcon className="h-4 w-4" />
-                {label}
-              </button>
-              {children
-                ? children.map((child) => {
-                    const childActive =
-                      child.to === PROFILE_BASE
-                        ? location.pathname === PROFILE_BASE
-                        : isNavActive(
-                            location.pathname,
-                            child.to,
-                            child.activePaths,
-                          );
-                    return (
-                      <button
-                        key={child.to}
-                        type="button"
-                        aria-current={childActive ? "page" : undefined}
-                        onClick={() =>
-                          handleNavClick(child.to, child.activePaths)
-                        }
-                        className={cn(
-                          "ml-7 rounded-md px-3 py-1.5 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground",
-                          childActive
-                            ? "font-semibold text-foreground"
-                            : "text-muted-foreground",
-                        )}
-                      >
-                        {child.label}
-                      </button>
-                    );
-                  })
-                : null}
-            </div>
-          ),
+          ({ to, label, icon: NavIcon, activePaths, children }) => {
+            const active = isNavActive(location.pathname, to, activePaths);
+            return (
+              <div key={to} className="flex flex-col gap-1">
+                <button
+                  type="button"
+                  data-sidebar-item=""
+                  data-active={active ? "true" : undefined}
+                  aria-current={active ? "page" : undefined}
+                  onClick={() =>
+                    handleNavClick(
+                      children?.[0]?.to ?? to,
+                      activePaths,
+                      Boolean(children),
+                    )
+                  }
+                  className={cn(
+                    SIDEBAR_NAV_ITEM_CLASS,
+                    active
+                      ? SIDEBAR_NAV_ITEM_ACTIVE_CLASS
+                      : SIDEBAR_NAV_ITEM_IDLE_CLASS,
+                  )}
+                >
+                  <NavIcon className="h-4 w-4" />
+                  {label}
+                </button>
+                {children
+                  ? children.map((child) => {
+                      const childActive =
+                        child.to === PROFILE_BASE
+                          ? location.pathname === PROFILE_BASE
+                          : isNavActive(
+                              location.pathname,
+                              child.to,
+                              child.activePaths,
+                            );
+                      return (
+                        <button
+                          key={child.to}
+                          type="button"
+                          aria-current={childActive ? "page" : undefined}
+                          onClick={() =>
+                            handleNavClick(child.to, child.activePaths)
+                          }
+                          data-sidebar-subitem=""
+                          className={cn(
+                            "ml-7 rounded-(--radius-nav) px-3 py-1.5 text-left text-sm transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-sidebar-ring",
+                            childActive
+                              ? "font-semibold text-sidebar-accent-foreground"
+                              : "text-sidebar-foreground",
+                          )}
+                        >
+                          {child.label}
+                        </button>
+                      );
+                    })
+                  : null}
+              </div>
+            );
+          },
         )}
       </nav>
-      <div className="mt-auto space-y-4 pt-6 pb-2">
-        <div className="flex flex-col gap-2 border-t border-border/60 pt-4">
+      <div className="mt-auto pt-6">
+        <div data-sidebar-footer="" className="flex flex-col gap-1">
           <DropdownMenu
             onOpenChange={(open) => {
               if (open) setRememberedUsers(loadRememberedAuthUsers());
             }}
           >
             <DropdownMenuTrigger asChild>
-              <button type="button" className={SIDEBAR_ITEM_CLASS}>
+              <button type="button" className={SIDEBAR_FOOTER_ITEM_CLASS}>
                 <UserRound className="h-4 w-4" />
                 <span>Account</span>
               </button>
@@ -267,10 +282,9 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
             aria-current={appearanceActive ? "page" : undefined}
             onClick={handleAppearanceClick}
             className={cn(
-              SIDEBAR_ITEM_CLASS,
-              appearanceActive
-                ? "bg-accent text-accent-foreground"
-                : "text-muted-foreground",
+              SIDEBAR_FOOTER_ITEM_CLASS,
+              appearanceActive &&
+                "bg-sidebar-accent text-sidebar-accent-foreground",
             )}
           >
             <Palette className="h-4 w-4" />
@@ -282,10 +296,23 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
   );
 };
 
-/** Always-visible sidebar for lg+ screens; rendered once by the app shell. */
+/**
+ * Always-visible sidebar for lg+ screens; rendered once by the app shell.
+ * Geometry (width, floating inset, radius, brand size) is per theme in
+ * styles/appearance-structure.css; App.tsx offsets the content by
+ * --app-content-offset to match.
+ */
 export const PersistentSidebar: React.FC = () => (
-  <aside className="hidden lg:flex fixed inset-y-0 left-0 z-30 w-60 flex-col overflow-y-auto border-r bg-background p-4">
-    <div className="px-3 text-lg font-semibold">JobOps</div>
+  <aside
+    data-app-sidebar=""
+    className="hidden lg:flex fixed z-30 top-(--app-sidebar-inset) bottom-(--app-sidebar-inset) left-(--app-sidebar-inset) w-(--app-sidebar-width) flex-col overflow-y-auto rounded-(--app-sidebar-radius) border-r-(length:--sidebar-border-width) border-sidebar-border bg-sidebar px-3 pt-5.5 pb-3.5 text-sidebar-foreground"
+  >
+    <div
+      data-sidebar-brand=""
+      className="px-3 pb-4.5 font-heading text-(length:--app-sidebar-brand-size) font-(weight:--heading-weight) leading-tight text-(--sidebar-brand)"
+    >
+      JobOps
+    </div>
     <SidebarNav />
   </aside>
 );
@@ -335,9 +362,15 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
                 <span className="sr-only">Open navigation menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="w-64 flex flex-col">
+            <SheetContent
+              side="left"
+              data-app-sidebar-sheet=""
+              className="flex w-64 flex-col border-sidebar-border bg-sidebar text-sidebar-foreground"
+            >
               <SheetHeader>
-                <SheetTitle>JobOps</SheetTitle>
+                <SheetTitle className="font-heading font-(weight:--heading-weight) text-(--sidebar-brand)">
+                  JobOps
+                </SheetTitle>
               </SheetHeader>
               <SidebarNav
                 onNavigated={() => setNavOpen(false)}
@@ -350,7 +383,12 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
             <Icon className="h-4 w-4 text-muted-foreground" />
           </div>
           <div className="min-w-0 leading-tight">
-            <div className="text-sm font-semibold tracking-tight">{title}</div>
+            <div
+              data-page-title=""
+              className="font-heading text-lg font-(weight:--heading-weight) tracking-tight"
+            >
+              {title}
+            </div>
             <div className="text-xs text-muted-foreground">{subtitle}</div>
           </div>
           {badge && (
@@ -603,7 +641,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
 }) => (
   <section
     className={cn(
-      "rounded-xl border border-border/60 bg-card/40 p-4",
+      "rounded-(--radius) border-(length:--card-border-width) border-border/60 bg-card/40 p-4 shadow-(--card-shadow)",
       className,
     )}
   >
@@ -622,7 +660,10 @@ interface PageMainProps {
 
 export const PageMain: React.FC<PageMainProps> = ({ children, className }) => (
   <main
-    className={cn("container mx-auto space-y-6 px-4 py-6 pb-12", className)}
+    className={cn(
+      "container mx-auto space-y-6 px-4 pt-(--density-pad) pb-12",
+      className,
+    )}
   >
     {children}
   </main>

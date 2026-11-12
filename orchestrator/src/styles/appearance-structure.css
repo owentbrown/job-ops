@@ -1,0 +1,70 @@
+/*
+ * Appearance structure: what the generated variables can't express on their
+ * own (docs/jobops-redesign/THEMING.md §6). Colours, radii, heights and
+ * density all come from styles/appearance.generated.css; this file only adds
+ *   1. fallbacks for the structural variables when no data-theme is set, and
+ *   2. per-theme shell geometry for the app sidebar (layout.tsx
+ *      PersistentSidebar) and the content offset next to it (App.tsx).
+ *
+ * Sidebar styles:
+ *   editorial  full-height dark column, 236px
+ *   ledger     full-height light panel with a right divider, 236px
+ *   soft       floating rounded card: 220px, 14px margin, 32px radius
+ * The active-row bar (inset 2px, --sidebar-primary) disappears in Soft
+ * because its --sidebar-primary is transparent.
+ *
+ * No colour literals: everything here is a var() or a size.
+ */
+
+:root {
+  /* Fallbacks (generated blocks override these whenever data-theme is set). */
+  --radius-tile: var(--radius);
+  --radius-button: calc(var(--radius) - 2px);
+  --radius-pill: calc(var(--radius) - 2px);
+  --radius-popover: calc(var(--radius) - 2px);
+  --radius-nav: calc(var(--radius) - 2px);
+  --nav-item-height: 36px;
+  --density-pad: 24px;
+  --card-shadow: var(--shadow);
+  --card-border-width: 1px;
+  --label-transform: none;
+  --page-title-size: 24px;
+  --tint: var(--accent);
+  --tint-2: var(--secondary);
+  --action: var(--primary);
+  --action-foreground: var(--primary-foreground);
+  --sidebar-brand: var(--sidebar-foreground);
+  --sidebar-border-width: 1px;
+  --sidebar-footer-bg: transparent;
+  --sidebar-footer-border: var(--sidebar-border);
+  --sidebar-footer-foreground: var(--sidebar-foreground);
+  --sidebar-footer-muted: var(--sidebar-foreground);
+
+  /* Shell geometry (fallback = the pre-appearance 15rem sidebar). */
+  --app-sidebar-width: 15rem;
+  --app-sidebar-inset: 0px;
+  --app-sidebar-radius: 0px;
+  --app-sidebar-brand-size: 18px;
+  /* Left padding of the content column at lg+. */
+  --app-content-offset: calc(
+    var(--app-sidebar-width) +
+    var(--app-sidebar-inset)
+  );
+}
+
+html[data-theme="editorial"] {
+  --app-sidebar-width: 236px;
+  --app-sidebar-brand-size: 26px;
+}
+
+html[data-theme="ledger"] {
+  --app-sidebar-width: 236px;
+  --app-sidebar-brand-size: 20px;
+}
+
+html[data-theme="soft"] {
+  --app-sidebar-width: 220px;
+  --app-sidebar-inset: 14px;
+  --app-sidebar-radius: 32px;
+  --app-sidebar-brand-size: 26px;
+}

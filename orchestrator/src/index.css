@@ -10,6 +10,8 @@
  * whenever the attributes are present.
  */
 @import "./styles/appearance.generated.css";
+/* Theme structure: shell geometry + fallbacks for structural variables. */
+@import "./styles/appearance-structure.css";
 @source "./";
 @plugin "@tailwindcss/typography";
 

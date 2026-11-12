@@ -25,7 +25,8 @@
     "db:drop": "tsx src/server/db/clear.ts --drop",
     "pipeline:run": "tsx src/server/pipeline/run.ts",
     "test": "vitest",
-    "test:run": "vitest run"
+    "test:run": "vitest run",
+    "appearance:css": "tsx scripts/generate-appearance-css.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.4.0",

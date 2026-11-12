@@ -155,10 +155,16 @@ function groupBy<T>(
 
 export function computeOverview(input: OverviewInput): OverviewResponse {
   const nowMs = input.now.getTime();
-  const rangeStart = nowMs - input.rangeDays * DAY_MS;
   const dayFmt = new Intl.DateTimeFormat("en-CA", { timeZone: input.timeZone });
   const dayKey = (ms: number) => dayFmt.format(new Date(ms));
   const todayKey = dayKey(nowMs);
+  // The range is exactly the calendar days drawn in the pace chart.
+  const firstKey = shiftDayKey(todayKey, -(input.rangeDays - 1));
+  const inRangeMs = (ms: number) => {
+    if (Number.isNaN(ms)) return false;
+    const key = dayKey(ms);
+    return key >= firstKey && key <= todayKey;
+  };
 
   const eventsByJob = groupBy(input.stageEvents, (e) => e.applicationId);
   const messagesByJob = groupBy(input.messages, (m) => m.matchedJobId);
@@ -172,7 +178,7 @@ export function computeOverview(input: OverviewInput): OverviewResponse {
         messagesByJob.get(job.id) ?? [],
       ),
     );
-  const inRange = applications.filter((a) => a.appliedMs >= rangeStart);
+  const inRange = applications.filter((a) => inRangeMs(a.appliedMs));
   const replied = (list: JobFacts[]) =>
     list.filter((a) => a.replyMs !== null).length;
 
@@ -212,7 +218,7 @@ export function computeOverview(input: OverviewInput): OverviewResponse {
       .map((a) => ((a.replyMs as number) - a.appliedMs) / DAY_MS),
   );
   const emailsMatched = input.messages.filter(
-    (m) => MATCHED.has(m.processingStatus) && m.receivedAt >= rangeStart,
+    (m) => MATCHED.has(m.processingStatus) && inRangeMs(m.receivedAt),
   ).length;
 
   // Source yield
@@ -226,7 +232,7 @@ export function computeOverview(input: OverviewInput): OverviewResponse {
     return row;
   };
   for (const job of input.jobs) {
-    if (Date.parse(job.discoveredAt) >= rangeStart)
+    if (inRangeMs(Date.parse(job.discoveredAt)))
       sourceRow(job.source).results += 1;
   }
   for (const a of inRange) {

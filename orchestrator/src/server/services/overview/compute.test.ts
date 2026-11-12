@@ -180,6 +180,63 @@ describe("pace", () => {
   });
 });
 
+describe("range", () => {
+  it("covers exactly the calendar days drawn in the pace chart", () => {
+    const result = computeOverview(
+      input({
+        rangeDays: 7,
+        jobs: [
+          // Before the first drawn day (2026-11-06), though within 7x24h.
+          job({
+            id: "early",
+            appliedAt: "2026-11-05T15:00:00Z",
+            discoveredAt: "2026-11-05T15:00:00Z",
+          }),
+          // First drawn day.
+          job({ id: "first", appliedAt: "2026-11-06T01:00:00Z" }),
+          job({ id: "today", appliedAt: "2026-11-12T08:00:00Z" }),
+          // Future-dated rows are not counted.
+          job({
+            id: "tomorrow",
+            appliedAt: "2026-11-13T09:00:00Z",
+            discoveredAt: "2026-11-13T09:00:00Z",
+          }),
+        ],
+        messages: [
+          {
+            matchedJobId: "x",
+            processingStatus: "auto_linked",
+            messageType: "update",
+            receivedAt: Date.parse("2026-11-05T15:00:00Z"),
+          },
+          {
+            matchedJobId: "x",
+            processingStatus: "auto_linked",
+            messageType: "update",
+            receivedAt: Date.parse("2026-11-06T01:00:00Z"),
+          },
+          {
+            matchedJobId: "x",
+            processingStatus: "auto_linked",
+            messageType: "update",
+            receivedAt: Date.parse("2026-11-13T09:00:00Z"),
+          },
+        ],
+      }),
+    );
+    expect(result.pace.perDay[0].date).toBe("2026-11-06");
+    expect(result.replies.applied).toBe(2);
+    const drawn = result.pace.perDay.reduce((sum, d) => sum + d.count, 0);
+    expect(drawn).toBe(result.replies.applied);
+    expect(result.replies.emailsMatched).toBe(1);
+    // results counts discoveries on drawn days only (default discoveredAt
+    // is 20 days ago, so only "early"/"tomorrow" set their own).
+    expect(result.sources.rows.find((r) => r.source === "linkedin")?.results).toBe(
+      0,
+    );
+  });
+});
+
 describe("replies", () => {
   it("counts a reply from a stage change, a rejection or a matched email", () => {
     const messages: OverviewMessageRow[] = [

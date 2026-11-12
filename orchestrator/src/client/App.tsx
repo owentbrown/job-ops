@@ -21,8 +21,8 @@ import { useAnalyticsIdentity } from "./hooks/useAnalyticsIdentity";
 import { useDemoInfo } from "./hooks/useDemoInfo";
 import { setAuthNavigator } from "./lib/auth-navigation";
 import { ApplicationsPage } from "./pages/ApplicationsPage";
+import { ClassicOverviewPage } from "./pages/ClassicOverviewPage";
 import { GmailOauthCallbackPage } from "./pages/GmailOauthCallbackPage";
-import { HomePage } from "./pages/HomePage";
 import { JobPage } from "./pages/JobPage";
 import { JobsFilteredPage } from "./pages/JobsFilteredPage";
 import { OfflinePage } from "./pages/OfflinePage";
@@ -196,7 +196,11 @@ export const App: React.FC = () => {
                 ))}
 
                 {/* Application routes */}
-                <Route path="/overview" element={<HomePage />} />
+                <Route path="/overview" element={<ClassicOverviewPage />} />
+                <Route
+                  path="/overview/classic"
+                  element={<ClassicOverviewPage />}
+                />
                 <Route
                   path="/oauth/gmail/callback"
                   element={<GmailOauthCallbackPage />}

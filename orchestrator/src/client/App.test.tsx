@@ -27,8 +27,8 @@ vi.mock("./pages/GmailOauthCallbackPage", () => ({
   GmailOauthCallbackPage: () => null,
 }));
 
-vi.mock("./pages/HomePage", () => ({
-  HomePage: () => <div>overview</div>,
+vi.mock("./pages/ClassicOverviewPage", () => ({
+  ClassicOverviewPage: () => <div>overview</div>,
 }));
 
 vi.mock("./pages/ApplicationsPage", () => ({

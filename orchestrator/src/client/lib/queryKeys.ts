@@ -86,8 +86,14 @@ export const queryKeys = {
     runs: () => [...queryKeys.pipeline.all, "runs"] as const,
     searchPresets: () => [...queryKeys.pipeline.all, "search-presets"] as const,
     schedule: () => [...queryKeys.pipeline.all, "schedule"] as const,
+    progressSnapshot: () =>
+      [...queryKeys.pipeline.all, "progress-snapshot"] as const,
     runInsights: (id: string) =>
       [...queryKeys.pipeline.all, "run-insights", id] as const,
+  },
+  overview: {
+    all: ["overview"] as const,
+    data: (range: number) => [...queryKeys.overview.all, range] as const,
   },
   watchlist: {
     all: ["watchlist"] as const,

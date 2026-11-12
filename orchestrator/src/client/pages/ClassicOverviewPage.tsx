@@ -28,7 +28,7 @@ type JobWithEvents = {
 const DURATION_OPTIONS = [7, 14, 30, 90] as const;
 const DEFAULT_DURATION = 30;
 
-export const HomePage: React.FC = () => {
+export const ClassicOverviewPage: React.FC = () => {
   const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -134,7 +134,7 @@ export const HomePage: React.FC = () => {
     <>
       <PageHeader
         icon={ChartColumn}
-        title="Overview"
+        title="Overview (classic)"
         subtitle="Analytics & Insights"
         actions={
           <DurationSelector value={duration} onChange={handleDurationChange} />

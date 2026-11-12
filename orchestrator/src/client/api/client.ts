@@ -7,6 +7,7 @@ export * from "./billing";
 export * from "./cover-letter";
 export * from "./ghostwriter";
 export * from "./jobs";
+export * from "./overview";
 export * from "./pipeline";
 export * from "./post-application";
 export * from "./prefilter";

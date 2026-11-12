@@ -347,8 +347,14 @@ export function resolveTokens(
   const m = mode === "light";
   const c = m ? th.L : th.D;
   const nav = m ? a.navLight : a.navDark;
-  const acc = m ? a.actionLight : a.actionDark;
   const bg = mix(c.bg, nav, m ? th.bgK[0] : th.bgK[1]);
+  // ADJUSTED: the action colour is also used as text directly on the page
+  // background (links, ghost buttons). In light mode the reference value is
+  // below 4.5:1 on the tinted bg for Evergreen in every theme (Soft 3.61,
+  // Editorial 3.92, Ledger 4.01) and for Soft with Harbour (4.18) and Orchid
+  // (4.20), so it is darkened toward ink just enough to pass. Darkening only
+  // raises accInk (white) on the fill. Other combinations keep the exact value.
+  const acc = towardContrast(m ? a.actionLight : a.actionDark, bg, c.ink, 4.5);
   const surf = c.surf;
   const warn = m ? WARNING.light : WARNING.dark;
   const danger = m ? DANGER.light : DANGER.dark;

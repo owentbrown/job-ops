@@ -32,7 +32,8 @@ describe("buildTokens", () => {
     expect(t["--sidebar"]).toBe("#0c2f2c");
     // mix(#FFFFFF, #0c2f2c, 0.28) = 186.96, 196.76, 195.92
     expect(t["--sidebar-foreground"]).toBe("#bbc5c4");
-    expect(t["--primary"]).toBe("#C2531F");
+    // ADJUSTED from #C2531F (3.92:1 on the page bg) to reach 4.5:1.
+    expect(t["--primary"]).toBe("#b14d1f");
     expect(t["--primary-foreground"]).toBe("#FFFFFF");
     expect(t["--bucket-offer"]).toBe("#0E5E54");
     expect(t["--heading-font"]).toBe("Newsreader, Georgia, serif");
@@ -102,6 +103,7 @@ describe("contrast (WCAG AA 4.5:1) for all 36 combinations", () => {
       ["ink on surf", t.ink, t.surf],
       ["mut on surf", t.mut, t.surf],
       ["accInk on acc", t.accInk, t.acc],
+      ["primary (acc) as text on bg", t.acc, t.bg],
       ["sideInk on side", t.sideInk, t.side],
       ["navOnInk on navOnBg (over side)", t.navOnInk, t.navOnBg, t.side],
       ["destructive-foreground on destructive", t.accInk, t.dFg],

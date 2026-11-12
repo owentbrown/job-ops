@@ -89,14 +89,14 @@ const buildSignInPath = (username: string, nextPath: string): string => {
  * which is transparent in the Soft theme (pill, no bar).
  */
 const SIDEBAR_NAV_ITEM_CLASS =
-  "flex h-(--nav-item-height) shrink-0 items-center gap-3 rounded-(--radius-nav) px-3.5 text-left text-sm transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-sidebar-ring";
+  "flex h-(--nav-item-height) shrink-0 items-center gap-3 rounded-(--radius-nav) px-3.5 text-left text-sm transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring";
 const SIDEBAR_NAV_ITEM_ACTIVE_CLASS =
   "bg-sidebar-accent font-semibold text-sidebar-accent-foreground shadow-[inset_2px_0_0_var(--sidebar-primary)]";
 const SIDEBAR_NAV_ITEM_IDLE_CLASS = "font-medium text-sidebar-foreground";
 
 /** Footer rows (Account, Appearance): boxed in --sidebar-footer-* colours. */
 const SIDEBAR_FOOTER_ITEM_CLASS =
-  "flex h-(--nav-item-height) w-full items-center gap-3 rounded-(--radius-nav) border border-(color:--sidebar-footer-border) bg-(--sidebar-footer-bg) px-3.5 text-left text-sm font-semibold text-(--sidebar-footer-foreground) transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-sidebar-ring [&_svg]:text-(--sidebar-footer-muted) hover:[&_svg]:text-current";
+  "flex h-(--nav-item-height) w-full items-center gap-3 rounded-(--radius-nav) border border-(color:--sidebar-footer-border) bg-(--sidebar-footer-bg) px-3.5 text-left text-sm font-semibold text-(--sidebar-footer-foreground) transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring [&_svg]:text-(--sidebar-footer-muted) hover:[&_svg]:text-current";
 
 /** True when the app shell renders the persistent (lg+) sidebar. */
 export const PersistentSidebarContext = React.createContext(false);
@@ -209,7 +209,7 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
                           }
                           data-sidebar-subitem=""
                           className={cn(
-                            "ml-7 rounded-(--radius-nav) px-3 py-1.5 text-left text-sm transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-sidebar-ring",
+                            "ml-7 rounded-(--radius-nav) px-3 py-1.5 text-left text-sm transition-colors hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
                             childActive
                               ? "font-semibold text-sidebar-accent-foreground"
                               : "text-sidebar-foreground",
@@ -641,7 +641,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
 }) => (
   <section
     className={cn(
-      "rounded-(--radius) border-(length:--card-border-width) border-border/60 bg-card/40 p-4 shadow-(--card-shadow)",
+      "rounded-(--radius) border-(length:--card-border-width) border-border/60 bg-card/40 p-4",
       className,
     )}
   >

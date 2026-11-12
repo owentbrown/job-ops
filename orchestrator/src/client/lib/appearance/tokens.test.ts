@@ -112,6 +112,19 @@ describe("contrast (WCAG AA 4.5:1) for all 36 combinations", () => {
       .map((p) => `${p.label}: ${p.ratio.toFixed(2)}`);
     expect(failures).toEqual([]);
   });
+
+  it.each(
+    combos,
+  )("sidebar focus ring ≥ 3:1 on the sidebar: $theme · $colours · $mode", ({
+    theme,
+    colours,
+    mode,
+  }) => {
+    const t = resolveTokens(theme, colours, mode);
+    const tokens = buildTokens(theme, colours, mode);
+    expect(tokens["--sidebar-ring"]).toBe(t.sideRing);
+    expect(contrastRatio(t.sideRing, t.side)).toBeGreaterThanOrEqual(3);
+  });
 });
 
 describe("contrastRatio", () => {

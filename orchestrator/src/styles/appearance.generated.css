@@ -36,7 +36,7 @@ html[data-theme="editorial"][data-colours="evergreen"][data-mode="light"] {
   --sidebar-primary-foreground: #0b0c14;
   --sidebar-border: transparent;
   --sidebar-border-width: 0px;
-  --sidebar-ring: #c2531f;
+  --sidebar-ring: #f59a6b;
   --sidebar-brand: #ffffff;
   --sidebar-footer-bg: rgba(255, 255, 255, 0.06);
   --sidebar-footer-border: rgba(255, 255, 255, 0.16);
@@ -190,7 +190,7 @@ html[data-theme="editorial"][data-colours="harbour"][data-mode="light"] {
   --sidebar-primary-foreground: #0b0c14;
   --sidebar-border: transparent;
   --sidebar-border-width: 0px;
-  --sidebar-ring: #0f766e;
+  --sidebar-ring: #5fd3bc;
   --sidebar-brand: #ffffff;
   --sidebar-footer-bg: rgba(255, 255, 255, 0.06);
   --sidebar-footer-border: rgba(255, 255, 255, 0.16);
@@ -344,7 +344,7 @@ html[data-theme="editorial"][data-colours="twilight"][data-mode="light"] {
   --sidebar-primary-foreground: #0b0c14;
   --sidebar-border: transparent;
   --sidebar-border-width: 0px;
-  --sidebar-ring: #be1e5a;
+  --sidebar-ring: #ff8fb5;
   --sidebar-brand: #ffffff;
   --sidebar-footer-bg: rgba(255, 255, 255, 0.06);
   --sidebar-footer-border: rgba(255, 255, 255, 0.16);
@@ -498,7 +498,7 @@ html[data-theme="editorial"][data-colours="clay"][data-mode="light"] {
   --sidebar-primary-foreground: #0b0c14;
   --sidebar-border: transparent;
   --sidebar-border-width: 0px;
-  --sidebar-ring: #0f6e7a;
+  --sidebar-ring: #6fd0dc;
   --sidebar-brand: #ffffff;
   --sidebar-footer-bg: rgba(255, 255, 255, 0.06);
   --sidebar-footer-border: rgba(255, 255, 255, 0.16);
@@ -652,7 +652,7 @@ html[data-theme="editorial"][data-colours="orchid"][data-mode="light"] {
   --sidebar-primary-foreground: #0b0c14;
   --sidebar-border: transparent;
   --sidebar-border-width: 0px;
-  --sidebar-ring: #0e7490;
+  --sidebar-ring: #67e8f9;
   --sidebar-brand: #ffffff;
   --sidebar-footer-bg: rgba(255, 255, 255, 0.06);
   --sidebar-footer-border: rgba(255, 255, 255, 0.16);
@@ -806,7 +806,7 @@ html[data-theme="editorial"][data-colours="slate"][data-mode="light"] {
   --sidebar-primary-foreground: #0b0c14;
   --sidebar-border: transparent;
   --sidebar-border-width: 0px;
-  --sidebar-ring: #4f46e5;
+  --sidebar-ring: #a5a0ff;
   --sidebar-brand: #ffffff;
   --sidebar-footer-bg: rgba(255, 255, 255, 0.06);
   --sidebar-footer-border: rgba(255, 255, 255, 0.16);
@@ -1884,7 +1884,7 @@ html[data-theme="soft"][data-colours="evergreen"][data-mode="light"] {
   --sidebar-primary-foreground: #ffffff;
   --sidebar-border: transparent;
   --sidebar-border-width: 0px;
-  --sidebar-ring: #c2531f;
+  --sidebar-ring: #f59a6b;
   --sidebar-brand: #ffffff;
   --sidebar-footer-bg: rgba(255, 255, 255, 0.14);
   --sidebar-footer-border: rgba(255, 255, 255, 0);
@@ -2038,7 +2038,7 @@ html[data-theme="soft"][data-colours="harbour"][data-mode="light"] {
   --sidebar-primary-foreground: #ffffff;
   --sidebar-border: transparent;
   --sidebar-border-width: 0px;
-  --sidebar-ring: #0f766e;
+  --sidebar-ring: #5fd3bc;
   --sidebar-brand: #ffffff;
   --sidebar-footer-bg: rgba(255, 255, 255, 0.14);
   --sidebar-footer-border: rgba(255, 255, 255, 0);
@@ -2192,7 +2192,7 @@ html[data-theme="soft"][data-colours="twilight"][data-mode="light"] {
   --sidebar-primary-foreground: #ffffff;
   --sidebar-border: transparent;
   --sidebar-border-width: 0px;
-  --sidebar-ring: #be1e5a;
+  --sidebar-ring: #ff8fb5;
   --sidebar-brand: #ffffff;
   --sidebar-footer-bg: rgba(255, 255, 255, 0.14);
   --sidebar-footer-border: rgba(255, 255, 255, 0);
@@ -2346,7 +2346,7 @@ html[data-theme="soft"][data-colours="clay"][data-mode="light"] {
   --sidebar-primary-foreground: #ffffff;
   --sidebar-border: transparent;
   --sidebar-border-width: 0px;
-  --sidebar-ring: #0f6e7a;
+  --sidebar-ring: #6fd0dc;
   --sidebar-brand: #ffffff;
   --sidebar-footer-bg: rgba(255, 255, 255, 0.14);
   --sidebar-footer-border: rgba(255, 255, 255, 0);
@@ -2500,7 +2500,7 @@ html[data-theme="soft"][data-colours="orchid"][data-mode="light"] {
   --sidebar-primary-foreground: #ffffff;
   --sidebar-border: transparent;
   --sidebar-border-width: 0px;
-  --sidebar-ring: #0e7490;
+  --sidebar-ring: #67e8f9;
   --sidebar-brand: #ffffff;
   --sidebar-footer-bg: rgba(255, 255, 255, 0.14);
   --sidebar-footer-border: rgba(255, 255, 255, 0);
@@ -2654,7 +2654,7 @@ html[data-theme="soft"][data-colours="slate"][data-mode="light"] {
   --sidebar-primary-foreground: #ffffff;
   --sidebar-border: transparent;
   --sidebar-border-width: 0px;
-  --sidebar-ring: #4f46e5;
+  --sidebar-ring: #a5a0ff;
   --sidebar-brand: #ffffff;
   --sidebar-footer-bg: rgba(255, 255, 255, 0.14);
   --sidebar-footer-border: rgba(255, 255, 255, 0);

@@ -1,5 +1,5 @@
 import { act, renderHook } from "@testing-library/react";
-import type React from "react";
+import React from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { AppearanceProvider, useAppearance } from "./AppearanceProvider";
 import { parseAppearanceChoice } from "./choice";
@@ -101,6 +101,23 @@ describe("useAppearance", () => {
     expect(
       JSON.parse(localStorage.getItem(APPEARANCE_STORAGE_KEY) ?? "null"),
     ).toEqual({ mode: "dark", theme: "soft", colours: "orchid" });
+  });
+
+  it("does not store the defaults on mount under StrictMode", () => {
+    installMatchMedia(false);
+    const strictWrapper = ({ children }: { children: React.ReactNode }) => (
+      <React.StrictMode>
+        <AppearanceProvider>{children}</AppearanceProvider>
+      </React.StrictMode>
+    );
+    const { result } = renderHook(() => useAppearance(), {
+      wrapper: strictWrapper,
+    });
+    expect(localStorage.getItem(APPEARANCE_STORAGE_KEY)).toBeNull();
+    act(() => result.current.setTheme("ledger"));
+    expect(
+      JSON.parse(localStorage.getItem(APPEARANCE_STORAGE_KEY) ?? "null"),
+    ).toEqual({ mode: "system", theme: "ledger", colours: "evergreen" });
   });
 
   it("follows OS changes live in System mode only", () => {

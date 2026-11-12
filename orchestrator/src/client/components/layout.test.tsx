@@ -148,6 +148,8 @@ describe("PersistentSidebar", () => {
       "bg-sidebar-accent",
       "text-sidebar-accent-foreground",
       "shadow-[inset_2px_0_0_var(--sidebar-primary)]",
+      "focus-visible:ring-2",
+      "focus-visible:ring-sidebar-ring",
     );
     const idle = within(nav).getByRole("button", { name: "Jobs" });
     expect(idle).not.toHaveAttribute("data-active");

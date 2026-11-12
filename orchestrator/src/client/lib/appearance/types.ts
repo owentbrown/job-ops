@@ -157,4 +157,9 @@ export interface ResolvedTokens {
   /** Sidebar divider colour; "transparent" when the reference has `none`. */
   sideBorderColour: string;
   sideBorderWidth: string;
+  /**
+   * Focus ring on the sidebar (not in the reference). Derived so it reaches
+   * 3:1 against `side` (WCAG 1.4.11 non-text contrast).
+   */
+  sideRing: string;
 }

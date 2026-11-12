@@ -64,15 +64,15 @@ export const AppearanceProvider: React.FC<{ children: React.ReactNode }> = ({
     applyAppearance(choice, resolvedMode);
   }, [choice, resolvedMode]);
 
-  // Persist outside the state updater (updaters must stay pure; StrictMode
-  // calls them twice). Skip the first run: the initial choice came from
-  // storage (or the defaults) and needs no write.
-  const isFirstPersist = useRef(true);
+  // Persist outside the state updater (updaters must stay pure). Write only
+  // when the choice differs from what was read or last written, so the
+  // initial mount (run twice under StrictMode) never stores the defaults
+  // for a first-time visitor.
+  const lastPersisted = useRef<string>(JSON.stringify(choice));
   useEffect(() => {
-    if (isFirstPersist.current) {
-      isFirstPersist.current = false;
-      return;
-    }
+    const serialized = JSON.stringify(choice);
+    if (serialized === lastPersisted.current) return;
+    lastPersisted.current = serialized;
     writeStoredAppearance(choice);
   }, [choice]);
 

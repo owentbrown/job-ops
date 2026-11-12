@@ -326,6 +326,10 @@ export function resolveTokens(
     return {
       ...base,
       side,
+      // ADDED: the action colour is ~2.3-2.9:1 on this dark column in light
+      // mode, so the ring starts from the bright action colour and moves
+      // toward white until it reaches 3:1.
+      sideRing: towardContrast(a.actionDark, side, "#FFFFFF", 3),
       sideInk,
       brandInk: "#FFFFFF",
       navOnBg: "rgba(255,255,255,0.1)",
@@ -342,9 +346,12 @@ export function resolveTokens(
 
   if (th.sideStyle === "light") {
     const navOnBg = m ? mix("#FFFFFF", nav, 0.13) : mix(surf, nav, 0.2);
+    const side = m ? mix("#FFFFFF", nav, 0.05) : mix(c.bg, nav, 0.05);
     return {
       ...base,
-      side: m ? mix("#FFFFFF", nav, 0.05) : mix(c.bg, nav, 0.05),
+      side,
+      // ADDED: action colour, moved toward ink only if it is below 3:1.
+      sideRing: towardContrast(acc, side, c.ink, 3),
       sideInk: c.mut,
       brandInk: c.ink,
       navOnBg,
@@ -353,7 +360,7 @@ export function resolveTokens(
       // with Evergreen (3.76), Harbour (4.29) and Orchid (4.38), so the label
       // is darkened toward ink just enough to pass. Other combinations keep
       // the exact action colour. The 2px bar (navBar) is unchanged.
-      navOnInk: towardContrast(acc, navOnBg, c.ink),
+      navOnInk: towardContrast(acc, navOnBg, c.ink, 4.5),
       navBar: acc,
       sbBg: surf,
       sbBorder: c.line,
@@ -364,9 +371,12 @@ export function resolveTokens(
     };
   }
 
+  const floatSide = m ? mix(nav, "#000000", 0.18) : mix("#1B182A", nav, 0.28);
   return {
     ...base,
-    side: m ? mix(nav, "#000000", 0.18) : mix("#1B182A", nav, 0.28),
+    side: floatSide,
+    // ADDED: bright action colour on the vivid card, toward white until 3:1.
+    sideRing: towardContrast(a.actionDark, floatSide, "#FFFFFF", 3),
     sideInk: "rgba(255,255,255,0.78)",
     brandInk: "#FFFFFF",
     navOnBg: "rgba(255,255,255,0.2)",
@@ -383,12 +393,17 @@ export function resolveTokens(
 
 /**
  * Return `fg`, or `fg` mixed toward `toward` in 0.02 steps until it reaches
- * 4.5:1 on the opaque `bg`. Used only where the reference value fails.
+ * `min`:1 on the opaque `bg`. Used only where the reference value fails.
  */
-function towardContrast(fg: string, bg: string, toward: string): string {
+function towardContrast(
+  fg: string,
+  bg: string,
+  toward: string,
+  min: number,
+): string {
   for (let k = 0; k <= 1; k = Math.round((k + 0.02) * 100) / 100) {
     const candidate = k === 0 ? fg : mix(fg, toward, k);
-    if (contrastRatio(candidate, bg) >= 4.5) return candidate;
+    if (contrastRatio(candidate, bg) >= min) return candidate;
   }
   return toward;
 }
@@ -452,7 +467,7 @@ export function buildTokens(
     "--sidebar-primary-foreground": sidebarPrimaryInk,
     "--sidebar-border": t.sideBorderColour,
     "--sidebar-border-width": t.sideBorderWidth,
-    "--sidebar-ring": t.acc,
+    "--sidebar-ring": t.sideRing,
     "--sidebar-brand": t.brandInk,
     "--sidebar-footer-bg": t.sbBg,
     "--sidebar-footer-border": t.sbBorder,

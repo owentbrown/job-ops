@@ -10,6 +10,7 @@
  *   editorial  full-height dark column, 236px
  *   ledger     full-height light panel with a right divider, 236px
  *   soft       floating rounded card: 220px, 14px margin, 32px radius
+ *              (content offset 248px: 14 + 220 + 14 gutter)
  * The active-row bar (inset 2px, --sidebar-primary) disappears in Soft
  * because its --sidebar-primary is transparent.
  *
@@ -45,9 +46,13 @@
   --app-sidebar-inset: 0px;
   --app-sidebar-radius: 0px;
   --app-sidebar-brand-size: 18px;
-  /* Left padding of the content column at lg+. */
+  /*
+   * Left padding of the content column at lg+: inset + width + a gutter
+   * equal to the inset, so a floating sidebar never touches the content.
+   */
   --app-content-offset: calc(
     var(--app-sidebar-width) +
+    2 *
     var(--app-sidebar-inset)
   );
 }

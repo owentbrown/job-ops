@@ -439,39 +439,50 @@ export const InProgressBoardPage: React.FC = () => {
                             Drop a card here or log a stage.
                           </div>
                         ) : (
-                          laneCards.map(({ job, latestEventAt, stage }) => (
-                            <InProgressBoardCard
-                              key={job.id}
-                              job={job}
-                              stage={stage}
-                              latestEventAt={latestEventAt}
-                              jobPageLinkState={jobPageLinkState}
-                              isMoving={movingJobId === job.id}
-                              cardClassName={getCardLeftAccentClass(bucket)}
-                              onDragStart={(event) => {
-                                if (
-                                  (event.target as HTMLElement).closest(
-                                    "[data-board-card-menu]",
-                                  )
-                                ) {
-                                  event.preventDefault();
-                                  return;
+                          laneCards.map(
+                            ({
+                              job,
+                              latestEventAt,
+                              stage,
+                              bucket: cardBucket,
+                            }) => (
+                              <InProgressBoardCard
+                                key={job.id}
+                                job={job}
+                                stage={stage}
+                                isClosed={
+                                  stage === "closed" &&
+                                  cardBucket !== "awaiting"
                                 }
-                                setDragging({
-                                  jobId: job.id,
-                                  fromBucket: bucket,
-                                });
-                                event.dataTransfer.effectAllowed = "move";
-                              }}
-                              onDragEnd={() => {
-                                setDragging(null);
-                                setDropTargetBucket(null);
-                              }}
-                              onLogEvent={() =>
-                                setLogEventTarget({ job, stage })
-                              }
-                            />
-                          ))
+                                latestEventAt={latestEventAt}
+                                jobPageLinkState={jobPageLinkState}
+                                isMoving={movingJobId === job.id}
+                                cardClassName={getCardLeftAccentClass(bucket)}
+                                onDragStart={(event) => {
+                                  if (
+                                    (event.target as HTMLElement).closest(
+                                      "[data-board-card-menu]",
+                                    )
+                                  ) {
+                                    event.preventDefault();
+                                    return;
+                                  }
+                                  setDragging({
+                                    jobId: job.id,
+                                    fromBucket: bucket,
+                                  });
+                                  event.dataTransfer.effectAllowed = "move";
+                                }}
+                                onDragEnd={() => {
+                                  setDragging(null);
+                                  setDropTargetBucket(null);
+                                }}
+                                onLogEvent={() =>
+                                  setLogEventTarget({ job, stage })
+                                }
+                              />
+                            ),
+                          )
                         )}
                       </div>
                     )}

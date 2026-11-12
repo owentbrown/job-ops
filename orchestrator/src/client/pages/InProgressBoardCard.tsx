@@ -15,6 +15,8 @@ import { cn, formatTimestamp } from "@/lib/utils";
 export type InProgressBoardCardProps = {
   job: JobListItem;
   stage: ApplicationStage;
+  /** True when the card is truly closed (not a ghosted card waiting in Awaiting reply). */
+  isClosed: boolean;
   latestEventAt: number | null;
   jobPageLinkState: { jobPageBackTo: string };
   isMoving: boolean;
@@ -26,7 +28,7 @@ export type InProgressBoardCardProps = {
 
 export const InProgressBoardCard: React.FC<InProgressBoardCardProps> = ({
   job,
-  stage,
+  isClosed,
   latestEventAt,
   jobPageLinkState,
   isMoving,
@@ -35,7 +37,7 @@ export const InProgressBoardCard: React.FC<InProgressBoardCardProps> = ({
   onDragEnd,
   onLogEvent,
 }) => {
-  const canLogEvents = stage !== "closed";
+  const canLogEvents = !isClosed;
 
   return (
     // biome-ignore lint/a11y/noStaticElementInteractions: full-card drag target for kanban lanes
@@ -109,7 +111,7 @@ export const InProgressBoardCard: React.FC<InProgressBoardCardProps> = ({
         className="block rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <div className="text-xs text-muted-foreground/90">{job.employer}</div>
-        {stage === "closed" && (
+        {isClosed && (
           <div className="mt-2 flex items-center gap-2">
             <Badge
               variant="outline"

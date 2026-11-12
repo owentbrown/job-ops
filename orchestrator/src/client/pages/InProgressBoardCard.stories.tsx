@@ -96,6 +96,7 @@ const InteractiveBoardCard: React.FC<
 const baseCardProps = {
   job: makeJob(),
   stage: "screening" as const,
+  isClosed: false,
   latestEventAt: LATEST_EVENT_AT,
   jobPageLinkState: JOB_PAGE_LINK_STATE,
   isMoving: false,
@@ -120,6 +121,7 @@ export const TechnicalInterview: Story = () => (
     <InteractiveBoardCard
       {...baseCardProps}
       stage="interview"
+      isClosed={false}
       cardClassName={cardAccentClass("interview")}
     />
   </BoardCardFrame>
@@ -131,6 +133,7 @@ export const FinalRound: Story = () => (
     <InteractiveBoardCard
       {...baseCardProps}
       stage="interview"
+      isClosed={false}
       cardClassName={cardAccentClass("interview")}
     />
   </BoardCardFrame>
@@ -142,6 +145,7 @@ export const Offer: Story = () => (
     <InteractiveBoardCard
       {...baseCardProps}
       stage="offer"
+      isClosed={false}
       job={makeJob({ title: "Staff Platform Engineer" })}
       cardClassName={cardAccentClass("offer")}
     />
@@ -154,6 +158,7 @@ export const ClosedRejected: Story = () => (
     <InteractiveBoardCard
       {...baseCardProps}
       stage="closed"
+      isClosed={true}
       job={makeJob({ outcome: "rejected" })}
     />
   </BoardCardFrame>
@@ -165,6 +170,7 @@ export const ClosedWithdrawn: Story = () => (
     <InteractiveBoardCard
       {...baseCardProps}
       stage="closed"
+      isClosed={true}
       job={makeJob({
         title: "Product Designer",
         employer: "Northwind",
@@ -208,6 +214,7 @@ export const AllStates: Story = () => (
       <InteractiveBoardCard
         {...baseCardProps}
         stage="interview"
+        isClosed={false}
         cardClassName={cardAccentClass("interview")}
       />
     </BoardCardFrame>
@@ -215,6 +222,7 @@ export const AllStates: Story = () => (
       <InteractiveBoardCard
         {...baseCardProps}
         stage="offer"
+        isClosed={false}
         cardClassName={cardAccentClass("offer")}
       />
     </BoardCardFrame>
@@ -222,6 +230,7 @@ export const AllStates: Story = () => (
       <InteractiveBoardCard
         {...baseCardProps}
         stage="closed"
+        isClosed={true}
         job={makeJob({ outcome: "rejected" })}
       />
     </BoardCardFrame>

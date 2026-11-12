@@ -282,6 +282,37 @@ describe("InProgressBoardPage", () => {
     expect(screen.queryByText("Withdrawn Co")).not.toBeInTheDocument();
   });
 
+  it("treats a ghosted card in Awaiting reply as open: no Closed badge, Log Event available", async () => {
+    mockJobs([
+      makeJob({
+        id: "job-ghosted",
+        employer: "Ghosted Co",
+        outcome: "ghosted",
+      }),
+    ]);
+    vi.mocked(api.getJobStageEvents).mockImplementation(async (jobId) => [
+      makeEvent({
+        applicationId: jobId,
+        fromStage: "screening",
+        toStage: "closed",
+        outcome: "ghosted",
+      }),
+    ]);
+
+    renderBoard();
+    const awaiting = await screen.findByRole("region", {
+      name: "Awaiting reply lane",
+    });
+    const cardRoot = getBoardCardRoot(
+      await within(awaiting).findByText("Ghosted Co"),
+    );
+
+    expect(within(cardRoot).queryByText("Closed")).not.toBeInTheDocument();
+    expect(
+      within(cardRoot).getByRole("menuitem", { name: /log event/i }),
+    ).toBeInTheDocument();
+  });
+
   it("moves a job to closed/rejected when dropped on the Rejected lane", async () => {
     renderBoard();
 

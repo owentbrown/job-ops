@@ -91,8 +91,19 @@ vi.mock("./TracerLinksPage", () => ({
   TracerLinksPage: () => <div>tracer-analytics-body</div>,
 }));
 vi.mock("./FilteredJobsPage", () => ({
-  FilteredJobsPage: ({ view }: { view?: string }) => (
-    <div>filtered-body:{view}</div>
+  FilteredJobsPage: ({
+    view,
+    onDirtyChange,
+  }: {
+    view?: string;
+    onDirtyChange?: (dirty: boolean) => void;
+  }) => (
+    <div>
+      filtered-body:{view}
+      <button type="button" onClick={() => onDirtyChange?.(true)}>
+        make-rules-dirty
+      </button>
+    </div>
   ),
 }));
 
@@ -1365,6 +1376,42 @@ describe("absorbed sections", () => {
     );
     await screen.findByText("watchlist-body");
     expect(screen.queryByRole("button", { name: /save changes/i })).toBeNull();
+  });
+
+  it("asks before leaving the pre-score section with unsaved rule edits", async () => {
+    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValue(false);
+    render(
+      <MemoryRouter initialEntries={["/settings#prefilter"]}>
+        <SettingsPage />
+      </MemoryRouter>,
+    );
+    fireEvent.click(await screen.findByText("make-rules-dirty"));
+    expect(await screen.findByText("1 unsaved section")).toBeInTheDocument();
+    fireEvent.click(screen.getByText("Sources"));
+    expect(confirmSpy).toHaveBeenCalledWith(
+      "You have unsaved filter rule changes. Leave without saving?",
+    );
+    expect(screen.getByText("filtered-body:rules")).toBeInTheDocument();
+    expect(screen.queryByText("watchlist-body")).toBeNull();
+
+    confirmSpy.mockReturnValue(true);
+    fireEvent.click(screen.getByText("Sources"));
+    expect(await screen.findByText("watchlist-body")).toBeInTheDocument();
+    confirmSpy.mockRestore();
+  });
+
+  it("does not ask when leaving the pre-score section without edits", async () => {
+    const confirmSpy = vi.spyOn(window, "confirm");
+    render(
+      <MemoryRouter initialEntries={["/settings#prefilter"]}>
+        <SettingsPage />
+      </MemoryRouter>,
+    );
+    await screen.findByText("filtered-body:rules");
+    fireEvent.click(screen.getByText("Sources"));
+    expect(await screen.findByText("watchlist-body")).toBeInTheDocument();
+    expect(confirmSpy).not.toHaveBeenCalled();
+    confirmSpy.mockRestore();
   });
 
   it("lists the new Search group in the settings nav", async () => {

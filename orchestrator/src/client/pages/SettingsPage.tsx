@@ -59,7 +59,7 @@ import {
   useForm,
   useWatch,
 } from "react-hook-form";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useQueryErrorToast } from "@/client/hooks/useQueryErrorToast";
 import { formatUserFacingError } from "@/client/lib/error-format";
@@ -349,6 +349,9 @@ const SETTINGS_NAV_GROUPS: SettingsNavGroup[] = [
     ],
   },
 ];
+
+const UNSAVED_EMBEDDED_MESSAGE =
+  "You have unsaved filter rule changes. Leave without saving?";
 
 const EMBEDDED_SECTION_IDS = new Set<SettingsSectionId>([
   "spend",
@@ -847,6 +850,8 @@ const getDerivedSettings = (settings: AppSettings | null) => {
 export const SettingsPage: React.FC = () => {
   const queryClient = useQueryClient();
   const location = useLocation();
+  const navigate = useNavigate();
+  const [embeddedDirty, setEmbeddedDirty] = useState(false);
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [activeSection, setActiveSection] =
     useState<SettingsSectionId>("model");
@@ -1558,12 +1563,33 @@ export const SettingsPage: React.FC = () => {
     [settingsSearch, visibleNavGroups],
   );
 
+  // Embedded sections (pre-score rules) keep their own draft state, which is
+  // lost when the section unmounts, so ask before leaving while it is dirty.
+  const confirmLeaveEmbedded = useCallback(() => {
+    if (!embeddedDirty) return true;
+    const leave = window.confirm(UNSAVED_EMBEDDED_MESSAGE);
+    if (leave) setEmbeddedDirty(false);
+    return leave;
+  }, [embeddedDirty]);
+
+  const handleSectionSelect = useCallback(
+    (sectionId: SettingsSectionId) => {
+      if (sectionId !== activeSection && !confirmLeaveEmbedded()) return;
+      setActiveSection(sectionId);
+    },
+    [activeSection, confirmLeaveEmbedded],
+  );
+
   useEffect(() => {
     const hash = location.hash.replace(/^#/, "");
     const allSectionIds = visibleNavGroups.flatMap((g) =>
       g.items.map((i) => i.id),
     );
     if (hash && allSectionIds.includes(hash as SettingsSectionId)) {
+      if (hash !== activeSection && !confirmLeaveEmbedded()) {
+        navigate(`${location.pathname}#${activeSection}`, { replace: true });
+        return;
+      }
       setActiveSection(hash as SettingsSectionId);
       const parentGroup = visibleNavGroups.find((g) =>
         g.items.some((i) => i.id === hash),
@@ -1574,6 +1600,7 @@ export const SettingsPage: React.FC = () => {
         );
       }
     }
+    // biome-ignore lint/correctness/useExhaustiveDependencies: react only to hash changes
   }, [location.hash, visibleNavGroups]);
 
   const visibleSectionIds = useMemo(
@@ -1689,7 +1716,8 @@ export const SettingsPage: React.FC = () => {
   const selectedSectionBadge = getSectionBadge(activeSection);
   const dirtySectionCount = visibleNavGroups
     .flatMap((group) => group.items)
-    .filter((item) => sectionHasDirtyState(item.id)).length;
+    .filter((item) => sectionHasDirtyState(item.id)).length +
+    (embeddedDirty ? 1 : 0);
   const activeSectionIsDirty = sectionHasDirtyState(activeSection);
 
   let activeSectionContent: React.ReactNode;
@@ -1711,7 +1739,7 @@ export const SettingsPage: React.FC = () => {
     case "prefilter":
       activeSectionContent = (
         <EmbeddedPage hideHeading>
-          <FilteredJobsPage view="rules" />
+          <FilteredJobsPage view="rules" onDirtyChange={setEmbeddedDirty} />
         </EmbeddedPage>
       );
       break;
@@ -1896,7 +1924,7 @@ export const SettingsPage: React.FC = () => {
             activeSectionId={activeSection}
             openGroupIds={openGroups}
             onOpenGroupIdsChange={setOpenGroups}
-            onSectionSelect={setActiveSection}
+            onSectionSelect={handleSectionSelect}
             searchValue={settingsSearch}
             onSearchValueChange={setSettingsSearch}
             searchPlaceholder="Search settings"

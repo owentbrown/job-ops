@@ -16,9 +16,11 @@ const FILTERED_JOBS_KEY = ["prefilter", "filtered-jobs"] as const;
 
 type FilteredView = "all" | "jobs" | "rules";
 
-export const FilteredJobsPage: React.FC<{ view?: FilteredView }> = ({
-  view = "all",
-}) => {
+export const FilteredJobsPage: React.FC<{
+  view?: FilteredView;
+  /** Reports unsaved rule edits to a host (Settings) that can guard navigation. */
+  onDirtyChange?: (dirty: boolean) => void;
+}> = ({ view = "all", onDirtyChange }) => {
   const queryClient = useQueryClient();
   const { data, isLoading, error } = useQuery({
     queryKey: FILTERED_JOBS_KEY,
@@ -31,8 +33,9 @@ export const FilteredJobsPage: React.FC<{ view?: FilteredView }> = ({
   );
   const handleDirtyChange = useCallback((dirty: boolean) => {
     setRulesDirty(dirty);
+    onDirtyChange?.(dirty);
     if (dirty) setConfirmBacklog(false);
-  }, []);
+  }, [onDirtyChange]);
 
   // An armed confirm must not stay armed forever.
   useEffect(() => {

@@ -1,0 +1,100 @@
+import type React from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import {
+  applyAppearance,
+  DARK_QUERY,
+  readStoredAppearance,
+  systemPrefersDark,
+  writeStoredAppearance,
+} from "./choice";
+import type {
+  AppearanceChoice,
+  ColourId,
+  Mode,
+  ResolvedMode,
+  ThemeId,
+} from "./types";
+
+export interface AppearanceContextValue {
+  choice: AppearanceChoice;
+  /** `choice.mode` with System resolved against the OS setting. */
+  resolvedMode: ResolvedMode;
+  setMode: (mode: Mode) => void;
+  setTheme: (theme: ThemeId) => void;
+  setColours: (colours: ColourId) => void;
+  /** Flip the resolved mode and set it explicitly (leaves System). */
+  toggleLightDark: () => void;
+}
+
+const AppearanceContext = createContext<AppearanceContextValue | null>(null);
+
+export const AppearanceProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
+  const [choice, setChoice] = useState<AppearanceChoice>(readStoredAppearance);
+  const [osDark, setOsDark] = useState<boolean>(systemPrefersDark);
+
+  const resolvedMode: ResolvedMode =
+    choice.mode === "system" ? (osDark ? "dark" : "light") : choice.mode;
+
+  // Follow OS changes live while in System mode.
+  useEffect(() => {
+    if (choice.mode !== "system") return;
+    if (typeof window.matchMedia !== "function") return;
+    const query = window.matchMedia(DARK_QUERY);
+    setOsDark(query.matches);
+    const onChange = (event: MediaQueryListEvent) => setOsDark(event.matches);
+    if (typeof query.addEventListener === "function") {
+      query.addEventListener("change", onChange);
+      return () => query.removeEventListener("change", onChange);
+    }
+    query.addListener(onChange);
+    return () => query.removeListener(onChange);
+  }, [choice.mode]);
+
+  useEffect(() => {
+    applyAppearance(choice, resolvedMode);
+  }, [choice, resolvedMode]);
+
+  const update = useCallback((patch: Partial<AppearanceChoice>) => {
+    setChoice((prev) => {
+      const next = { ...prev, ...patch };
+      writeStoredAppearance(next);
+      return next;
+    });
+  }, []);
+
+  const value = useMemo<AppearanceContextValue>(
+    () => ({
+      choice,
+      resolvedMode,
+      setMode: (mode) => update({ mode }),
+      setTheme: (theme) => update({ theme }),
+      setColours: (colours) => update({ colours }),
+      toggleLightDark: () =>
+        update({ mode: resolvedMode === "dark" ? "light" : "dark" }),
+    }),
+    [choice, resolvedMode, update],
+  );
+
+  return (
+    <AppearanceContext.Provider value={value}>
+      {children}
+    </AppearanceContext.Provider>
+  );
+};
+
+export function useAppearance(): AppearanceContextValue {
+  const ctx = useContext(AppearanceContext);
+  if (!ctx) {
+    throw new Error("useAppearance must be used inside <AppearanceProvider>");
+  }
+  return ctx;
+}

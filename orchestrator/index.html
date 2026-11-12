@@ -1,13 +1,55 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Job Ops Orchestrator - Manage your job applications intelligently" />
     <title>Job Ops | Orchestrator</title>
+    <script>
+      // Appearance: apply the saved choice before first paint (no flash).
+      // Mirrors src/client/lib/appearance (types.ts ids, AppearanceProvider).
+      (() => {
+        const pick = (value, allowed) =>
+          allowed.indexOf(value) >= 0 ? value : allowed[0];
+        let saved = null;
+        try {
+          saved = JSON.parse(localStorage.getItem("jobops.appearance"));
+        } catch {}
+        const s = saved && typeof saved === "object" ? saved : {};
+        try {
+          const choice = {
+            mode: pick(s.mode, ["system", "light", "dark"]),
+            theme: pick(s.theme, ["editorial", "ledger", "soft"]),
+            colours: pick(s.colours, [
+              "evergreen",
+              "harbour",
+              "twilight",
+              "clay",
+              "orchid",
+              "slate",
+            ]),
+          };
+          const mode =
+            choice.mode !== "system"
+              ? choice.mode
+              : window.matchMedia?.("(prefers-color-scheme: dark)").matches
+                ? "dark"
+                : "light";
+          const html = document.documentElement;
+          html.setAttribute("data-mode", mode);
+          html.setAttribute("data-theme", choice.theme);
+          html.setAttribute("data-colours", choice.colours);
+          html.classList.toggle("dark", mode === "dark");
+        } catch {}
+      })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+    />
     <script
       defer
       crossorigin="anonymous"

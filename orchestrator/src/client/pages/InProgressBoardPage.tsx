@@ -79,7 +79,7 @@ const getCardLeftAccentClass = (bucket: PipelineBucket) => {
     return "border-l-2 border-l-bucket-interview/60";
   }
   if (bucket === "offer") {
-    return "border-2 border-bucket-offer/50 shadow-[0_4px_12px_-4px_color-mix(in_oklch,var(--color-bucket-offer)_70%,transparent)]";
+    return "border-2 border-bucket-offer/50 shadow-[0_4px_12px_-4px_color-mix(in_oklch,var(--bucket-offer)_70%,transparent)]";
   }
   return "";
 };
@@ -380,7 +380,7 @@ export const InProgressBoardPage: React.FC = () => {
                   >
                     <header
                       style={{
-                        borderTopColor: `var(--color-bucket-${bucket})`,
+                        borderTopColor: `var(--bucket-${bucket})`,
                       }}
                       className={cn(
                         "flex items-center rounded-t-xl border-t-[3px] border-b border-border/60 px-3 py-2.5",

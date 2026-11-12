@@ -187,7 +187,7 @@ export const DesignResumePage: React.FC<{ toolbar?: React.ReactNode }> = ({
       <PageHeader
         icon={headerIcon}
         title={headerTitle}
-        subtitle="Edit your resume details"
+        subtitle="Your base resume. Each application gets a tailored copy built from it."
         actions={
           <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap sm:justify-end">
             <div className="hidden items-center gap-2 sm:flex">
@@ -359,12 +359,26 @@ export const DesignResumePage: React.FC<{ toolbar?: React.ReactNode }> = ({
               </button>
             </div>
             <div
-              className={
+              className={cn(
+                "flex min-h-0 min-w-0 flex-1 flex-col gap-3 overflow-hidden",
                 activeSection
-                  ? "flex min-h-0 min-w-0 flex-1 flex-col gap-3 overflow-hidden sm:grid sm:grid-rows-[minmax(0,1fr)_minmax(0,1fr)] sm:gap-6 xl:grid-cols-[minmax(442px,0.78fr)_minmax(0,1.22fr)] xl:grid-rows-none"
-                  : "flex min-h-0 min-w-0 flex-1 flex-col gap-3 overflow-hidden sm:grid sm:grid-cols-[76px_minmax(0,1fr)]"
-              }
+                  ? "sm:grid sm:grid-rows-[minmax(0,1fr)_minmax(0,1fr)] sm:gap-6"
+                  : "sm:grid sm:grid-cols-[76px_minmax(0,1fr)]",
+                // Wide screens: labelled section list | editor | smaller preview.
+                "xl:grid-cols-[11rem_minmax(0,1fr)_minmax(320px,380px)] xl:grid-rows-none xl:gap-5 2xl:grid-cols-[13rem_minmax(0,1fr)_440px]",
+              )}
             >
+              <DesignResumeDock
+                variant="list"
+                activeSectionId={activeSection}
+                className="hidden xl:flex"
+                draft={draft}
+                onUpdateResumeJson={updateResumeJson}
+                onSectionSelect={(sectionId) =>
+                  navigate(resumeSectionPath(sectionId))
+                }
+                getItemBadge={getDesignResumeSectionBadge}
+              />
               {activeSection && activeGroup && activeSectionMeta ? (
                 <div
                   className={cn(
@@ -372,12 +386,12 @@ export const DesignResumePage: React.FC<{ toolbar?: React.ReactNode }> = ({
                     mobileWorkspaceView === "edit"
                       ? "flex flex-1 flex-col"
                       : "hidden",
-                    "sm:grid sm:grid-cols-[76px_minmax(0,1fr)] sm:gap-3",
+                    "sm:grid sm:grid-cols-[76px_minmax(0,1fr)] sm:gap-3 xl:grid-cols-1",
                   )}
                 >
                   <DesignResumeDock
                     activeSectionId={activeSection}
-                    className="hidden h-full self-start sm:flex"
+                    className="hidden h-full self-start sm:flex xl:hidden"
                     draft={draft}
                     onUpdateResumeJson={updateResumeJson}
                     onSectionSelect={(sectionId) =>
@@ -444,9 +458,20 @@ export const DesignResumePage: React.FC<{ toolbar?: React.ReactNode }> = ({
                       </Button>
                     </div>
                   </div>
+                  <div className="hidden min-h-0 flex-col items-center justify-center rounded-2xl border border-border/70 bg-card px-6 text-center xl:flex">
+                    <div className="max-w-sm space-y-2">
+                      <h2 className="text-xl font-semibold tracking-tight">
+                        Choose a section to edit
+                      </h2>
+                      <p className="text-sm leading-6 text-muted-foreground">
+                        Pick a section from the list to edit it here. The
+                        preview updates as you type.
+                      </p>
+                    </div>
+                  </div>
                   <DesignResumeDock
                     activeSectionId={null}
-                    className="hidden h-full self-start sm:flex"
+                    className="hidden h-full self-start sm:flex xl:hidden"
                     draft={draft}
                     onUpdateResumeJson={updateResumeJson}
                     onSectionSelect={(sectionId) =>
@@ -461,6 +486,7 @@ export const DesignResumePage: React.FC<{ toolbar?: React.ReactNode }> = ({
                   mobileWorkspaceView === "preview" ? "flex flex-1" : "hidden",
                   "sm:flex",
                 )}
+                compact
                 draft={draft}
                 pdfRenderer={pdfRenderer}
                 typstTheme={typstTheme}

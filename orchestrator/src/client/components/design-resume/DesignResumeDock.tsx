@@ -59,6 +59,7 @@ type DesignResumeDockItem = {
   onDragEnd?: () => void;
   onDragOver?: (event: React.DragEvent<HTMLButtonElement>) => void;
   onDrop?: (event: React.DragEvent<HTMLButtonElement>) => void;
+  sectionId?: DesignResumeSectionId | null;
 };
 
 type DesignResumeDockButtonProps = DesignResumeDockItem & {
@@ -187,28 +188,33 @@ export type DesignResumeIconRailProps = {
   onUpdateResumeJson: (
     updater: (resumeJson: DesignResumeJson) => DesignResumeJson,
   ) => void;
+  /**
+   * "dock" (default) is the compact icon-only rail with hover magnification.
+   * "list" writes each section out as a labelled button (icon + text + badge)
+   * for the wide three-column studio layout.
+   */
+  variant?: "dock" | "list";
+  /** Optional per-section status badge, shown by the "list" variant. */
+  getItemBadge?: (sectionId: DesignResumeSectionId) => {
+    label: string;
+  } | null;
 };
 
-export function DesignResumeDock({
+type DesignResumeSectionItemsOptions = Pick<
+  DesignResumeIconRailProps,
+  "activeSectionId" | "onSectionSelect" | "draft" | "onUpdateResumeJson"
+>;
+
+/**
+ * Builds the ordered section items (respecting the resume's section order)
+ * and the drag-to-reorder handlers shared by both dock variants.
+ */
+function useDesignResumeSectionItems({
   activeSectionId,
   onSectionSelect,
-  className,
   draft,
   onUpdateResumeJson,
-}: DesignResumeIconRailProps) {
-  const railRef = useRef<HTMLElement>(null);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const mouseY = useMotionValue(Number.POSITIVE_INFINITY);
-  const spring = { mass: 0.1, stiffness: 150, damping: 12 };
-  const panelWidth = 76;
-  const magnification = 64;
-  const baseItemSize = 46;
-  const distance = 200;
-  const railPadding = 12;
-  const [scrollOffset, setScrollOffset] = useState(0);
-  const [railHeight, setRailHeight] = useState(0);
-  const [contentHeight, setContentHeight] = useState(0);
-
+}: DesignResumeSectionItemsOptions) {
   const [draggingKey, setDraggingKey] = useState<string | null>(null);
   const [dragOverKey, setDragOverKey] = useState<string | null>(null);
 
@@ -342,6 +348,7 @@ export function DesignResumeDock({
           draggingKey !== null && isReorderable && draggingKey !== item.id;
         return {
           id: item.id,
+          sectionId,
           icon: <Icon aria-hidden="true" />,
           label: item.label,
           active: sectionId === activeSectionId,
@@ -376,6 +383,129 @@ export function DesignResumeDock({
     handleDragOver,
     handleDrop,
   ]);
+
+  return items;
+}
+
+export function DesignResumeDock({
+  variant = "dock",
+  ...props
+}: DesignResumeIconRailProps) {
+  return variant === "list" ? (
+    <DesignResumeSectionList {...props} />
+  ) : (
+    <DesignResumeIconDock {...props} />
+  );
+}
+
+function DesignResumeSectionList({
+  activeSectionId,
+  onSectionSelect,
+  className,
+  draft,
+  onUpdateResumeJson,
+  getItemBadge,
+}: Omit<DesignResumeIconRailProps, "variant">) {
+  const items = useDesignResumeSectionItems({
+    activeSectionId,
+    onSectionSelect,
+    draft,
+    onUpdateResumeJson,
+  });
+  // The live preview is always visible next to the list, so the dock's
+  // "Live preview" shortcut (sectionId null) is not repeated here.
+  const sectionItems = items.filter((item) => item.sectionId !== null);
+  const profileItems = sectionItems.filter((item) => !item.isReorderable);
+  const resumeItems = sectionItems.filter((item) => item.isReorderable);
+
+  const renderItem = (item: (typeof items)[number]) => {
+    const badge = item.sectionId
+      ? (getItemBadge?.(item.sectionId) ?? null)
+      : null;
+    return (
+      <li key={item.id}>
+        <button
+          type="button"
+          draggable={item.isReorderable}
+          onClick={item.onClick}
+          onDragStart={item.onDragStart}
+          onDragEnd={item.onDragEnd}
+          onDragOver={item.onDragOver}
+          onDrop={item.onDrop}
+          aria-current={item.active ? "page" : undefined}
+          className={cn(
+            "group relative flex min-h-9 w-full items-center gap-2.5 rounded-lg border px-3 py-2 text-left text-sm transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring",
+            item.isDragTarget
+              ? "border-primary bg-primary/5"
+              : item.isCandidate
+                ? "border-dashed border-primary/45"
+                : item.active
+                  ? "border-transparent bg-primary/12 font-medium text-primary"
+                  : "border-transparent text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+            item.isDragging && "opacity-60",
+          )}
+        >
+          {item.isReorderable ? (
+            <GripVertical
+              className="pointer-events-none absolute left-0 h-3.5 w-3.5 text-muted-foreground/60 opacity-0 transition-opacity group-hover:opacity-100"
+              aria-hidden="true"
+            />
+          ) : null}
+          <span className="shrink-0 [&_svg]:h-4 [&_svg]:w-4">{item.icon}</span>
+          <span className="min-w-0 flex-1 truncate">{item.label}</span>
+          {badge ? (
+            <span className="shrink-0 rounded-full border border-border/60 px-1.5 py-0.5 text-[10px] font-normal leading-none text-muted-foreground">
+              {badge.label}
+            </span>
+          ) : null}
+        </button>
+      </li>
+    );
+  };
+
+  return (
+    <nav
+      aria-label="Resume Studio sections"
+      className={cn("min-h-0 flex-col overflow-y-auto pr-1", className)}
+    >
+      <ul className="space-y-0.5">{profileItems.map(renderItem)}</ul>
+      {resumeItems.length > 0 ? (
+        <>
+          <div className="mt-4 mb-1 px-3 text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+            Resume sections
+          </div>
+          <ul className="space-y-0.5">{resumeItems.map(renderItem)}</ul>
+        </>
+      ) : null}
+    </nav>
+  );
+}
+
+function DesignResumeIconDock({
+  activeSectionId,
+  onSectionSelect,
+  className,
+  draft,
+  onUpdateResumeJson,
+}: Omit<DesignResumeIconRailProps, "variant">) {
+  const items = useDesignResumeSectionItems({
+    activeSectionId,
+    onSectionSelect,
+    draft,
+    onUpdateResumeJson,
+  });
+  const railRef = useRef<HTMLElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const mouseY = useMotionValue(Number.POSITIVE_INFINITY);
+  const spring = { mass: 0.1, stiffness: 150, damping: 12 };
+  const panelWidth = 76;
+  const magnification = 64;
+  const baseItemSize = 46;
+  const distance = 200;
+  const railPadding = 12;
+  const [scrollOffset, setScrollOffset] = useState(0);
+  const [railHeight, setRailHeight] = useState(0);
+  const [contentHeight, setContentHeight] = useState(0);
 
   const maxScrollOffset = Math.max(
     0,

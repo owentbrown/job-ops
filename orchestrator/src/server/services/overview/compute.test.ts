@@ -136,6 +136,42 @@ describe("pace", () => {
     expect(result.pace.medianFoundToAppliedDays).toBe(1);
   });
 
+  it("draws one entry per calendar day across a DST fall-back", () => {
+    const result = computeOverview(
+      input({
+        timeZone: "America/New_York",
+        now: new Date("2026-11-13T04:30:00Z"), // Nov 12 23:30 local
+        rangeDays: 14,
+      }),
+    );
+    const dates = result.pace.perDay.map((d) => d.date);
+    expect(dates).toHaveLength(14);
+    expect(new Set(dates).size).toBe(14);
+    expect(dates[0]).toBe("2026-10-30");
+    expect(dates.at(-1)).toBe("2026-11-12");
+    for (let i = 1; i < dates.length; i++) {
+      const gap =
+        Date.parse(`${dates[i]}T00:00:00Z`) -
+        Date.parse(`${dates[i - 1]}T00:00:00Z`);
+      expect(gap).toBe(DAY);
+    }
+  });
+
+  it("draws one entry per calendar day across a DST spring-forward", () => {
+    const result = computeOverview(
+      input({
+        timeZone: "America/New_York",
+        now: new Date("2027-03-15T03:30:00Z"), // Mar 14 23:30 local (EDT)
+        rangeDays: 14,
+      }),
+    );
+    const dates = result.pace.perDay.map((d) => d.date);
+    expect(dates).toHaveLength(14);
+    expect(new Set(dates).size).toBe(14);
+    expect(dates.filter((d) => d === "2027-03-08")).toHaveLength(1);
+    expect(dates.at(-1)).toBe("2027-03-14");
+  });
+
   it("has no best day or median when nothing was applied", () => {
     const result = computeOverview(input({ rangeDays: 7 }));
     expect(result.pace.bestDay).toBeNull();

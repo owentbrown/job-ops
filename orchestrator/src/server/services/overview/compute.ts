@@ -75,6 +75,15 @@ function median(values: number[]): number | null {
   return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
 }
 
+/**
+ * Shift a `YYYY-MM-DD` key by whole calendar days. Pure calendar arithmetic
+ * in UTC, so DST changes in the user's time zone can't skip or repeat a date.
+ */
+function shiftDayKey(key: string, days: number): string {
+  const [y, m, d] = key.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
+}
+
 function band(score: number): ScoreBand {
   if (score >= 90) return "90+";
   if (score >= 80) return "80-89";
@@ -149,6 +158,7 @@ export function computeOverview(input: OverviewInput): OverviewResponse {
   const rangeStart = nowMs - input.rangeDays * DAY_MS;
   const dayFmt = new Intl.DateTimeFormat("en-CA", { timeZone: input.timeZone });
   const dayKey = (ms: number) => dayFmt.format(new Date(ms));
+  const todayKey = dayKey(nowMs);
 
   const eventsByJob = groupBy(input.stageEvents, (e) => e.applicationId);
   const messagesByJob = groupBy(input.messages, (m) => m.matchedJobId);
@@ -183,7 +193,7 @@ export function computeOverview(input: OverviewInput): OverviewResponse {
     counts.set(key, (counts.get(key) ?? 0) + 1);
   }
   const perDay = Array.from({ length: input.rangeDays }, (_, i) => {
-    const date = dayKey(nowMs - (input.rangeDays - 1 - i) * DAY_MS);
+    const date = shiftDayKey(todayKey, -(input.rangeDays - 1 - i));
     return { date, count: counts.get(date) ?? 0 };
   });
   const best = perDay.reduce<{ date: string; count: number } | null>(

@@ -1400,6 +1400,20 @@ describe("absorbed sections", () => {
     confirmSpy.mockRestore();
   });
 
+  it("keeps dirty pre-score rules open when the settings search excludes them", async () => {
+    render(
+      <MemoryRouter initialEntries={["/settings#prefilter"]}>
+        <SettingsPage />
+      </MemoryRouter>,
+    );
+    fireEvent.click(await screen.findByText("make-rules-dirty"));
+    fireEvent.change(screen.getByLabelText("Search settings"), {
+      target: { value: "webhook" },
+    });
+    expect(await screen.findByText("1 unsaved section")).toBeInTheDocument();
+    expect(screen.getByText("filtered-body:rules")).toBeInTheDocument();
+  });
+
   it("does not ask when leaving the pre-score section without edits", async () => {
     const confirmSpy = vi.spyOn(window, "confirm");
     render(

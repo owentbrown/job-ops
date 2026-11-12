@@ -1580,6 +1580,8 @@ export const SettingsPage: React.FC = () => {
     [activeSection, confirmLeaveEmbedded],
   );
 
+  // Deps are intentionally partial: only a hash change should re-apply the
+  // hash, otherwise a stale hash would override later section clicks.
   // biome-ignore lint/correctness/useExhaustiveDependencies: must react only to hash changes, not to section clicks
   useEffect(() => {
     const hash = location.hash.replace(/^#/, "");
@@ -1588,7 +1590,10 @@ export const SettingsPage: React.FC = () => {
     );
     if (hash && allSectionIds.includes(hash as SettingsSectionId)) {
       if (hash !== activeSection && !confirmLeaveEmbedded()) {
-        navigate(`${location.pathname}#${activeSection}`, { replace: true });
+        navigate(
+          { search: location.search, hash: activeSection },
+          { replace: true },
+        );
         return;
       }
       setActiveSection(hash as SettingsSectionId);
@@ -1611,10 +1616,18 @@ export const SettingsPage: React.FC = () => {
 
   useEffect(() => {
     if (visibleSectionIds.length === 0) return;
+    // Keep a dirty embedded section open even when the search filters it out,
+    // so unsaved rule edits are never dropped silently.
+    if (embeddedDirty && activeSection === "prefilter") return;
     if (!visibleSectionIds.includes(activeSection)) {
       setActiveSection(visibleSectionIds[0]);
     }
-  }, [activeSection, visibleSectionIds]);
+  }, [activeSection, visibleSectionIds, embeddedDirty]);
+
+  // The embedded editor cannot report "clean" when it unmounts.
+  useEffect(() => {
+    if (activeSection !== "prefilter") setEmbeddedDirty(false);
+  }, [activeSection]);
 
   const firstVisibleGroup = visibleNavGroups[0] ?? SETTINGS_NAV_GROUPS[0];
   const firstVisibleSection = firstVisibleGroup.items[0];

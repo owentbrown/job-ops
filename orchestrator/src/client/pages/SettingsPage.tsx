@@ -1,5 +1,6 @@
 import * as api from "@client/api";
 import { PageHeader } from "@client/components/layout";
+import { EmbeddedPage } from "@client/components/PageFrame";
 import {
   type SectionWorkspaceBadge,
   SectionWorkspaceNav,
@@ -65,6 +66,11 @@ import { formatUserFacingError } from "@/client/lib/error-format";
 import { showErrorToast } from "@/client/lib/error-toast";
 import { queryKeys } from "@/client/lib/queryKeys";
 import { Button } from "@/components/ui/button";
+import { FilteredJobsPage } from "./FilteredJobsPage";
+import { SpendPage } from "./SpendPage";
+import { TracerLinksPage } from "./TracerLinksPage";
+import { VisaSponsorsPage } from "./VisaSponsorsPage";
+import { WatchlistPage } from "./WatchlistPage";
 
 const DEFAULT_FORM_VALUES: UpdateSettingsInput = {
   model: "",
@@ -133,7 +139,11 @@ type SettingsSectionId =
   | "model"
   | "chat"
   | "prompt-templates"
+  | "spend"
+  | "sources"
+  | "prefilter"
   | "scoring"
+  | "visa-sponsors"
   | "reactive-resume"
   | "webhooks"
   | "tracer-links"
@@ -145,7 +155,7 @@ type SettingsSectionId =
 type SettingsGroupId =
   | "account"
   | "ai"
-  | "scoring"
+  | "search"
   | "integrations"
   | "workspaces"
   | "display"
@@ -213,18 +223,44 @@ const SETTINGS_NAV_GROUPS: SettingsNavGroup[] = [
           "Base AI instructions for Ghostwriter, tailoring, and scoring.",
         searchTerms: ["prompt", "templates", "system prompt", "instructions"],
       },
+      {
+        id: "spend",
+        label: "Spend",
+        description:
+          "Estimated AI cost per run and per task, and model pricing.",
+        searchTerms: ["cost", "spend", "tokens", "pricing", "budget"],
+      },
     ],
   },
   {
-    id: "scoring",
-    label: "Scoring",
+    id: "search",
+    label: "Search",
     items: [
       {
+        id: "sources",
+        label: "Sources",
+        description: "Company career pages you watch for new roles.",
+        searchTerms: ["watchlist", "career pages", "sources", "companies"],
+      },
+      {
+        id: "prefilter",
+        label: "Pre-score filter",
+        description:
+          "Rules that remove jobs before AI scoring, and the backlog run.",
+        searchTerms: ["filter", "filtered", "rules", "prefilter", "exclude"],
+      },
+      {
         id: "scoring",
-        label: "Rules & Filters",
+        label: "Scoring rules",
         description:
           "Salary penalties, thresholds, keywords, and scorer hints.",
         searchTerms: ["threshold", "salary", "keywords", "instructions"],
+      },
+      {
+        id: "visa-sponsors",
+        label: "Visa sponsors",
+        description: "Look up companies in the visa sponsor registers.",
+        searchTerms: ["visa", "sponsor", "sponsorship"],
       },
     ],
   },
@@ -314,11 +350,22 @@ const SETTINGS_NAV_GROUPS: SettingsNavGroup[] = [
   },
 ];
 
+const EMBEDDED_SECTION_IDS = new Set<SettingsSectionId>([
+  "spend",
+  "sources",
+  "prefilter",
+  "visa-sponsors",
+]);
+
 const SECTION_FIELD_MAP: Record<
   SettingsSectionId,
   Array<keyof UpdateSettingsInput>
 > = {
   billing: [],
+  spend: [],
+  sources: [],
+  prefilter: [],
+  "visa-sponsors": [],
   model: [
     "llmProvider",
     "llmBaseUrl",
@@ -1629,6 +1676,11 @@ export const SettingsPage: React.FC = () => {
         return backup.backupEnabled.effective
           ? { label: "Scheduled", variant: "outline" as const }
           : { label: "Manual only", variant: "secondary" as const };
+      case "spend":
+      case "sources":
+      case "prefilter":
+      case "visa-sponsors":
+        return null;
       default:
         return { label: "Ready", variant: "outline" as const };
     }
@@ -1642,6 +1694,34 @@ export const SettingsPage: React.FC = () => {
 
   let activeSectionContent: React.ReactNode;
   switch (activeSection) {
+    case "spend":
+      activeSectionContent = (
+        <EmbeddedPage hideHeading>
+          <SpendPage />
+        </EmbeddedPage>
+      );
+      break;
+    case "sources":
+      activeSectionContent = (
+        <EmbeddedPage hideHeading>
+          <WatchlistPage />
+        </EmbeddedPage>
+      );
+      break;
+    case "prefilter":
+      activeSectionContent = (
+        <EmbeddedPage hideHeading>
+          <FilteredJobsPage view="rules" />
+        </EmbeddedPage>
+      );
+      break;
+    case "visa-sponsors":
+      activeSectionContent = (
+        <EmbeddedPage hideHeading>
+          <VisaSponsorsPage />
+        </EmbeddedPage>
+      );
+      break;
     case "billing":
       activeSectionContent = (
         <BillingSettingsSection
@@ -1729,13 +1809,18 @@ export const SettingsPage: React.FC = () => {
       break;
     case "tracer-links":
       activeSectionContent = (
-        <TracerLinksSettingsSection
-          readiness={tracerReadiness}
-          isLoading={isLoading || isTracerReadinessLoading}
-          isChecking={isTracerReadinessChecking}
-          onVerifyNow={handleVerifyTracerReadiness}
-          layoutMode="panel"
-        />
+        <div className="space-y-8">
+          <TracerLinksSettingsSection
+            readiness={tracerReadiness}
+            isLoading={isLoading || isTracerReadinessLoading}
+            isChecking={isTracerReadinessChecking}
+            onVerifyNow={handleVerifyTracerReadiness}
+            layoutMode="panel"
+          />
+          <EmbeddedPage>
+            <TracerLinksPage />
+          </EmbeddedPage>
+        </div>
       );
       break;
     case "environment":
@@ -1832,7 +1917,8 @@ export const SettingsPage: React.FC = () => {
                 : null
             }
             actions={
-              activeSection === "billing" ? null : (
+              activeSection === "billing" ||
+              EMBEDDED_SECTION_IDS.has(activeSection) ? null : (
                 <>
                   {activeSectionIsDirty ? (
                     <Button

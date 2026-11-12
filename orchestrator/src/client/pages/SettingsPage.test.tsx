@@ -80,6 +80,22 @@ vi.mock("../api", () => ({
   unlinkSsoIdentity: vi.fn(),
 }));
 
+vi.mock("./WatchlistPage", () => ({
+  WatchlistPage: () => <div>watchlist-body</div>,
+}));
+vi.mock("./VisaSponsorsPage", () => ({
+  VisaSponsorsPage: () => <div>visa-body</div>,
+}));
+vi.mock("./SpendPage", () => ({ SpendPage: () => <div>spend-body</div> }));
+vi.mock("./TracerLinksPage", () => ({
+  TracerLinksPage: () => <div>tracer-analytics-body</div>,
+}));
+vi.mock("./FilteredJobsPage", () => ({
+  FilteredJobsPage: ({ view }: { view?: string }) => (
+    <div>filtered-body:{view}</div>
+  ),
+}));
+
 vi.mock("sonner", () => ({
   toast: {
     success: vi.fn(),
@@ -183,8 +199,8 @@ const openEnvironmentSection = async () => {
 };
 
 const openScoringSection = async () => {
-  await openNavGroup(/^scoring$/i);
-  await clickLastButtonByName(/rules.*filters/i);
+  await openNavGroup(/^search$/i);
+  await clickLastButtonByName(/scoring rules/i);
 };
 
 const openDangerZoneSection = async () => {
@@ -1308,5 +1324,57 @@ describe("SettingsPage", () => {
         ghostwriterSystemPromptTemplate: null,
       }),
     );
+  });
+});
+
+describe("absorbed sections", () => {
+  beforeEach(() => {
+    vi.mocked(api.getSettings).mockResolvedValue(baseSettings);
+  });
+
+  it.each([
+    ["#sources", "watchlist-body"],
+    ["#prefilter", "filtered-body:rules"],
+    ["#visa-sponsors", "visa-body"],
+    ["#spend", "spend-body"],
+  ])("opens %s from the URL hash", async (hash, text) => {
+    render(
+      <MemoryRouter initialEntries={[`/settings${hash}`]}>
+        <SettingsPage />
+      </MemoryRouter>,
+    );
+    expect(await screen.findByText(text)).toBeInTheDocument();
+  });
+
+  it("shows tracer analytics under the tracer links setup", async () => {
+    render(
+      <MemoryRouter initialEntries={["/settings#tracer-links"]}>
+        <SettingsPage />
+      </MemoryRouter>,
+    );
+    expect(
+      await screen.findByText("tracer-analytics-body"),
+    ).toBeInTheDocument();
+  });
+
+  it("hides the save bar for embedded sections", async () => {
+    render(
+      <MemoryRouter initialEntries={["/settings#sources"]}>
+        <SettingsPage />
+      </MemoryRouter>,
+    );
+    await screen.findByText("watchlist-body");
+    expect(screen.queryByRole("button", { name: /save changes/i })).toBeNull();
+  });
+
+  it("lists the new Search group in the settings nav", async () => {
+    renderPage();
+    await openNavGroup(/^search$/i);
+    await openNavGroup(/^ai$/i);
+    expect(screen.getByText("Sources")).toBeInTheDocument();
+    expect(screen.getByText("Pre-score filter")).toBeInTheDocument();
+    expect(screen.getByText("Scoring rules")).toBeInTheDocument();
+    expect(screen.getByText("Visa sponsors")).toBeInTheDocument();
+    expect(screen.getByText("Spend")).toBeInTheDocument();
   });
 });

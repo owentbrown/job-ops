@@ -1,4 +1,4 @@
-import { PageFrame } from "@client/components/PageFrame";
+import { PageFrame, useIsEmbedded } from "@client/components/PageFrame";
 import type {
   JobListItem,
   PostApplicationInboxItem,
@@ -603,6 +603,25 @@ export const TrackingInboxPage: React.FC = () => {
   );
 
   const pendingCount = inbox.length;
+  // Inside Applications the page heading is hidden, so Refresh moves into the
+  // Pending review card instead of sitting alone in an empty row.
+  const embedded = useIsEmbedded();
+  const refreshButton = (
+    <Button
+      size="sm"
+      variant="outline"
+      onClick={() => void refresh()}
+      disabled={isRefreshing || isLoading}
+      className="gap-2"
+    >
+      {isRefreshing ? (
+        <Loader2 className="h-4 w-4 animate-spin" />
+      ) : (
+        <RefreshCcw className="h-4 w-4" />
+      )}
+      Refresh
+    </Button>
+  );
   const isConnected = Boolean(status?.connected);
   const connectionLabel = useMemo(() => {
     if (!status) return "Unknown";
@@ -627,22 +646,7 @@ export const TrackingInboxPage: React.FC = () => {
         icon={Inbox}
         title="Tracking Inbox"
         subtitle="Post-application message review"
-        actions={
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => void refresh()}
-            disabled={isRefreshing || isLoading}
-            className="gap-2"
-          >
-            {isRefreshing ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <RefreshCcw className="h-4 w-4" />
-            )}
-            Refresh
-          </Button>
-        }
+        actions={embedded ? undefined : refreshButton}
         mainClassName="space-y-4"
       >
         <Card>
@@ -658,30 +662,33 @@ export const TrackingInboxPage: React.FC = () => {
                 </Badge>
               ) : null}
             </CardTitle>
-            {inbox.length > 0 && (
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1"
-                  disabled={isActionLoading}
-                  onClick={() => openInboxActionDialog("approve")}
-                >
-                  <CheckCircle className="h-4 w-4" />
-                  Approve All
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1"
-                  disabled={isActionLoading}
-                  onClick={() => openInboxActionDialog("deny")}
-                >
-                  <XCircle className="h-4 w-4" />
-                  Ignore All
-                </Button>
-              </div>
-            )}
+            <div className="flex flex-wrap justify-end gap-2">
+              {embedded ? refreshButton : null}
+              {inbox.length > 0 && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1"
+                    disabled={isActionLoading}
+                    onClick={() => openInboxActionDialog("approve")}
+                  >
+                    <CheckCircle className="h-4 w-4" />
+                    Approve All
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1"
+                    disabled={isActionLoading}
+                    onClick={() => openInboxActionDialog("deny")}
+                  >
+                    <XCircle className="h-4 w-4" />
+                    Ignore All
+                  </Button>
+                </>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -691,6 +698,7 @@ export const TrackingInboxPage: React.FC = () => {
               </div>
             ) : inbox.length === 0 ? (
               <EmptyState
+                className="py-4"
                 title="No pending messages"
                 description="Run sync to ingest new job-application emails."
               />

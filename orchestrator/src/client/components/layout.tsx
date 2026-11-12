@@ -508,6 +508,7 @@ interface EmptyStateProps {
   title: string;
   description?: string;
   action?: React.ReactNode;
+  className?: string;
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({
@@ -515,8 +516,14 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   title,
   description,
   action,
+  className,
 }) => (
-  <div className="flex flex-col items-center justify-center gap-2 px-6 py-12 text-center">
+  <div
+    className={cn(
+      "flex flex-col items-center justify-center gap-2 px-6 py-12 text-center",
+      className,
+    )}
+  >
     {Icon && <Icon className="h-10 w-10 text-muted-foreground/50 mb-2" />}
     <div className="text-base font-semibold">{title}</div>
     {description && (

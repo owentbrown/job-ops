@@ -34,7 +34,10 @@ export interface AppearanceContextValue {
   toggleLightDark: () => void;
 }
 
-const AppearanceContext = createContext<AppearanceContextValue | null>(null);
+/** Exported so tests can supply a fixed value with spy setters. */
+export const AppearanceContext = createContext<AppearanceContextValue | null>(
+  null,
+);
 
 export const AppearanceProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -106,4 +109,13 @@ export function useAppearance(): AppearanceContextValue {
     throw new Error("useAppearance must be used inside <AppearanceProvider>");
   }
   return ctx;
+}
+
+/**
+ * Like `useAppearance`, but returns null outside the provider. Shared chrome
+ * (page header, sidebar) uses it so components rendered without the app
+ * shell (stories, isolated tests) still work and just omit the controls.
+ */
+export function useOptionalAppearance(): AppearanceContextValue | null {
+  return useContext(AppearanceContext);
 }

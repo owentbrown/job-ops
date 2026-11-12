@@ -1,4 +1,4 @@
-import { PageFrame } from "@client/components/PageFrame";
+import { PageFrame, useIsEmbedded } from "@client/components/PageFrame";
 import type {
   JobListItem,
   PostApplicationInboxItem,
@@ -603,6 +603,25 @@ export const TrackingInboxPage: React.FC = () => {
   );
 
   const pendingCount = inbox.length;
+  // Inside Applications the page heading is hidden, so Refresh moves into the
+  // Pending review card instead of sitting alone in an empty row.
+  const embedded = useIsEmbedded();
+  const refreshButton = (
+    <Button
+      size="sm"
+      variant="outline"
+      onClick={() => void refresh()}
+      disabled={isRefreshing || isLoading}
+      className="gap-2"
+    >
+      {isRefreshing ? (
+        <Loader2 className="h-4 w-4 animate-spin" />
+      ) : (
+        <RefreshCcw className="h-4 w-4" />
+      )}
+      Refresh
+    </Button>
+  );
   const isConnected = Boolean(status?.connected);
   const connectionLabel = useMemo(() => {
     if (!status) return "Unknown";
@@ -627,27 +646,81 @@ export const TrackingInboxPage: React.FC = () => {
         icon={Inbox}
         title="Tracking Inbox"
         subtitle="Post-application message review"
-        actions={
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => void refresh()}
-            disabled={isRefreshing || isLoading}
-            className="gap-2"
-          >
-            {isRefreshing ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <RefreshCcw className="h-4 w-4" />
-            )}
-            Refresh
-          </Button>
-        }
+        actions={embedded ? undefined : refreshButton}
         mainClassName="space-y-4"
       >
-        <section className="space-y-1 px-1">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between pb-3">
+            <CardTitle className="flex items-center gap-2 text-base">
+              Pending review
+              {!isLoading ? (
+                <Badge
+                  variant="secondary"
+                  aria-label={`${pendingCount} pending`}
+                >
+                  {pendingCount}
+                </Badge>
+              ) : null}
+            </CardTitle>
+            <div className="flex flex-wrap justify-end gap-2">
+              {embedded ? refreshButton : null}
+              {inbox.length > 0 && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1"
+                    disabled={isActionLoading}
+                    onClick={() => openInboxActionDialog("approve")}
+                  >
+                    <CheckCircle className="h-4 w-4" />
+                    Approve All
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1"
+                    disabled={isActionLoading}
+                    onClick={() => openInboxActionDialog("deny")}
+                  >
+                    <XCircle className="h-4 w-4" />
+                    Ignore All
+                  </Button>
+                </>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading inbox...
+              </div>
+            ) : inbox.length === 0 ? (
+              <EmptyState
+                className="py-4"
+                title="No pending messages"
+                description="Run sync to ingest new job-application emails."
+              />
+            ) : (
+              <EmailViewerList
+                items={inbox}
+                appliedJobs={appliedJobs}
+                appliedJobByMessageId={appliedJobByMessageId}
+                onAppliedJobChange={handleAppliedJobChange}
+                onDecision={(item, decision) =>
+                  void handleDecision(item, decision, "main_inbox")
+                }
+                isActionLoading={isActionLoading}
+                isAppliedJobsLoading={isAppliedJobsLoading}
+              />
+            )}
+          </CardContent>
+        </Card>
+
+        <section className="space-y-1 px-1 pt-2">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold tracking-tight">
+            <h2 className="text-lg font-semibold tracking-tight">
               Application Inbox Matching
             </h2>
           </div>
@@ -760,71 +833,12 @@ export const TrackingInboxPage: React.FC = () => {
               <Badge variant={status?.connected ? "default" : "outline"}>
                 {connectionLabel}
               </Badge>
-              <span className="text-muted-foreground">
-                Pending review:{" "}
-                <span className="font-semibold">{pendingCount}</span>
-              </span>
               {status?.integration?.lastSyncedAt ? (
                 <span className="text-muted-foreground">
                   Last synced: {formatEpochMs(status.integration.lastSyncedAt)}
                 </span>
               ) : null}
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-3">
-            <CardTitle className="text-base">Pending Review Queue</CardTitle>
-            {inbox.length > 0 && (
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1"
-                  disabled={isActionLoading}
-                  onClick={() => openInboxActionDialog("approve")}
-                >
-                  <CheckCircle className="h-4 w-4" />
-                  Approve All
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1"
-                  disabled={isActionLoading}
-                  onClick={() => openInboxActionDialog("deny")}
-                >
-                  <XCircle className="h-4 w-4" />
-                  Ignore All
-                </Button>
-              </div>
-            )}
-          </CardHeader>
-          <CardContent>
-            {isLoading ? (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Loading inbox...
-              </div>
-            ) : inbox.length === 0 ? (
-              <EmptyState
-                title="No pending messages"
-                description="Run sync to ingest new job-application emails."
-              />
-            ) : (
-              <EmailViewerList
-                items={inbox}
-                appliedJobs={appliedJobs}
-                appliedJobByMessageId={appliedJobByMessageId}
-                onAppliedJobChange={handleAppliedJobChange}
-                onDecision={(item, decision) =>
-                  void handleDecision(item, decision, "main_inbox")
-                }
-                isActionLoading={isActionLoading}
-                isAppliedJobsLoading={isAppliedJobsLoading}
-              />
-            )}
           </CardContent>
         </Card>
 

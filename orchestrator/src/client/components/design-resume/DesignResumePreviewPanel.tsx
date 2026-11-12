@@ -29,6 +29,8 @@ type DesignResumePreviewPanelProps = {
   onPdfRendererChange: (renderer: PdfRenderer) => void;
   onTypstThemeChange: (theme: TypstTheme) => void;
   className?: string;
+  /** Let the template selects share a narrow column on wide screens. */
+  compact?: boolean;
 };
 
 export function DesignResumePreviewPanel({
@@ -41,18 +43,28 @@ export function DesignResumePreviewPanel({
   onPdfRendererChange,
   onTypstThemeChange,
   className,
+  compact = false,
 }: DesignResumePreviewPanelProps) {
+  const selectWidthClass = compact ? "xl:w-auto xl:min-w-0 xl:flex-1" : null;
   return (
     <section
       className={cn("flex min-h-0 min-w-0 flex-col overflow-hidden", className)}
     >
-      <div className="flex flex-wrap items-start justify-end gap-4 py-4">
+      <div
+        className={cn(
+          "flex flex-wrap items-start justify-end gap-4 py-4",
+          compact && "xl:flex-nowrap xl:gap-2 xl:pt-0 xl:pb-3",
+        )}
+      >
         <Select
           value={pdfRenderer}
           onValueChange={(value) => onPdfRendererChange(value as PdfRenderer)}
           disabled={isUpdatingRenderer}
         >
-          <SelectTrigger id="design-resume-template" className="w-full sm:w-72">
+          <SelectTrigger
+            id="design-resume-template"
+            className={cn("w-full sm:w-72", selectWidthClass)}
+          >
             <SelectValue placeholder="Choose a template" />
           </SelectTrigger>
           <SelectContent>
@@ -71,7 +83,7 @@ export function DesignResumePreviewPanel({
           >
             <SelectTrigger
               id="design-resume-typst-theme"
-              className="w-full sm:w-52"
+              className={cn("w-full sm:w-52", selectWidthClass)}
             >
               <SelectValue placeholder="Choose a Typst theme" />
             </SelectTrigger>

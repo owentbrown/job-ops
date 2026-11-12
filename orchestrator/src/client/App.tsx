@@ -16,6 +16,10 @@ import { CSSTransition, SwitchTransition } from "react-transition-group";
 
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
+import {
+  PersistentSidebar,
+  PersistentSidebarContext,
+} from "./components/layout";
 import { OnboardingGate } from "./components/OnboardingGate";
 import { useAnalyticsIdentity } from "./hooks/useAnalyticsIdentity";
 import { useDemoInfo } from "./hooks/useDemoInfo";
@@ -74,6 +78,16 @@ function ParamRedirect({ to }: { to: string }) {
   return <Navigate to={target} replace />;
 }
 
+/** Routes that render without the app header, so without the sidebar too. */
+const isSidebarRoute = (pathname: string) =>
+  !(
+    pathname === "/sign-in" ||
+    pathname === "/onboarding" ||
+    pathname === "/offline" ||
+    pathname === "/oauth/gmail/callback" ||
+    pathname.startsWith("/sso/callback/")
+  );
+
 const DEMO_WAITLIST_BANNER_DISMISSED_KEY = "jobops.demoWaitlistBannerDismissed";
 
 export const App: React.FC = () => {
@@ -84,6 +98,7 @@ export const App: React.FC = () => {
   const isAuthRoute =
     location.pathname === "/sign-in" ||
     location.pathname.startsWith("/sso/callback/");
+  const showSidebar = isSidebarRoute(location.pathname);
   const demoInfo = useDemoInfo({ enabled: !isAuthRoute });
   const showDemoBanners = !isAuthRoute && demoInfo?.demoMode;
   const [demoWaitlistBannerDismissed, setDemoWaitlistBannerDismissed] =
@@ -176,69 +191,72 @@ export const App: React.FC = () => {
           </div>
         </div>
       )}
-      <div>
-        <SwitchTransition mode="out-in">
-          <CSSTransition
-            key={pageKey}
-            nodeRef={nodeRef}
-            timeout={100}
-            classNames="page"
-            unmountOnExit
-          >
-            <div ref={nodeRef}>
-              <Routes location={location}>
-                {/* Backwards-compatibility redirects */}
-                {REDIRECTS.map(({ from, to }) => (
-                  <Route
-                    key={from}
-                    path={from}
-                    element={<ParamRedirect to={to} />}
-                  />
-                ))}
+      {showSidebar && <PersistentSidebar />}
+      <div className={showSidebar ? "lg:pl-60" : undefined}>
+        <PersistentSidebarContext.Provider value={showSidebar}>
+          <SwitchTransition mode="out-in">
+            <CSSTransition
+              key={pageKey}
+              nodeRef={nodeRef}
+              timeout={100}
+              classNames="page"
+              unmountOnExit
+            >
+              <div ref={nodeRef}>
+                <Routes location={location}>
+                  {/* Backwards-compatibility redirects */}
+                  {REDIRECTS.map(({ from, to }) => (
+                    <Route
+                      key={from}
+                      path={from}
+                      element={<ParamRedirect to={to} />}
+                    />
+                  ))}
 
-                {/* Application routes */}
-                <Route path="/overview" element={<OverviewPage />} />
-                <Route
-                  path="/overview/classic"
-                  element={<ClassicOverviewPage />}
-                />
-                <Route
-                  path="/oauth/gmail/callback"
-                  element={<GmailOauthCallbackPage />}
-                />
-                <Route path="/job/:id" element={<JobPage />} />
-                <Route path="/job/:id/:view" element={<JobPage />} />
-                <Route
-                  path="/applications/:tab"
-                  element={<ApplicationsPage />}
-                />
-                <Route path="/profile" element={<AboutYouPage />} />
-                <Route
-                  path="/profile/studio/:doc"
-                  element={<ProfileStudioPage />}
-                />
-                <Route
-                  path="/profile/studio/:doc/:section"
-                  element={<ProfileStudioPage />}
-                />
-                <Route path="/onboarding" element={<OnboardingPage />} />
-                <Route path="/offline" element={<OfflinePage />} />
-                <Route path="/sign-in" element={<SignInPage />} />
-                <Route
-                  path="/sso/callback/:provider"
-                  element={<SsoCallbackPage />}
-                />
-                <Route path="/settings" element={<SettingsPage />} />
-                <Route path="/jobs/filtered" element={<JobsFilteredPage />} />
-                <Route path="/jobs/:tab" element={<OrchestratorPage />} />
-                <Route
-                  path="/jobs/:tab/:jobId"
-                  element={<OrchestratorPage />}
-                />
-              </Routes>
-            </div>
-          </CSSTransition>
-        </SwitchTransition>
+                  {/* Application routes */}
+                  <Route path="/overview" element={<OverviewPage />} />
+                  <Route
+                    path="/overview/classic"
+                    element={<ClassicOverviewPage />}
+                  />
+                  <Route
+                    path="/oauth/gmail/callback"
+                    element={<GmailOauthCallbackPage />}
+                  />
+                  <Route path="/job/:id" element={<JobPage />} />
+                  <Route path="/job/:id/:view" element={<JobPage />} />
+                  <Route
+                    path="/applications/:tab"
+                    element={<ApplicationsPage />}
+                  />
+                  <Route path="/profile" element={<AboutYouPage />} />
+                  <Route
+                    path="/profile/studio/:doc"
+                    element={<ProfileStudioPage />}
+                  />
+                  <Route
+                    path="/profile/studio/:doc/:section"
+                    element={<ProfileStudioPage />}
+                  />
+                  <Route path="/onboarding" element={<OnboardingPage />} />
+                  <Route path="/offline" element={<OfflinePage />} />
+                  <Route path="/sign-in" element={<SignInPage />} />
+                  <Route
+                    path="/sso/callback/:provider"
+                    element={<SsoCallbackPage />}
+                  />
+                  <Route path="/settings" element={<SettingsPage />} />
+                  <Route path="/jobs/filtered" element={<JobsFilteredPage />} />
+                  <Route path="/jobs/:tab" element={<OrchestratorPage />} />
+                  <Route
+                    path="/jobs/:tab/:jobId"
+                    element={<OrchestratorPage />}
+                  />
+                </Routes>
+              </div>
+            </CSSTransition>
+          </SwitchTransition>
+        </PersistentSidebarContext.Provider>
       </div>
 
       <Toaster position="bottom-right" richColors closeButton />

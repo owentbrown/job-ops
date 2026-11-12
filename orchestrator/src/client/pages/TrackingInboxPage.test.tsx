@@ -208,6 +208,30 @@ describe("TrackingInboxPage", () => {
     });
   });
 
+  it("shows the pending review queue before provider controls and sync runs", async () => {
+    render(
+      <MemoryRouter>
+        <TrackingInboxPage />
+      </MemoryRouter>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("Interview invite")).toBeInTheDocument();
+    });
+
+    const pending = screen.getByText("Pending review");
+    const intro = screen.getByText("Application Inbox Matching");
+    const providers = screen.getByText("Provider Controls");
+    const runs = screen.getByText("Recent Sync Runs");
+    for (const later of [intro, providers, runs]) {
+      expect(
+        pending.compareDocumentPosition(later) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+    }
+    expect(screen.getByLabelText("1 pending")).toBeInTheDocument();
+  });
+
   it("submits approve action", async () => {
     render(
       <MemoryRouter>

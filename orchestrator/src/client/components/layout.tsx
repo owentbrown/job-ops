@@ -12,7 +12,7 @@ import {
   Menu,
   UserRound,
 } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -81,6 +81,226 @@ const buildSignInPath = (username: string, nextPath: string): string => {
 };
 
 // ============================================================================
+// Sidebar navigation (shared by the slide-out Sheet and the fixed sidebar)
+// ============================================================================
+
+/** True when the app shell renders the persistent (lg+) sidebar. */
+export const PersistentSidebarContext = React.createContext(false);
+
+interface SidebarNavProps {
+  showVersionFooter?: boolean;
+  /** Called after any item is chosen (the Sheet uses this to close itself). */
+  onNavigated?: () => void;
+  /** Wait for the Sheet close animation before navigating. */
+  delayNavigation?: boolean;
+}
+
+export const SidebarNav: React.FC<SidebarNavProps> = ({
+  showVersionFooter = true,
+  onNavigated,
+  delayNavigation = false,
+}) => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [rememberedUsers, setRememberedUsers] = useState<RememberedAuthUser[]>(
+    () => loadRememberedAuthUsers(),
+  );
+  const { version, updateAvailable } = useVersionCheck();
+
+  const handleNavClick = (
+    to: string,
+    activePaths?: string[],
+    exact = false,
+  ) => {
+    const alreadyThere = exact
+      ? location.pathname === to
+      : isNavActive(location.pathname, to, activePaths);
+    onNavigated?.();
+    if (alreadyThere) return;
+    if (delayNavigation) {
+      setTimeout(() => navigate(to), 150);
+    } else {
+      navigate(to);
+    }
+  };
+
+  const handleRememberedUserClick = async (username: string) => {
+    onNavigated?.();
+    await logout({ redirect: false });
+    navigate(buildSignInPath(username, location.pathname), { replace: true });
+  };
+
+  const handleSignOut = async () => {
+    onNavigated?.();
+    await logout();
+  };
+
+  return (
+    <div className="flex min-h-0 flex-1 flex-col">
+      <nav aria-label="Main" className="mt-6 flex flex-col gap-2">
+        {NAV_LINKS.map(
+          ({ to, label, icon: NavIcon, activePaths, children }) => (
+            <div key={to} className="flex flex-col gap-1">
+              <button
+                type="button"
+                aria-current={
+                  isNavActive(location.pathname, to, activePaths)
+                    ? "page"
+                    : undefined
+                }
+                onClick={() =>
+                  handleNavClick(
+                    children?.[0]?.to ?? to,
+                    activePaths,
+                    Boolean(children),
+                  )
+                }
+                className={cn(
+                  "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground text-left",
+                  isNavActive(location.pathname, to, activePaths)
+                    ? "bg-accent text-accent-foreground"
+                    : "text-muted-foreground",
+                )}
+              >
+                <NavIcon className="h-4 w-4" />
+                {label}
+              </button>
+              {children
+                ? children.map((child) => {
+                    const childActive =
+                      child.to === PROFILE_BASE
+                        ? location.pathname === PROFILE_BASE
+                        : isNavActive(
+                            location.pathname,
+                            child.to,
+                            child.activePaths,
+                          );
+                    return (
+                      <button
+                        key={child.to}
+                        type="button"
+                        aria-current={childActive ? "page" : undefined}
+                        onClick={() =>
+                          handleNavClick(child.to, child.activePaths)
+                        }
+                        className={cn(
+                          "ml-7 rounded-md px-3 py-1.5 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground",
+                          childActive
+                            ? "font-semibold text-foreground"
+                            : "text-muted-foreground",
+                        )}
+                      >
+                        {child.label}
+                      </button>
+                    );
+                  })
+                : null}
+            </div>
+          ),
+        )}
+      </nav>
+      <div className="mt-auto space-y-4 pt-6 pb-2">
+        <div className="space-y-2 border-t border-border/60 pt-4">
+          <DropdownMenu
+            onOpenChange={(open) => {
+              if (open) setRememberedUsers(loadRememberedAuthUsers());
+            }}
+          >
+            <DropdownMenuTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-8 w-full justify-start gap-2 px-2 text-xs"
+              >
+                <UserRound className="h-3.5 w-3.5" />
+                <span>Account</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56">
+              <DropdownMenuLabel>Remembered</DropdownMenuLabel>
+              {rememberedUsers.length > 0 ? (
+                rememberedUsers.map((user) => (
+                  <DropdownMenuItem
+                    key={user.username}
+                    onSelect={() =>
+                      void handleRememberedUserClick(user.username)
+                    }
+                    className="flex min-w-0 items-start gap-2"
+                  >
+                    <UserRound className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                    <span className="min-w-0">
+                      <span className="block truncate font-medium">
+                        {user.displayName ?? user.username}
+                      </span>
+                      {user.displayName ? (
+                        <span className="block truncate text-xs text-muted-foreground">
+                          {user.username}
+                        </span>
+                      ) : null}
+                    </span>
+                  </DropdownMenuItem>
+                ))
+              ) : (
+                <DropdownMenuItem disabled>
+                  Sign in once to remember a username here.
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onSelect={() => void handleSignOut()}
+                className="gap-2"
+              >
+                <LogOut className="h-3.5 w-3.5" />
+                <span>Sign out</span>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        {showVersionFooter && (
+          <div className="flex flex-col items-start gap-2">
+            <a
+              href="https://github.com/DaKheera47/job-ops/releases"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <span className="truncate">Version {version}</span>
+              {updateAvailable && (
+                <Tip asChild content={<p>Update available</p>}>
+                  <span className="h-2 w-2 shrink-0 cursor-pointer rounded-full bg-success" />
+                </Tip>
+              )}
+            </a>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                onNavigated?.();
+                window.open("/docs", "_blank", "noopener,noreferrer");
+              }}
+              className="h-7 gap-1.5 px-2 text-xs"
+            >
+              <span>Documentation</span>
+              <ExternalLink className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+/** Always-visible sidebar for lg+ screens; rendered once by the app shell. */
+export const PersistentSidebar: React.FC = () => (
+  <aside className="hidden lg:flex fixed inset-y-0 left-0 z-30 w-60 flex-col overflow-y-auto border-r bg-background p-4">
+    <div className="px-3 text-lg font-semibold">JobOps</div>
+    <SidebarNav />
+  </aside>
+);
+
+// ============================================================================
 // Page Header
 // ============================================================================
 
@@ -107,48 +327,10 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   navOpen: controlledNavOpen,
   onNavOpenChange,
 }) => {
-  const location = useLocation();
-  const navigate = useNavigate();
   const [internalNavOpen, setInternalNavOpen] = useState(false);
-  const [rememberedUsers, setRememberedUsers] = useState<RememberedAuthUser[]>(
-    () => loadRememberedAuthUsers(),
-  );
   const navOpen = controlledNavOpen ?? internalNavOpen;
   const setNavOpen = onNavOpenChange ?? setInternalNavOpen;
-  const { version, updateAvailable } = useVersionCheck();
-
-  useEffect(() => {
-    if (navOpen) {
-      setRememberedUsers(loadRememberedAuthUsers());
-    }
-  }, [navOpen]);
-
-  const handleNavClick = (
-    to: string,
-    activePaths?: string[],
-    exact = false,
-  ) => {
-    const alreadyThere = exact
-      ? location.pathname === to
-      : isNavActive(location.pathname, to, activePaths);
-    if (alreadyThere) {
-      setNavOpen(false);
-      return;
-    }
-    setNavOpen(false);
-    setTimeout(() => navigate(to), 150);
-  };
-
-  const handleRememberedUserClick = async (username: string) => {
-    setNavOpen(false);
-    await logout({ redirect: false });
-    navigate(buildSignInPath(username, location.pathname), { replace: true });
-  };
-
-  const handleSignOut = async () => {
-    setNavOpen(false);
-    await logout();
-  };
+  const hasPersistentSidebar = useContext(PersistentSidebarContext);
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -156,7 +338,11 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
         <div className="flex min-w-0 items-center gap-3">
           <Sheet open={navOpen} onOpenChange={setNavOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button
+                variant="ghost"
+                size="icon"
+                className={hasPersistentSidebar ? "lg:hidden" : undefined}
+              >
                 <Menu className="h-5 w-5" />
                 <span className="sr-only">Open navigation menu</span>
               </Button>
@@ -165,153 +351,11 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
               <SheetHeader>
                 <SheetTitle>JobOps</SheetTitle>
               </SheetHeader>
-              <nav className="mt-6 flex flex-col gap-2">
-                {NAV_LINKS.map(
-                  ({ to, label, icon: NavIcon, activePaths, children }) => (
-                    <div key={to} className="flex flex-col gap-1">
-                      <button
-                        type="button"
-                        aria-current={
-                          isNavActive(location.pathname, to, activePaths)
-                            ? "page"
-                            : undefined
-                        }
-                        onClick={() =>
-                          handleNavClick(
-                            children?.[0]?.to ?? to,
-                            activePaths,
-                            Boolean(children),
-                          )
-                        }
-                        className={cn(
-                          "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground text-left",
-                          isNavActive(location.pathname, to, activePaths)
-                            ? "bg-accent text-accent-foreground"
-                            : "text-muted-foreground",
-                        )}
-                      >
-                        <NavIcon className="h-4 w-4" />
-                        {label}
-                      </button>
-                      {children
-                        ? children.map((child) => {
-                            const childActive =
-                              child.to === PROFILE_BASE
-                                ? location.pathname === PROFILE_BASE
-                                : isNavActive(
-                                    location.pathname,
-                                    child.to,
-                                    child.activePaths,
-                                  );
-                            return (
-                              <button
-                                key={child.to}
-                                type="button"
-                                aria-current={childActive ? "page" : undefined}
-                                onClick={() =>
-                                  handleNavClick(child.to, child.activePaths)
-                                }
-                                className={cn(
-                                  "ml-7 rounded-md px-3 py-1.5 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground",
-                                  childActive
-                                    ? "font-semibold text-foreground"
-                                    : "text-muted-foreground",
-                                )}
-                              >
-                                {child.label}
-                              </button>
-                            );
-                          })
-                        : null}
-                    </div>
-                  ),
-                )}
-              </nav>
-              <div className="mt-auto space-y-4 pt-6 pb-2">
-                <div className="space-y-2 border-t border-border/60 pt-4">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="h-8 w-full justify-start gap-2 px-2 text-xs"
-                      >
-                        <UserRound className="h-3.5 w-3.5" />
-                        <span>Account</span>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-56">
-                      <DropdownMenuLabel>Remembered</DropdownMenuLabel>
-                      {rememberedUsers.length > 0 ? (
-                        rememberedUsers.map((user) => (
-                          <DropdownMenuItem
-                            key={user.username}
-                            onSelect={() =>
-                              void handleRememberedUserClick(user.username)
-                            }
-                            className="flex min-w-0 items-start gap-2"
-                          >
-                            <UserRound className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                            <span className="min-w-0">
-                              <span className="block truncate font-medium">
-                                {user.displayName ?? user.username}
-                              </span>
-                              {user.displayName ? (
-                                <span className="block truncate text-xs text-muted-foreground">
-                                  {user.username}
-                                </span>
-                              ) : null}
-                            </span>
-                          </DropdownMenuItem>
-                        ))
-                      ) : (
-                        <DropdownMenuItem disabled>
-                          Sign in once to remember a username here.
-                        </DropdownMenuItem>
-                      )}
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem
-                        onSelect={() => void handleSignOut()}
-                        className="gap-2"
-                      >
-                        <LogOut className="h-3.5 w-3.5" />
-                        <span>Sign out</span>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-                {showVersionFooter && (
-                  <div className="flex flex-col items-start gap-2">
-                    <a
-                      href="https://github.com/DaKheera47/job-ops/releases"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground transition-colors hover:text-foreground"
-                    >
-                      <span className="truncate">Version {version}</span>
-                      {updateAvailable && (
-                        <Tip asChild content={<p>Update available</p>}>
-                          <span className="h-2 w-2 shrink-0 cursor-pointer rounded-full bg-success" />
-                        </Tip>
-                      )}
-                    </a>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setNavOpen(false);
-                        window.open("/docs", "_blank", "noopener,noreferrer");
-                      }}
-                      className="h-7 gap-1.5 px-2 text-xs"
-                    >
-                      <span>Documentation</span>
-                      <ExternalLink className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                )}
-              </div>
+              <SidebarNav
+                showVersionFooter={showVersionFooter}
+                onNavigated={() => setNavOpen(false)}
+                delayNavigation
+              />
             </SheetContent>
           </Sheet>
 
@@ -464,6 +508,7 @@ interface EmptyStateProps {
   title: string;
   description?: string;
   action?: React.ReactNode;
+  className?: string;
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({
@@ -471,8 +516,14 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   title,
   description,
   action,
+  className,
 }) => (
-  <div className="flex flex-col items-center justify-center gap-2 px-6 py-12 text-center">
+  <div
+    className={cn(
+      "flex flex-col items-center justify-center gap-2 px-6 py-12 text-center",
+      className,
+    )}
+  >
     {Icon && <Icon className="h-10 w-10 text-muted-foreground/50 mb-2" />}
     <div className="text-base font-semibold">{title}</div>
     {description && (

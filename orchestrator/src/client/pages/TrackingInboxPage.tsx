@@ -647,9 +647,9 @@ export const TrackingInboxPage: React.FC = () => {
       >
         <section className="space-y-1 px-1">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold tracking-tight">
+            <h2 className="text-2xl font-bold tracking-tight">
               Application Inbox Matching
-            </h1>
+            </h2>
           </div>
           <p className="text-sm text-muted-foreground">
             Connect your inbox to ingest related emails, review the suggested

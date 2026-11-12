@@ -94,6 +94,24 @@ describe("SourceYieldTable", () => {
   });
 });
 
+describe("SourceYieldTable before the first reply", () => {
+  it("shows no reply rates and a hint", () => {
+    wrap(
+      <SourceYieldTable
+        rows={[
+          { source: "linkedin", results: 40, applied: 5, replied: 0 },
+          { source: "indeed", results: 10, applied: 3, replied: 0 },
+        ]}
+      />,
+    );
+    expect(screen.queryByText("0%")).not.toBeInTheDocument();
+    expect(screen.getAllByText("—")).toHaveLength(2);
+    expect(
+      screen.getByText("Reply rates appear after your first reply."),
+    ).toBeInTheDocument();
+  });
+});
+
 describe("ScoreBandsCard", () => {
   it("hints instead of drawing bars with too little data", () => {
     wrap(

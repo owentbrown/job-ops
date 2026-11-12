@@ -44,7 +44,14 @@ vi.mock("./pages/OnboardingPage", () => ({
 }));
 
 vi.mock("./pages/OrchestratorPage", () => ({
-  OrchestratorPage: () => null,
+  OrchestratorPage: () => {
+    const { tab, jobId } = useParams();
+    return <div>{`orchestrator:${tab}:${jobId ?? ""}`}</div>;
+  },
+}));
+
+vi.mock("./pages/profile/AboutYouPage", () => ({
+  AboutYouPage: () => <div>about-you</div>,
 }));
 
 vi.mock("./pages/SettingsPage", async () => {
@@ -288,5 +295,31 @@ describe("Filtered jobs tab", () => {
       </MemoryRouter>,
     );
     expect(await screen.findByText("jobs-filtered")).toBeInTheDocument();
+  });
+});
+
+describe("parameterised legacy redirects", () => {
+  it("substitutes :jobId when redirecting /ready/abc", async () => {
+    vi.mocked(useDemoInfo).mockReturnValue(null);
+    render(
+      <MemoryRouter initialEntries={["/ready/abc"]}>
+        <App />
+      </MemoryRouter>,
+    );
+    expect(
+      await screen.findByText("orchestrator:ready:abc"),
+    ).toBeInTheDocument();
+  });
+});
+
+describe("About you route", () => {
+  it("renders at /profile", async () => {
+    vi.mocked(useDemoInfo).mockReturnValue(null);
+    render(
+      <MemoryRouter initialEntries={["/profile"]}>
+        <App />
+      </MemoryRouter>,
+    );
+    expect(await screen.findByText("about-you")).toBeInTheDocument();
   });
 });

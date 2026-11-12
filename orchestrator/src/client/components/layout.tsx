@@ -159,22 +159,57 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
                 <SheetTitle>JobOps</SheetTitle>
               </SheetHeader>
               <nav className="mt-6 flex flex-col gap-2">
-                {navLinks.map(({ to, label, icon: NavIcon, activePaths }) => (
-                  <button
-                    key={to}
-                    type="button"
-                    onClick={() => handleNavClick(to, activePaths)}
-                    className={cn(
-                      "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground text-left",
+                {navLinks.map(
+                  ({ to, label, icon: NavIcon, activePaths, children }) => (
+                    <div key={to} className="flex flex-col gap-1">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          handleNavClick(children?.[0]?.to ?? to, activePaths)
+                        }
+                        className={cn(
+                          "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground text-left",
+                          isNavActive(location.pathname, to, activePaths)
+                            ? "bg-accent text-accent-foreground"
+                            : "text-muted-foreground",
+                        )}
+                      >
+                        <NavIcon className="h-4 w-4" />
+                        {label}
+                      </button>
+                      {children &&
                       isNavActive(location.pathname, to, activePaths)
-                        ? "bg-accent text-accent-foreground"
-                        : "text-muted-foreground",
-                    )}
-                  >
-                    <NavIcon className="h-4 w-4" />
-                    {label}
-                  </button>
-                ))}
+                        ? children.map((child) => {
+                            const childActive =
+                              child.to === "/profile"
+                                ? location.pathname === "/profile"
+                                : isNavActive(
+                                    location.pathname,
+                                    child.to,
+                                    child.activePaths,
+                                  );
+                            return (
+                              <button
+                                key={child.to}
+                                type="button"
+                                onClick={() =>
+                                  handleNavClick(child.to, child.activePaths)
+                                }
+                                className={cn(
+                                  "ml-7 rounded-md px-3 py-1.5 text-left text-sm transition-colors hover:bg-accent hover:text-accent-foreground",
+                                  childActive
+                                    ? "font-semibold text-foreground"
+                                    : "text-muted-foreground",
+                                )}
+                              >
+                                {child.label}
+                              </button>
+                            );
+                          })
+                        : null}
+                    </div>
+                  ),
+                )}
               </nav>
               <div className="mt-auto space-y-4 pt-6 pb-2">
                 <div className="space-y-2 border-t border-border/60 pt-4">

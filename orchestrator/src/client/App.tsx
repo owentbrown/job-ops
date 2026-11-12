@@ -28,6 +28,7 @@ import { JobsFilteredPage } from "./pages/JobsFilteredPage";
 import { OfflinePage } from "./pages/OfflinePage";
 import { OnboardingPage } from "./pages/OnboardingPage";
 import { OrchestratorPage } from "./pages/OrchestratorPage";
+import { AboutYouPage } from "./pages/profile/AboutYouPage";
 import { ProfileStudioPage } from "./pages/profile/ProfileStudioPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { SignInPage } from "./pages/SignInPage";
@@ -206,6 +207,7 @@ export const App: React.FC = () => {
                   path="/applications/:tab"
                   element={<ApplicationsPage />}
                 />
+                <Route path="/profile" element={<AboutYouPage />} />
                 <Route
                   path="/profile/studio/:doc"
                   element={<ProfileStudioPage />}

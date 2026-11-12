@@ -1,9 +1,9 @@
 import {
   Columns3,
-  FilePenLine,
   Home,
   LayoutDashboard,
   Settings,
+  UserRound,
 } from "lucide-react";
 
 export type NavLink = {
@@ -11,6 +11,7 @@ export type NavLink = {
   label: string;
   icon: typeof Home;
   activePaths?: string[];
+  children?: Array<{ to: string; label: string; activePaths?: string[] }>;
 };
 
 export const NAV_LINKS: NavLink[] = [
@@ -34,10 +35,18 @@ export const NAV_LINKS: NavLink[] = [
     activePaths: ["/applications"],
   },
   {
-    to: "/profile/studio/resume",
-    label: "Resume Studio",
-    icon: FilePenLine,
+    to: "/profile",
+    label: "Profile",
+    icon: UserRound,
     activePaths: ["/profile"],
+    children: [
+      { to: "/profile", label: "About you" },
+      {
+        to: "/profile/studio/resume",
+        label: "Document Studio",
+        activePaths: ["/profile/studio"],
+      },
+    ],
   },
   { to: "/settings", label: "Settings", icon: Settings },
 ];

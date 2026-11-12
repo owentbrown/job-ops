@@ -23,6 +23,7 @@ import type { DesignResumeJson } from "@shared/types";
 import {
   Download,
   FileDown,
+  FileText,
   Import,
   ListPlus,
   MoreHorizontal,
@@ -61,6 +62,9 @@ import { formatUserFacingError } from "../lib/error-format";
 export const DesignResumePage: React.FC<{ toolbar?: React.ReactNode }> = ({
   toolbar,
 }) => {
+  // Inside Document Studio the page shares the studio's title and icon.
+  const headerTitle = toolbar ? "Document Studio" : "Resume Studio";
+  const headerIcon = toolbar ? FileText : PenSquare;
   const navigate = useNavigate();
   const {
     draft,
@@ -116,8 +120,8 @@ export const DesignResumePage: React.FC<{ toolbar?: React.ReactNode }> = ({
     return (
       <div className="flex h-dvh flex-col overflow-hidden">
         <PageHeader
-          icon={PenSquare}
-          title="Resume Studio"
+          icon={headerIcon}
+          title={headerTitle}
           subtitle="Loading your resume"
         />
         <PageMain className={DESIGN_RESUME_PAGE_MAIN_CLASS_NAME}>
@@ -181,8 +185,8 @@ export const DesignResumePage: React.FC<{ toolbar?: React.ReactNode }> = ({
       />
 
       <PageHeader
-        icon={PenSquare}
-        title="Resume Studio"
+        icon={headerIcon}
+        title={headerTitle}
         subtitle="Edit your resume details"
         actions={
           <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap sm:justify-end">

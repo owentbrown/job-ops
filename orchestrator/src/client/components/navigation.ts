@@ -1,3 +1,4 @@
+import { PROFILE_BASE } from "@client/lib/routes";
 import {
   Columns3,
   Home,
@@ -35,12 +36,12 @@ export const NAV_LINKS: NavLink[] = [
     activePaths: ["/applications"],
   },
   {
-    to: "/profile",
+    to: PROFILE_BASE,
     label: "Profile",
     icon: UserRound,
-    activePaths: ["/profile"],
+    activePaths: [PROFILE_BASE],
     children: [
-      { to: "/profile", label: "About you" },
+      { to: PROFILE_BASE, label: "About you" },
       {
         to: "/profile/studio/resume",
         label: "Document Studio",

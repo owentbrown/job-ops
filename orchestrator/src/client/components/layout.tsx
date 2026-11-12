@@ -3,6 +3,7 @@
  */
 
 import { getAppStatus, logout } from "@client/api";
+import { PROFILE_BASE } from "@client/lib/routes";
 import { useQuery } from "@tanstack/react-query";
 import {
   ExternalLink,
@@ -115,7 +116,6 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   const navOpen = controlledNavOpen ?? internalNavOpen;
   const setNavOpen = onNavOpenChange ?? setInternalNavOpen;
   const { version, updateAvailable } = useVersionCheck();
-  const navLinks = NAV_LINKS;
 
   useEffect(() => {
     if (navOpen) {
@@ -123,8 +123,15 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
     }
   }, [navOpen]);
 
-  const handleNavClick = (to: string, activePaths?: string[]) => {
-    if (isNavActive(location.pathname, to, activePaths)) {
+  const handleNavClick = (
+    to: string,
+    activePaths?: string[],
+    exact = false,
+  ) => {
+    const alreadyThere = exact
+      ? location.pathname === to
+      : isNavActive(location.pathname, to, activePaths);
+    if (alreadyThere) {
       setNavOpen(false);
       return;
     }
@@ -159,13 +166,22 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
                 <SheetTitle>JobOps</SheetTitle>
               </SheetHeader>
               <nav className="mt-6 flex flex-col gap-2">
-                {navLinks.map(
+                {NAV_LINKS.map(
                   ({ to, label, icon: NavIcon, activePaths, children }) => (
                     <div key={to} className="flex flex-col gap-1">
                       <button
                         type="button"
+                        aria-current={
+                          isNavActive(location.pathname, to, activePaths)
+                            ? "page"
+                            : undefined
+                        }
                         onClick={() =>
-                          handleNavClick(children?.[0]?.to ?? to, activePaths)
+                          handleNavClick(
+                            children?.[0]?.to ?? to,
+                            activePaths,
+                            Boolean(children),
+                          )
                         }
                         className={cn(
                           "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground text-left",
@@ -177,12 +193,11 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
                         <NavIcon className="h-4 w-4" />
                         {label}
                       </button>
-                      {children &&
-                      isNavActive(location.pathname, to, activePaths)
+                      {children
                         ? children.map((child) => {
                             const childActive =
-                              child.to === "/profile"
-                                ? location.pathname === "/profile"
+                              child.to === PROFILE_BASE
+                                ? location.pathname === PROFILE_BASE
                                 : isNavActive(
                                     location.pathname,
                                     child.to,
@@ -192,6 +207,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
                               <button
                                 key={child.to}
                                 type="button"
+                                aria-current={childActive ? "page" : undefined}
                                 onClick={() =>
                                   handleNavClick(child.to, child.activePaths)
                                 }

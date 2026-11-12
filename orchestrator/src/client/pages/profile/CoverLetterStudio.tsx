@@ -2,7 +2,7 @@ import { AppModeContext } from "@client/components/layout";
 import { PageFrame } from "@client/components/PageFrame";
 import { SignatureCard } from "@client/components/SignatureCard";
 import { useSettings } from "@client/hooks/useSettings";
-import { Mail } from "lucide-react";
+import { FileText } from "lucide-react";
 import React from "react";
 import { Link } from "react-router-dom";
 
@@ -17,7 +17,7 @@ export const CoverLetterStudio: React.FC<{ switcher: React.ReactNode }> = ({
 
   return (
     <PageFrame
-      icon={Mail}
+      icon={FileText}
       title="Document Studio"
       subtitle="The base documents every application starts from"
     >

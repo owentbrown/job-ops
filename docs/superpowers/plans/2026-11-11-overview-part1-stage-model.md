@@ -624,7 +624,7 @@ const INTERVIEW_STAGES = ["interview"] as const;
 
 - [ ] **Step 3: Update the demo data.** In `demo-defaults.ts` and `demo-defaults.data.ts`, change every `fromStage:` and `toStage:` value using the stage mapping table:
   - `recruiter_screen`, `assessment` → `screening`
-  - `technical_interview`, `onsite` → `interview`
+  - `technical_interview`, `onsite`, `hiring_manager_screen` → `interview`
 
   Leave `title:` text such as "Take-home assessment sent" and the `id:` strings unchanged.
 

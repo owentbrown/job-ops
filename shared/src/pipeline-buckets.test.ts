@@ -1,12 +1,15 @@
 import { describe, expect, it } from "vitest";
-import type { ApplicationStage } from "./types/jobs";
 import {
   bucketFor,
   PIPELINE_BUCKET_LABELS,
   PIPELINE_BUCKETS,
   transitionForBucket,
 } from "./pipeline-buckets";
-import { APPLICATION_STAGES, LEGACY_STAGE_MAP } from "./types/jobs";
+import {
+  APPLICATION_STAGES,
+  type ApplicationStage,
+  LEGACY_STAGE_MAP,
+} from "./types/jobs";
 
 describe("APPLICATION_STAGES", () => {
   it("is the five-stage model", () => {

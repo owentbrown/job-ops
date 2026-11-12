@@ -1,15 +1,11 @@
 import {
-  CircleDollarSign,
   Columns3,
-  Eye,
   FilePenLine,
   Filter,
   Home,
   Inbox,
   LayoutDashboard,
-  Link2,
   Settings,
-  Shield,
 } from "lucide-react";
 
 export type NavLink = {
@@ -45,16 +41,7 @@ export const NAV_LINKS: NavLink[] = [
     activePaths: ["/design-resume"],
   },
   { to: "/tracking-inbox", label: "Tracking Inbox", icon: Inbox },
-  {
-    to: "/tracer-links",
-    label: "Tracer Links",
-    icon: Link2,
-    activePaths: ["/tracer-links"],
-  },
-  { to: "/visa-sponsors", label: "Visa Sponsors", icon: Shield },
-  { to: "/watchlist", label: "Watchlist", icon: Eye },
   { to: "/filtered", label: "Filtered", icon: Filter },
-  { to: "/spend", label: "Spend", icon: CircleDollarSign },
   { to: "/settings", label: "Settings", icon: Settings },
 ];
 

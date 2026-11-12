@@ -31,12 +31,8 @@ import { OnboardingPage } from "./pages/OnboardingPage";
 import { OrchestratorPage } from "./pages/OrchestratorPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { SignInPage } from "./pages/SignInPage";
-import { SpendPage } from "./pages/SpendPage";
 import { SsoCallbackPage } from "./pages/SsoCallbackPage";
-import { TracerLinksPage } from "./pages/TracerLinksPage";
 import { TrackingInboxPage } from "./pages/TrackingInboxPage";
-import { VisaSponsorsPage } from "./pages/VisaSponsorsPage";
-import { WatchlistPage } from "./pages/WatchlistPage";
 
 /** Backwards-compatibility redirects: old URL paths -> new URL paths */
 const REDIRECTS: Array<{ from: string; to: string }> = [
@@ -54,6 +50,10 @@ const REDIRECTS: Array<{ from: string; to: string }> = [
   { from: "/jobs/in_progress/:jobId", to: "/applications/in-progress" },
   { from: "/all", to: "/jobs/all" },
   { from: "/all/:jobId", to: "/jobs/all/:jobId" },
+  { from: "/watchlist", to: "/settings#sources" },
+  { from: "/visa-sponsors", to: "/settings#visa-sponsors" },
+  { from: "/spend", to: "/settings#spend" },
+  { from: "/tracer-links", to: "/settings#tracer-links" },
 ];
 
 const DEMO_WAITLIST_BANNER_DISMISSED_KEY = "jobops.demoWaitlistBannerDismissed";
@@ -203,15 +203,11 @@ export const App: React.FC = () => {
                   element={<SsoCallbackPage />}
                 />
                 <Route path="/settings" element={<SettingsPage />} />
-                <Route path="/tracer-links" element={<TracerLinksPage />} />
-                <Route path="/visa-sponsors" element={<VisaSponsorsPage />} />
                 <Route
                   path="/tracking-inbox"
                   element={<TrackingInboxRoute />}
                 />
-                <Route path="/watchlist" element={<WatchlistPage />} />
                 <Route path="/filtered" element={<FilteredJobsPage />} />
-                <Route path="/spend" element={<SpendPage />} />
                 <Route path="/jobs/:tab" element={<OrchestratorPage />} />
                 <Route
                   path="/jobs/:tab/:jobId"

@@ -240,7 +240,7 @@ function WatchlistSourceGroup({
         <p className="text-xs text-muted-foreground">
           No Watchlist sources saved yet. Add company career pages on the{" "}
           <a
-            href="/watchlist"
+            href="/settings#sources"
             className="font-medium text-foreground underline underline-offset-2 hover:text-primary"
           >
             Watchlist page

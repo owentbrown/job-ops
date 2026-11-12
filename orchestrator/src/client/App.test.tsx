@@ -47,9 +47,15 @@ vi.mock("./pages/OrchestratorPage", () => ({
   OrchestratorPage: () => null,
 }));
 
-vi.mock("./pages/SettingsPage", () => ({
-  SettingsPage: () => null,
-}));
+vi.mock("./pages/SettingsPage", async () => {
+  const { useLocation } = await import("react-router-dom");
+  return {
+    SettingsPage: () => {
+      const location = useLocation();
+      return <div>settings{location.hash}</div>;
+    },
+  };
+});
 
 vi.mock("./pages/DesignResumePage", () => ({
   DesignResumePage: () => <div>design-resume-page</div>,
@@ -61,10 +67,6 @@ vi.mock("./pages/SignInPage", () => ({
 
 vi.mock("./pages/TrackingInboxPage", () => ({
   TrackingInboxPage: () => null,
-}));
-
-vi.mock("./pages/VisaSponsorsPage", () => ({
-  VisaSponsorsPage: () => null,
 }));
 
 describe("App demo banner", () => {
@@ -192,5 +194,29 @@ describe("App demo banner", () => {
     );
 
     expect(screen.getByText("overview")).toBeInTheDocument();
+  });
+});
+
+describe("legacy URLs moved into Settings", () => {
+  it.each([
+    ["/watchlist", "settings#sources"],
+    ["/visa-sponsors", "settings#visa-sponsors"],
+    ["/spend", "settings#spend"],
+    ["/tracer-links", "settings#tracer-links"],
+  ])("%s redirects to %s", async (from, text) => {
+    vi.mocked(useDemoInfo).mockReturnValue({
+      demoMode: false,
+      resetCadenceHours: 6,
+      lastResetAt: null,
+      nextResetAt: null,
+      baselineVersion: null,
+      baselineName: null,
+    });
+    render(
+      <MemoryRouter initialEntries={[from]}>
+        <App />
+      </MemoryRouter>,
+    );
+    expect(await screen.findByText(text)).toBeInTheDocument();
   });
 });

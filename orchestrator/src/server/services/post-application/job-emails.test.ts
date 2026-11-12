@@ -68,7 +68,7 @@ describe.sequential("post-application job emails service", () => {
       relevanceLlmScore: 96,
       relevanceDecision: "relevant",
       matchConfidence: 96,
-      stageTarget: "technical_interview",
+      stageTarget: "interview",
       messageType: "interview",
       stageEventPayload: null,
       processingStatus: input.processingStatus ?? "auto_linked",

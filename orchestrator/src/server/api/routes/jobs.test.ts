@@ -2062,7 +2062,7 @@ describe.sequential("Jobs API routes", () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          toStage: "recruiter_screen",
+          toStage: "screening",
           metadata: { note: "Called by recruiter" },
         }),
       });
@@ -2073,12 +2073,12 @@ describe.sequential("Jobs API routes", () => {
       expect(eventsBody.ok).toBe(true);
       expect(eventsBody.data).toHaveLength(2);
       expect(eventsBody.data[0].toStage).toBe("applied");
-      expect(eventsBody.data[1].toStage).toBe("recruiter_screen");
+      expect(eventsBody.data[1].toStage).toBe("screening");
       expect(eventsBody.data[1].metadata.note).toBe("Called by recruiter");
       expect(trackCanonicalActivationEvent).toHaveBeenCalledWith(
         "application_positive_response_detected",
         expect.objectContaining({
-          stage: "recruiter_screen",
+          stage: "screening",
         }),
         expect.objectContaining({
           occurredAt: eventsBody.data[1].occurredAt * 1000,

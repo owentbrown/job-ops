@@ -487,7 +487,7 @@ describe("ghostwriter service", () => {
           relevanceDecision: "relevant",
           matchedJobId: "job-1",
           matchConfidence: 91,
-          stageTarget: "recruiter_screen",
+          stageTarget: "screening",
           messageType: "interview",
           stageEventPayload: null,
           processingStatus: "auto_linked",

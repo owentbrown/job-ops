@@ -465,7 +465,7 @@ describe("buildJobChatPromptContext", () => {
           relevanceDecision: "relevant",
           matchedJobId: job.id,
           matchConfidence: 91,
-          stageTarget: "recruiter_screen",
+          stageTarget: "screening",
           messageType: "interview",
           stageEventPayload: null,
           processingStatus: "auto_linked",

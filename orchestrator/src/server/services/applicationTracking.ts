@@ -34,29 +34,19 @@ function tasksScopeFilter() {
 
 const STAGE_TO_STATUS: Record<ApplicationStage, JobStatus> = {
   applied: "applied",
-  recruiter_screen: "in_progress",
-  assessment: "in_progress",
-  hiring_manager_screen: "in_progress",
-  technical_interview: "in_progress",
-  onsite: "in_progress",
+  screening: "in_progress",
+  interview: "in_progress",
   offer: "in_progress",
   closed: "in_progress",
 };
 
 const POSITIVE_RESPONSE_STAGES = new Set<ApplicationStage>([
-  "recruiter_screen",
-  "assessment",
-  "hiring_manager_screen",
-  "technical_interview",
-  "onsite",
+  "screening",
+  "interview",
   "offer",
 ]);
 
-const INTERVIEW_STAGES = new Set<ApplicationStage>([
-  "hiring_manager_screen",
-  "technical_interview",
-  "onsite",
-]);
+const INTERVIEW_STAGES = new Set<ApplicationStage>(["interview"]);
 
 export const stageEventMetadataSchema = z
   .object({

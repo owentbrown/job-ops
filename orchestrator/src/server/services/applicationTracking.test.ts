@@ -61,10 +61,10 @@ describe.sequential("Application Tracking Service", () => {
     // 2. Next Transition (Recruiter Screen)
     const event2 = applicationTracking.transitionStage(
       job.id,
-      "recruiter_screen",
+      "screening",
     );
     expect(event2.fromStage).toBe("applied");
-    expect(event2.toStage).toBe("recruiter_screen");
+    expect(event2.toStage).toBe("screening");
 
     // Check Job Status (moves to in_progress beyond applied stage)
     const jobAfter2 = await db
@@ -111,7 +111,7 @@ describe.sequential("Application Tracking Service", () => {
     applicationTracking.transitionStage(job.id, "applied", now - 100);
     const event2 = applicationTracking.transitionStage(
       job.id,
-      "recruiter_screen",
+      "screening",
       now,
     );
 
@@ -228,7 +228,7 @@ describe.sequential("Application Tracking Service", () => {
 
     // 1. Update event2 to not be a closure
     applicationTracking.updateStageEvent(event2.id, {
-      toStage: "technical_interview",
+      toStage: "interview",
     });
     jobCheck = await db
       .select()

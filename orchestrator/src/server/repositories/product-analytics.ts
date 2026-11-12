@@ -38,20 +38,9 @@ export const ACTIVATION_MILESTONES = [
 
 export type ActivationMilestone = (typeof ACTIVATION_MILESTONES)[number];
 
-const POSITIVE_RESPONSE_STAGES = [
-  "recruiter_screen",
-  "assessment",
-  "hiring_manager_screen",
-  "technical_interview",
-  "onsite",
-  "offer",
-] as const;
+const POSITIVE_RESPONSE_STAGES = ["screening", "interview", "offer"] as const;
 
-const INTERVIEW_STAGES = [
-  "hiring_manager_screen",
-  "technical_interview",
-  "onsite",
-] as const;
+const INTERVIEW_STAGES = ["interview"] as const;
 
 type InstallState = typeof analyticsInstallState.$inferSelect;
 type MilestoneRow = typeof analyticsMilestones.$inferSelect;

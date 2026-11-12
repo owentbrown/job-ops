@@ -239,7 +239,7 @@ const DEMO_GENERATED_STAGE_EVENTS: DemoDefaultStageEvent[] =
         id: `demo-event-auto-screen-${n}`,
         applicationId: job.id,
         fromStage: "applied",
-        toStage: "recruiter_screen",
+        toStage: "screening",
         title: "Recruiter screening",
         occurredOffsetMinutes: Math.max(appliedOffset - 24 * 60, 15),
         metadata: { eventLabel: "Recruiter Screen", actor: "user" },
@@ -249,8 +249,8 @@ const DEMO_GENERATED_STAGE_EVENTS: DemoDefaultStageEvent[] =
       events.push({
         id: `demo-event-auto-tech-${n}`,
         applicationId: job.id,
-        fromStage: "recruiter_screen",
-        toStage: "technical_interview",
+        fromStage: "screening",
+        toStage: "interview",
         title: "Technical interview",
         occurredOffsetMinutes: Math.max(appliedOffset - 2 * 24 * 60, 15),
         metadata: { eventLabel: "Technical Interview", actor: "user" },
@@ -260,7 +260,7 @@ const DEMO_GENERATED_STAGE_EVENTS: DemoDefaultStageEvent[] =
       events.push({
         id: `demo-event-auto-offer-${n}`,
         applicationId: job.id,
-        fromStage: "technical_interview",
+        fromStage: "interview",
         toStage: "offer",
         title: "Offer received",
         occurredOffsetMinutes: Math.max(appliedOffset - 3 * 24 * 60, 15),
@@ -270,7 +270,7 @@ const DEMO_GENERATED_STAGE_EVENTS: DemoDefaultStageEvent[] =
       events.push({
         id: `demo-event-auto-closed-${n}`,
         applicationId: job.id,
-        fromStage: "recruiter_screen",
+        fromStage: "screening",
         toStage: "closed",
         title: "Closed without offer",
         occurredOffsetMinutes: Math.max(appliedOffset - 2 * 24 * 60, 15),

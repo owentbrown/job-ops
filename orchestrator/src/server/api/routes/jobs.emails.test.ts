@@ -56,7 +56,7 @@ describe.sequential("Jobs email routes", () => {
       relevanceLlmScore: 96,
       relevanceDecision: "relevant",
       matchConfidence: 96,
-      stageTarget: "technical_interview",
+      stageTarget: "interview",
       messageType: "interview",
       stageEventPayload: null,
       processingStatus: "auto_linked",

@@ -61,7 +61,7 @@ describe.sequential("Post-Application Review Workflow API", () => {
       relevanceLlmScore: 97,
       relevanceDecision: "relevant",
       matchConfidence: 97,
-      stageTarget: input?.stageTarget ?? "technical_interview",
+      stageTarget: input?.stageTarget ?? "interview",
       messageType:
         input?.stageTarget === "rejected" || input?.stageTarget === "withdrawn"
           ? "rejection"

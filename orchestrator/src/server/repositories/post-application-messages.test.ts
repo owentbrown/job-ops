@@ -35,7 +35,7 @@ describe.sequential("post-application message upsert transition semantics", () =
       relevanceLlmScore: 95,
       relevanceDecision: "relevant",
       matchConfidence: 95,
-      stageTarget: "assessment",
+      stageTarget: "screening",
       messageType: "update",
       stageEventPayload: { note: "test" },
       processingStatus: args.processingStatus,

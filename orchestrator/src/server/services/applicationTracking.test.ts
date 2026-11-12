@@ -256,6 +256,43 @@ describe.sequential("Application Tracking Service", () => {
     expect(jobCheck?.closedAt).toBeNull();
   });
 
+  it("clears outcome and closedAt when a closed job moves to an active stage", async () => {
+    const job = await jobsRepo.createJob({
+      source: "manual",
+      title: "Reopen Engineer",
+      employer: "Again Co",
+      jobUrl: "https://example.com/job/reopen",
+    });
+    const now = Math.floor(Date.now() / 1000);
+    applicationTracking.transitionStage(job.id, "applied", now - 300);
+    applicationTracking.transitionStage(
+      job.id,
+      "closed",
+      now - 200,
+      null,
+      "rejected",
+    );
+
+    // no_change on a closed job keeps the outcome
+    applicationTracking.transitionStage(job.id, "no_change", now - 100);
+    let jobCheck = await db
+      .select()
+      .from(schema.jobs)
+      .where(eq(schema.jobs.id, job.id))
+      .get();
+    expect(jobCheck?.outcome).toBe("rejected");
+    expect(jobCheck?.closedAt).toBe(now - 200);
+
+    applicationTracking.transitionStage(job.id, "screening", now);
+    jobCheck = await db
+      .select()
+      .from(schema.jobs)
+      .where(eq(schema.jobs.id, job.id))
+      .get();
+    expect(jobCheck?.outcome).toBeNull();
+    expect(jobCheck?.closedAt).toBeNull();
+  });
+
   it("sets closedAt when a closed stage event is logged without outcome", async () => {
     const job = await jobsRepo.createJob({
       source: "manual",

@@ -194,6 +194,10 @@ export function transitionStage(
 
       if (finalToStage === "closed") {
         updates.closedAt = timestamp;
+      } else {
+        // Moving back to an active stage reopens the application.
+        updates.outcome = null;
+        updates.closedAt = null;
       }
     }
 

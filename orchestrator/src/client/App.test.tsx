@@ -31,6 +31,10 @@ vi.mock("./pages/ClassicOverviewPage", () => ({
   ClassicOverviewPage: () => <div>overview</div>,
 }));
 
+vi.mock("./pages/OverviewPage", () => ({
+  OverviewPage: () => <div>overview</div>,
+}));
+
 vi.mock("./pages/ApplicationsPage", () => ({
   ApplicationsPage: () => <div>applications</div>,
 }));

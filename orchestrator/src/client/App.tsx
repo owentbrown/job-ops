@@ -28,6 +28,7 @@ import { JobsFilteredPage } from "./pages/JobsFilteredPage";
 import { OfflinePage } from "./pages/OfflinePage";
 import { OnboardingPage } from "./pages/OnboardingPage";
 import { OrchestratorPage } from "./pages/OrchestratorPage";
+import { OverviewPage } from "./pages/OverviewPage";
 import { AboutYouPage } from "./pages/profile/AboutYouPage";
 import { ProfileStudioPage } from "./pages/profile/ProfileStudioPage";
 import { SettingsPage } from "./pages/SettingsPage";
@@ -196,7 +197,7 @@ export const App: React.FC = () => {
                 ))}
 
                 {/* Application routes */}
-                <Route path="/overview" element={<ClassicOverviewPage />} />
+                <Route path="/overview" element={<OverviewPage />} />
                 <Route
                   path="/overview/classic"
                   element={<ClassicOverviewPage />}

@@ -109,7 +109,7 @@ type NoSelectedProjectsInfoCopy = {
 };
 
 const sectionClass =
-  "overflow-hidden rounded-md border border-border/55 bg-background/25 px-0 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]";
+  "overflow-hidden rounded-md border border-border/55 bg-background/25 px-0 shadow-[inset_0_1px_0_color-mix(in_srgb,var(--foreground)_3%,transparent)]";
 const triggerClass =
   "min-h-11 px-3 py-2 text-xs font-medium text-muted-foreground hover:bg-muted/20 hover:no-underline data-[state=open]:border-b data-[state=open]:border-border/45";
 const inputClass =

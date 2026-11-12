@@ -136,7 +136,7 @@ export function IconPickerField({ id, value, onChange }: IconPickerFieldProps) {
             <button
               type="button"
               onClick={handleClear}
-              className="text-xs text-[#F1703E] hover:underline"
+              className="text-xs text-primary hover:underline"
             >
               clear
             </button>

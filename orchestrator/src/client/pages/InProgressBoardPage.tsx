@@ -372,7 +372,7 @@ export const InProgressBoardPage: React.FC = () => {
                       }
                     }}
                     className={cn(
-                      "flex h-full flex-col rounded-xl border border-border/70 bg-muted/30 shadow-[0_10px_24px_-20px_rgba(0,0,0,0.8)] transition-colors",
+                      "flex h-full flex-col rounded-xl border border-border/70 bg-muted/30 shadow-[0_10px_24px_-20px_color-mix(in_srgb,var(--shadow-color)_80%,transparent)] transition-colors",
                       isCollapsedApplied ? "w-11" : "w-[320px]",
                       dropTargetBucket === bucket &&
                         "border-info/70 bg-info/15",

@@ -116,7 +116,7 @@ export const ScoreRing: React.FC<{
             animate={{ scale: 1.4, opacity: 0 }}
             transition={{ duration: 0.6, ease: "easeOut" }}
           />
-          <div className="relative z-10 flex h-full w-full flex-col items-center justify-center rounded-full border border-foreground/5 bg-background/70 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+          <div className="relative z-10 flex h-full w-full flex-col items-center justify-center rounded-full border border-foreground/5 bg-background/70 text-center shadow-[inset_0_1px_0_color-mix(in_srgb,var(--foreground)_4%,transparent)]">
             <div
               className={cn(
                 size === "sm" ? "text-lg" : "text-2xl",
@@ -180,7 +180,7 @@ export const ScoreRing: React.FC<{
               animate={{ scale: 1.4, opacity: 0 }}
               transition={{ duration: 0.6, ease: "easeOut" }}
             />
-            <div className="relative z-10 flex h-full w-full flex-col items-center justify-center rounded-full border border-foreground/5 bg-background/70 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+            <div className="relative z-10 flex h-full w-full flex-col items-center justify-center rounded-full border border-foreground/5 bg-background/70 text-center shadow-[inset_0_1px_0_color-mix(in_srgb,var(--foreground)_4%,transparent)]">
               <div
                 className={cn(
                   size === "sm" ? "text-lg" : "text-2xl",

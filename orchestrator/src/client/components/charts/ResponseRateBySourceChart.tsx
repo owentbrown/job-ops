@@ -59,16 +59,11 @@ const chartConfig = {
  */
 const RESPONSE_STAGES = new Set(["screening", "interview", "offer"]);
 
-const BAR_COLORS = [
-  "#3b82f6",
-  "#8b5cf6",
-  "#f59e0b",
-  "#10b981",
-  "#ef4444",
-  "#06b6d4",
-  "#f97316",
-  "#84cc16",
-];
+/** Categorical series colours; defined once in index.css (--chart-series-*). */
+const BAR_COLORS = Array.from(
+  { length: 8 },
+  (_, i) => `var(--chart-series-${i + 1})`,
+);
 
 /** Minimum applications required for a source to appear by default. */
 const MIN_SAMPLE_DEFAULT = 5;

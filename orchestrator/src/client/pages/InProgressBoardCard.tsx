@@ -46,8 +46,8 @@ export const InProgressBoardCard: React.FC<InProgressBoardCardProps> = ({
       onDragStart={onDragStart}
       onDragEnd={onDragEnd}
       className={cn(
-        "group rounded-lg border border-border/60 bg-background/95 p-3 shadow-[0_8px_20px_-18px_rgba(0,0,0,1)] transition-colors",
-        "hover:border-border hover:bg-background hover:shadow-[0_12px_24px_-16px_rgba(0,0,0,1)]",
+        "group rounded-lg border border-border/60 bg-background/95 p-3 shadow-[0_8px_20px_-18px_var(--shadow-color)] transition-colors",
+        "hover:border-border hover:bg-background hover:shadow-[0_12px_24px_-16px_var(--shadow-color)]",
         cardClassName,
         isMoving && "opacity-70",
       )}

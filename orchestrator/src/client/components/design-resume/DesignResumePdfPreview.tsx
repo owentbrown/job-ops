@@ -306,18 +306,18 @@ export function DesignResumePdfPreview({
 
   return (
     <div className="relative flex h-full min-h-0 items-center justify-center overflow-hidden bg-card">
-      <div className="relative h-full min-h-0 w-full overflow-hidden border border-border/70 shadow-[0_24px_80px_rgba(0,0,0,0.24)]">
+      <div className="relative h-full min-h-0 w-full overflow-hidden border border-border/70 shadow-[0_24px_80px_color-mix(in_srgb,var(--shadow-color)_24%,transparent)]">
         <div
           ref={viewerRef}
           data-testid="design-resume-pdf-scroll-container"
-          className="h-full overflow-auto bg-[#d9d9d9] px-6 py-8"
+          className="h-full overflow-auto bg-muted px-6 py-8"
         >
           <div className="mx-auto flex min-w-fit flex-col items-center gap-6">
             {Array.from({ length: pageCount }, (_, index) => index + 1).map(
               (pageNumber) => (
                 <div
                   key={pageNumber}
-                  className="w-fit rounded-sm bg-white shadow-[0_18px_48px_rgba(15,23,42,0.18)]"
+                  className="w-fit rounded-sm bg-white shadow-[0_18px_48px_color-mix(in_srgb,var(--shadow-color)_18%,transparent)]"
                 >
                   <canvas
                     ref={(canvas) => {

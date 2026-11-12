@@ -185,7 +185,7 @@ export const JobListPanel = forwardRef<VirtualListHandle, JobListPanelProps>(
                     "group absolute left-0 top-0 flex w-full items-center gap-3 border-l-2 border-b px-4 py-3 transition-colors cursor-pointer",
                     // selected or checked
                     (isChecked || isSelected) &&
-                      "shadow-[0_0_0_1px_hsl(var(--primary)/0.35)]",
+                      "shadow-[0_0_0_1px_color-mix(in_srgb,var(--primary)_35%,transparent)]",
                     // Checked rows keep their left border and background emphasized.
                     isChecked
                       ? "border-l! border-l-primary bg-primary/15! hover:bg-primary/25!"

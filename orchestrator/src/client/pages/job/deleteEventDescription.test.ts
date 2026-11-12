@@ -30,10 +30,7 @@ describe("getDeleteEventDescription", () => {
   });
 
   it("warns about rolling back when deleting the latest event", () => {
-    const events = [
-      makeEvent("a", "applied"),
-      makeEvent("b", "screening"),
-    ];
+    const events = [makeEvent("a", "applied"), makeEvent("b", "screening")];
     const description = getDeleteEventDescription(events, "b");
     expect(description.toLowerCase()).toContain("roll");
     expect(description).toContain("Applied");

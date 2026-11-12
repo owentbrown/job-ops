@@ -124,9 +124,7 @@ describe("ConversionAnalytics - Edge Cases", () => {
     it("excludes jobs with null appliedAt from conversion calculation", () => {
       const jobs = [
         createJob("job-1", null, []),
-        createJob("job-2", null, [
-          createEvent("screening", 1704844800000),
-        ]),
+        createJob("job-2", null, [createEvent("screening", 1704844800000)]),
       ];
 
       render(
@@ -188,12 +186,8 @@ describe("ConversionAnalytics - Edge Cases", () => {
     it("shows 100% conversion when all jobs have conversion events", () => {
       const today = mockDate.toISOString();
       const jobs = [
-        createJob("job-1", today, [
-          createEvent("screening", 1704844800000),
-        ]),
-        createJob("job-2", today, [
-          createEvent("interview", 1704844800000),
-        ]),
+        createJob("job-1", today, [createEvent("screening", 1704844800000)]),
+        createJob("job-2", today, [createEvent("interview", 1704844800000)]),
       ];
 
       render(
@@ -212,9 +206,7 @@ describe("ConversionAnalytics - Edge Cases", () => {
     it("calculates partial conversion rate correctly", () => {
       const today = mockDate.toISOString();
       const jobs = [
-        createJob("job-1", today, [
-          createEvent("screening", 1704844800000),
-        ]),
+        createJob("job-1", today, [createEvent("screening", 1704844800000)]),
         createJob("job-2", today, []),
         createJob("job-3", today, []),
         createJob("job-4", today, [createEvent("offer", 1704844800000)]),
@@ -273,9 +265,7 @@ describe("ConversionAnalytics - Edge Cases", () => {
     it("correctly categorizes screening stages ((screening))", () => {
       const today = mockDate.toISOString();
       const jobs = [
-        createJob("job-1", today, [
-          createEvent("screening", 1704844800000),
-        ]),
+        createJob("job-1", today, [createEvent("screening", 1704844800000)]),
         createJob("job-2", today, [createEvent("screening", 1704844800000)]),
         createJob("job-3", today, []),
       ];
@@ -295,12 +285,8 @@ describe("ConversionAnalytics - Edge Cases", () => {
     it("correctly categorizes interview stages", () => {
       const today = mockDate.toISOString();
       const jobs = [
-        createJob("job-1", today, [
-          createEvent("screening", 1704844800000),
-        ]),
-        createJob("job-2", today, [
-          createEvent("interview", 1704844800000),
-        ]),
+        createJob("job-1", today, [createEvent("screening", 1704844800000)]),
+        createJob("job-2", today, [createEvent("interview", 1704844800000)]),
         createJob("job-3", today, [createEvent("interview", 1704844800000)]),
       ];
 
@@ -508,9 +494,7 @@ describe("ConversionAnalytics - Edge Cases", () => {
       const oldDate = "2025-01-01T00:00:00Z"; // Before 7-day window
       const jobs = [
         createJob("job-1", oldDate, [createEvent("offer", 1704153600000)]),
-        createJob("job-2", oldDate, [
-          createEvent("screening", 1704153600000),
-        ]),
+        createJob("job-2", oldDate, [createEvent("screening", 1704153600000)]),
       ];
 
       render(
@@ -563,9 +547,7 @@ describe("ConversionAnalytics - Edge Cases", () => {
         createJob("job-2", today, []),
         createJob("job-3", today, []),
         createJob("job-4", today, []),
-        createJob("job-5", today, [
-          createEvent("screening", 1704844800000),
-        ]),
+        createJob("job-5", today, [createEvent("screening", 1704844800000)]),
       ];
 
       render(
@@ -584,9 +566,7 @@ describe("ConversionAnalytics - Edge Cases", () => {
     it("shows no trend indicator for moderate conversion rates (10-25%)", () => {
       const today = mockDate.toISOString();
       const jobs = [
-        createJob("job-1", today, [
-          createEvent("screening", 1704844800000),
-        ]),
+        createJob("job-1", today, [createEvent("screening", 1704844800000)]),
         createJob("job-2", today, []),
         createJob("job-3", today, []),
         createJob("job-4", today, []),
@@ -612,9 +592,7 @@ describe("ConversionAnalytics - Edge Cases", () => {
       const today = mockDate.toISOString();
       const yesterday = "2025-01-14T00:00:00Z";
       const jobs = [
-        createJob("job-1", today, [
-          createEvent("screening", 1705276800000),
-        ]),
+        createJob("job-1", today, [createEvent("screening", 1705276800000)]),
         createJob("job-2", yesterday, []),
       ];
 
@@ -632,9 +610,7 @@ describe("ConversionAnalytics - Edge Cases", () => {
     it("handles single day range for time series", () => {
       const today = mockDate.toISOString();
       const jobs = [
-        createJob("job-1", today, [
-          createEvent("screening", 1705276800000),
-        ]),
+        createJob("job-1", today, [createEvent("screening", 1705276800000)]),
       ];
 
       render(

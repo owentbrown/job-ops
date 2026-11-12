@@ -59,10 +59,7 @@ describe.sequential("Application Tracking Service", () => {
     expect(jobAfter1?.appliedAt).toBeTruthy();
 
     // 2. Next Transition (Recruiter Screen)
-    const event2 = applicationTracking.transitionStage(
-      job.id,
-      "screening",
-    );
+    const event2 = applicationTracking.transitionStage(job.id, "screening");
     expect(event2.fromStage).toBe("applied");
     expect(event2.toStage).toBe("screening");
 

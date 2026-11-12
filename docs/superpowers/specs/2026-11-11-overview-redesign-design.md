@@ -19,6 +19,7 @@ Replace the Overview page with a dashboard in three sections: Pipeline, Needs yo
 | Visual style | Current theme tokens, fonts, and dark/light support. Mockup colours, fonts and sidebar changes are out of scope. |
 | Stage model | Replace the stages (not just their display) with `applied, screening, interview, offer, closed`. There's no history in the old stages yet. |
 | Pipeline buckets | Awaiting reply, Screening, Interview, Offer, Rejected. Ghosted / no response count as Awaiting reply. Withdrawn is left out of the bar and shown as "+N withdrawn". |
+| Hiring-manager rounds | Count as Interview (any conversation with the hiring manager or team). Screening is recruiter/HR calls and assessments only. |
 | Board | Five lanes, one per bucket. The Closed lane is dropped. |
 | Role breakdown | During scoring, the AI picks a role category from the current search terms plus "Other". A raw job title is too fragmented to chart, and the search term that found a job doesn't say what the role is. |
 | Skip reasons | Optional one-click chips in the skip dialog, plus a one-time AI pass that sorts older free-text notes. |
@@ -70,8 +71,8 @@ One update that's safe to run more than once. It converts old stage values in:
 - any other column that stores an application stage
 
 Old to new:
-- `recruiter_screen`, `assessment`, `hiring_manager_screen` → `screening`
-- `technical_interview`, `onsite` → `interview`
+- `recruiter_screen`, `assessment` → `screening`
+- `technical_interview`, `onsite`, `hiring_manager_screen` → `interview`
 
 The Drizzle enums in `schema.ts` take the new list.
 

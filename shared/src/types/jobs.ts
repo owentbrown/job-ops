@@ -39,7 +39,7 @@ export const STAGE_LABELS: Record<ApplicationStage, string> = {
 export const LEGACY_STAGE_MAP: Readonly<Record<string, ApplicationStage>> = {
   recruiter_screen: "screening",
   assessment: "screening",
-  hiring_manager_screen: "screening",
+  hiring_manager_screen: "interview",
   technical_interview: "interview",
   onsite: "interview",
 };

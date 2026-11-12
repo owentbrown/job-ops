@@ -663,8 +663,8 @@ describe.sequential("database migrations", () => {
       const expected = [
         ["e1", "applied", "screening"],
         ["e2", "screening", "screening"],
-        ["e3", "screening", "screening"],
-        ["e4", "screening", "interview"],
+        ["e3", "screening", "interview"],
+        ["e4", "interview", "interview"],
         ["e5", "interview", "interview"],
         ["e6", "interview", "offer"],
       ];

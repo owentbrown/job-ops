@@ -15,7 +15,7 @@ describe("normalizeStageTarget", () => {
   it.each([
     ["recruiter_screen", "screening"],
     ["assessment", "screening"],
-    ["hiring_manager_screen", "screening"],
+    ["hiring_manager_screen", "interview"],
     ["technical_interview", "interview"],
     ["onsite", "interview"],
   ])("converts legacy %s to %s", (legacy, expected) => {

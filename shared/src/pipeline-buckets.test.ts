@@ -26,7 +26,7 @@ describe("APPLICATION_STAGES", () => {
     expect(LEGACY_STAGE_MAP).toEqual({
       recruiter_screen: "screening",
       assessment: "screening",
-      hiring_manager_screen: "screening",
+      hiring_manager_screen: "interview",
       technical_interview: "interview",
       onsite: "interview",
     });

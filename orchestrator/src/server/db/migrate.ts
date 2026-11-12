@@ -1182,10 +1182,10 @@ const migrations = [
      AND jobs.id NOT IN (SELECT application_id FROM stage_events WHERE to_stage = 'closed')`,
 
   // Five-stage model: rewrite pre-five-stage values. Safe to run on every boot.
-  `UPDATE stage_events SET to_stage = 'screening' WHERE to_stage IN ('recruiter_screen', 'assessment', 'hiring_manager_screen')`,
-  `UPDATE stage_events SET to_stage = 'interview' WHERE to_stage IN ('technical_interview', 'onsite')`,
-  `UPDATE stage_events SET from_stage = 'screening' WHERE from_stage IN ('recruiter_screen', 'assessment', 'hiring_manager_screen')`,
-  `UPDATE stage_events SET from_stage = 'interview' WHERE from_stage IN ('technical_interview', 'onsite')`,
+  `UPDATE stage_events SET to_stage = 'screening' WHERE to_stage IN ('recruiter_screen', 'assessment')`,
+  `UPDATE stage_events SET to_stage = 'interview' WHERE to_stage IN ('technical_interview', 'onsite', 'hiring_manager_screen')`,
+  `UPDATE stage_events SET from_stage = 'screening' WHERE from_stage IN ('recruiter_screen', 'assessment')`,
+  `UPDATE stage_events SET from_stage = 'interview' WHERE from_stage IN ('technical_interview', 'onsite', 'hiring_manager_screen')`,
 
   // Backfill: Sync legacy workflow status from latest stage event.
   `UPDATE jobs

@@ -32,7 +32,7 @@
 | `applied` | `applied` |
 | `recruiter_screen` | `screening` |
 | `assessment` | `screening` |
-| `hiring_manager_screen` | `screening` |
+| `hiring_manager_screen` | `interview` |
 | `technical_interview` | `interview` |
 | `onsite` | `interview` |
 | `offer` | `offer` |
@@ -102,7 +102,7 @@ describe("APPLICATION_STAGES", () => {
     expect(LEGACY_STAGE_MAP).toEqual({
       recruiter_screen: "screening",
       assessment: "screening",
-      hiring_manager_screen: "screening",
+      hiring_manager_screen: "interview",
       technical_interview: "interview",
       onsite: "interview",
     });
@@ -196,7 +196,7 @@ export const STAGE_LABELS: Record<ApplicationStage, string> = {
 export const LEGACY_STAGE_MAP: Readonly<Record<string, ApplicationStage>> = {
   recruiter_screen: "screening",
   assessment: "screening",
-  hiring_manager_screen: "screening",
+  hiring_manager_screen: "interview",
   technical_interview: "interview",
   onsite: "interview",
 };
@@ -345,7 +345,7 @@ describe("normalizeStageTarget", () => {
   it.each([
     ["recruiter_screen", "screening"],
     ["assessment", "screening"],
-    ["hiring_manager_screen", "screening"],
+    ["hiring_manager_screen", "interview"],
     ["technical_interview", "interview"],
     ["onsite", "interview"],
   ])("converts legacy %s to %s", (legacy, expected) => {
@@ -556,10 +556,10 @@ Expected: FAIL with `Unexpected stages: [["e1","applied","recruiter_screen"], �
 
 ```ts
   // Five-stage model: rewrite pre-five-stage values. Safe to run on every boot.
-  `UPDATE stage_events SET to_stage = 'screening' WHERE to_stage IN ('recruiter_screen', 'assessment', 'hiring_manager_screen')`,
-  `UPDATE stage_events SET to_stage = 'interview' WHERE to_stage IN ('technical_interview', 'onsite')`,
-  `UPDATE stage_events SET from_stage = 'screening' WHERE from_stage IN ('recruiter_screen', 'assessment', 'hiring_manager_screen')`,
-  `UPDATE stage_events SET from_stage = 'interview' WHERE from_stage IN ('technical_interview', 'onsite')`,
+  `UPDATE stage_events SET to_stage = 'screening' WHERE to_stage IN ('recruiter_screen', 'assessment')`,
+  `UPDATE stage_events SET to_stage = 'interview' WHERE to_stage IN ('technical_interview', 'onsite', 'hiring_manager_screen')`,
+  `UPDATE stage_events SET from_stage = 'screening' WHERE from_stage IN ('recruiter_screen', 'assessment')`,
+  `UPDATE stage_events SET from_stage = 'interview' WHERE from_stage IN ('technical_interview', 'onsite', 'hiring_manager_screen')`,
 ```
 
   - Then, in that backfill statement, replace the `IN (...)` list:
@@ -623,7 +623,7 @@ const INTERVIEW_STAGES = ["interview"] as const;
 ```
 
 - [ ] **Step 3: Update the demo data.** In `demo-defaults.ts` and `demo-defaults.data.ts`, change every `fromStage:` and `toStage:` value using the stage mapping table:
-  - `recruiter_screen`, `assessment`, `hiring_manager_screen` → `screening`
+  - `recruiter_screen`, `assessment` → `screening`
   - `technical_interview`, `onsite` → `interview`
 
   Leave `title:` text such as "Take-home assessment sent" and the `id:` strings unchanged.

@@ -1580,6 +1580,7 @@ export const SettingsPage: React.FC = () => {
     [activeSection, confirmLeaveEmbedded],
   );
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: must react only to hash changes, not to section clicks
   useEffect(() => {
     const hash = location.hash.replace(/^#/, "");
     const allSectionIds = visibleNavGroups.flatMap((g) =>
@@ -1600,7 +1601,6 @@ export const SettingsPage: React.FC = () => {
         );
       }
     }
-    // biome-ignore lint/correctness/useExhaustiveDependencies: react only to hash changes
   }, [location.hash, visibleNavGroups]);
 
   const visibleSectionIds = useMemo(
@@ -1714,9 +1714,10 @@ export const SettingsPage: React.FC = () => {
   };
 
   const selectedSectionBadge = getSectionBadge(activeSection);
-  const dirtySectionCount = visibleNavGroups
-    .flatMap((group) => group.items)
-    .filter((item) => sectionHasDirtyState(item.id)).length +
+  const dirtySectionCount =
+    visibleNavGroups
+      .flatMap((group) => group.items)
+      .filter((item) => sectionHasDirtyState(item.id)).length +
     (embeddedDirty ? 1 : 0);
   const activeSectionIsDirty = sectionHasDirtyState(activeSection);
 

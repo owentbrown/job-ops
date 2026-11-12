@@ -31,11 +31,14 @@ export const FilteredJobsPage: React.FC<{
   const [restoringIds, setRestoringIds] = useState<ReadonlySet<string>>(
     new Set(),
   );
-  const handleDirtyChange = useCallback((dirty: boolean) => {
-    setRulesDirty(dirty);
-    onDirtyChange?.(dirty);
-    if (dirty) setConfirmBacklog(false);
-  }, [onDirtyChange]);
+  const handleDirtyChange = useCallback(
+    (dirty: boolean) => {
+      setRulesDirty(dirty);
+      onDirtyChange?.(dirty);
+      if (dirty) setConfirmBacklog(false);
+    },
+    [onDirtyChange],
+  );
 
   // An armed confirm must not stay armed forever.
   useEffect(() => {

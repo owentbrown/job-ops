@@ -24,7 +24,7 @@ const Path: React.FC = () => (
 const renderAt = (path: string) =>
   renderWithQueryClient(
     <MemoryRouter initialEntries={[path]}>
-      <PageHeader icon={Home} title="t" />
+      <PageHeader icon={Home} title="t" subtitle="s" />
       <Path />
     </MemoryRouter>,
   );

@@ -231,9 +231,9 @@ describe("range", () => {
     expect(result.replies.emailsMatched).toBe(1);
     // results counts discoveries on drawn days only (default discoveredAt
     // is 20 days ago, so only "early"/"tomorrow" set their own).
-    expect(result.sources.rows.find((r) => r.source === "linkedin")?.results).toBe(
-      0,
-    );
+    expect(
+      result.sources.rows.find((r) => r.source === "linkedin")?.results,
+    ).toBe(0);
   });
 });
 
@@ -299,6 +299,29 @@ describe("replies", () => {
       }),
     );
     expect(result.replies.replied).toBe(0);
+  });
+});
+
+describe("day counts", () => {
+  it("never reports a negative number of days", () => {
+    const result = computeOverview(
+      input({
+        jobs: [
+          // Applied before it was discovered (e.g. a re-import).
+          job({ id: "early", appliedAt: iso(10), discoveredAt: iso(9) }),
+        ],
+        messages: [
+          {
+            matchedJobId: "early",
+            processingStatus: "auto_linked",
+            messageType: "interview",
+            receivedAt: NOW.getTime() - 11 * DAY, // a day before applying
+          },
+        ],
+      }),
+    );
+    expect(result.replies.medianDaysToReply).toBe(0);
+    expect(result.pace.medianFoundToAppliedDays).toBe(0);
   });
 });
 

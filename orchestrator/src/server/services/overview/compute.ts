@@ -207,7 +207,9 @@ export function computeOverview(input: OverviewInput): OverviewResponse {
     null,
   );
   const foundToApplied = median(
-    inRange.map((a) => (a.appliedMs - Date.parse(a.job.discoveredAt)) / DAY_MS),
+    inRange.map((a) =>
+      Math.max(0, (a.appliedMs - Date.parse(a.job.discoveredAt)) / DAY_MS),
+    ),
   );
 
   // Replies
@@ -215,7 +217,7 @@ export function computeOverview(input: OverviewInput): OverviewResponse {
   const daysToReply = median(
     inRange
       .filter((a) => a.replyMs !== null)
-      .map((a) => ((a.replyMs as number) - a.appliedMs) / DAY_MS),
+      .map((a) => Math.max(0, ((a.replyMs as number) - a.appliedMs) / DAY_MS)),
   );
   const emailsMatched = input.messages.filter(
     (m) => MATCHED.has(m.processingStatus) && inRangeMs(m.receivedAt),

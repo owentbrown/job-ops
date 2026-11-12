@@ -66,6 +66,7 @@ export const ActionTiles: React.FC<{
           </p>
           <Link
             to="/jobs/ready"
+            aria-label={`Solve browser check for ${challenge.extractorName}`}
             className="self-start rounded-[10px] bg-warning px-4 py-2 text-sm font-medium text-warning-foreground"
           >
             Solve
@@ -74,10 +75,7 @@ export const ActionTiles: React.FC<{
       ) : null}
 
       {tiles.map((t) => (
-        <TileShell
-          key={t.to}
-          className={t.count === 0 ? "opacity-80" : undefined}
-        >
+        <TileShell key={t.to}>
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {t.label}
           </p>

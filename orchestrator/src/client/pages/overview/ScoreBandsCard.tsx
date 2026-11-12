@@ -10,9 +10,11 @@ function takeaway(rows: OverviewScoreBandRow[]): string {
   if (readable.length < 2) return "No clear pattern yet.";
   const top = readable.reduce((a, b) => (b.rate > a.rate ? b : a));
   const lowest = readable.reduce((a, b) => (b.rate < a.rate ? b : a));
+  const ninetyPlus = readable.find((r) => r.band === "90+");
   if (
     (top.band === "90+" || top.band === "80-89") &&
-    top.rate - lowest.rate >= 10
+    top.rate - lowest.rate >= 10 &&
+    (!ninetyPlus || ninetyPlus.rate >= lowest.rate + 10)
   ) {
     return "Higher scores are getting more replies.";
   }

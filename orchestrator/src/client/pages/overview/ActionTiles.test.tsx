@@ -37,9 +37,10 @@ describe("ActionTiles", () => {
     renderTiles({ extractorName: "Hiring Cafe" });
     expect(screen.getByText(/blocking your search/i)).toBeInTheDocument();
     expect(screen.getByText(/hiring cafe/i)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /solve/i })).toHaveAttribute(
-      "href",
-      "/jobs/ready",
-    );
+    expect(
+      screen.getByRole("link", {
+        name: /solve browser check for hiring cafe/i,
+      }),
+    ).toHaveAttribute("href", "/jobs/ready");
   });
 });

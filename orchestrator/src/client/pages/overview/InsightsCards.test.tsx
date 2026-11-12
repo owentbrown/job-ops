@@ -76,6 +76,11 @@ describe("PaceCard", () => {
     expect(screen.getByText("1.0")).toBeInTheDocument();
     expect(screen.getByText(/2 on /i)).toBeInTheDocument();
     expect(screen.getByText("1.5 days")).toBeInTheDocument();
+    expect(
+      screen.getByRole("img", {
+        name: /applications per day: 2 in the last 2 days/i,
+      }),
+    ).toBeInTheDocument();
   });
 });
 
@@ -157,6 +162,23 @@ describe("ScoreBandsCard", () => {
     expect(
       screen.getByText("Higher scores are getting more replies."),
     ).toBeInTheDocument();
+  });
+
+  it("doesn't credit higher scores when 90+ is readable and lowest", () => {
+    wrap(
+      <ScoreBandsCard
+        rows={[
+          { band: "<70", applied: 5, replied: 2 },
+          { band: "70-79", applied: 0, replied: 0 },
+          { band: "80-89", applied: 5, replied: 3 },
+          { band: "90+", applied: 5, replied: 0 },
+        ]}
+      />,
+    );
+    expect(
+      screen.queryByText("Higher scores are getting more replies."),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText("No clear pattern yet.")).toBeInTheDocument();
   });
 
   it("says scores aren't predicting replies when the lowest band leads", () => {

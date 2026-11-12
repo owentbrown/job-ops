@@ -9,25 +9,36 @@ const config = {
   count: { label: "Applications", color: "var(--primary)" },
 };
 
+function chartLabel(pace: OverviewResponse["pace"]): string {
+  const total = pace.perDay.reduce((sum, d) => sum + d.count, 0);
+  const days = pace.perDay.length;
+  const best = pace.bestDay
+    ? `, best day ${pace.bestDay.count} on ${formatShortDate(pace.bestDay.date)}`
+    : "";
+  return `Applications per day: ${total} in the last ${days} days${best}`;
+}
+
 export const PaceCard: React.FC<{ pace: OverviewResponse["pace"] }> = ({
   pace,
 }) => (
   <Card className="border-border/60 shadow-none">
     <CardContent className="space-y-4 p-6">
       <h3 className="text-sm font-semibold">Pace</h3>
-      <ChartContainer config={config} className="h-40 w-full">
-        <BarChart data={pace.perDay}>
-          <XAxis
-            dataKey="date"
-            tickFormatter={formatShortDate}
-            tickLine={false}
-            axisLine={false}
-            minTickGap={24}
-          />
-          <Bar dataKey="count" fill="var(--color-count)" radius={3} />
-        </BarChart>
-      </ChartContainer>
-      <dl className="grid grid-cols-3 gap-3 text-sm">
+      <div role="img" aria-label={chartLabel(pace)}>
+        <ChartContainer config={config} className="h-40 w-full">
+          <BarChart data={pace.perDay}>
+            <XAxis
+              dataKey="date"
+              tickFormatter={formatShortDate}
+              tickLine={false}
+              axisLine={false}
+              minTickGap={24}
+            />
+            <Bar dataKey="count" fill="var(--color-count)" radius={3} />
+          </BarChart>
+        </ChartContainer>
+      </div>
+      <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
         <div>
           <dt className="text-xs text-muted-foreground">Average per day</dt>
           <dd className="font-mono text-xl tabular-nums">

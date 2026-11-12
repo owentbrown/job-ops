@@ -5,7 +5,7 @@ import {
 } from "@client/components/charts";
 import { PageHeader, PageMain } from "@client/components/layout";
 import { OVERVIEW_RANGES } from "@shared/types.js";
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { ChartColumn } from "lucide-react";
 import type React from "react";
 import { useSearchParams } from "react-router-dom";
@@ -45,6 +45,8 @@ export const OverviewPage: React.FC = () => {
   const overview = useQuery({
     queryKey: queryKeys.overview.data(range),
     queryFn: () => api.getOverview({ range, timeZone }),
+    // Keep the last range on screen while the next one loads.
+    placeholderData: keepPreviousData,
   });
   const progress = useQuery({
     queryKey: queryKeys.pipeline.progressSnapshot(),

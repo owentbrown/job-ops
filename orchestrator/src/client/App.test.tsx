@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import type React from "react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, useParams } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "./App";
 import { AppModeContext } from "./components/layout";
@@ -57,8 +57,11 @@ vi.mock("./pages/SettingsPage", async () => {
   };
 });
 
-vi.mock("./pages/DesignResumePage", () => ({
-  DesignResumePage: () => <div>design-resume-page</div>,
+vi.mock("./pages/profile/ProfileStudioPage", () => ({
+  ProfileStudioPage: () => {
+    const { section } = useParams();
+    return <div>design-resume-page{section ? `:${section}` : ""}</div>;
+  },
 }));
 
 vi.mock("./pages/SignInPage", () => ({
@@ -167,12 +170,35 @@ describe("App demo banner", () => {
     });
 
     render(
-      <MemoryRouter initialEntries={["/design-resume"]}>
+      <MemoryRouter initialEntries={["/profile/studio/resume"]}>
         <App />
       </MemoryRouter>,
     );
 
     expect(screen.getByText("design-resume-page")).toBeInTheDocument();
+  });
+
+  it.each([
+    ["/design-resume", "design-resume-page"],
+    ["/design-resume/basics", "design-resume-page:basics"],
+    ["/profile/studio", "design-resume-page"],
+  ])("redirects %s to the Resume Studio, keeping the section", (path, text) => {
+    vi.mocked(useDemoInfo).mockReturnValue({
+      demoMode: false,
+      resetCadenceHours: 6,
+      lastResetAt: null,
+      nextResetAt: null,
+      baselineVersion: null,
+      baselineName: null,
+    });
+
+    render(
+      <MemoryRouter initialEntries={[path]}>
+        <App />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByText(text)).toBeInTheDocument();
   });
 
   it("sends hosted users hitting /tracking-inbox to Applications", () => {

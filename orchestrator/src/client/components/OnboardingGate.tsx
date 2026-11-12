@@ -1,4 +1,5 @@
 import { useOnboardingStatus } from "@client/hooks/useOnboardingStatus";
+import { RESUME_STUDIO_BASE } from "@client/lib/routes";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
@@ -87,7 +88,10 @@ const OnboardingRedirect: React.FC<{ pathname: string }> = ({ pathname }) => {
 
   if (
     nextRequirementId === "resume" &&
-    (pathname === "/design-resume" || pathname.startsWith("/design-resume/"))
+    (pathname === "/design-resume" ||
+      pathname.startsWith("/design-resume/") ||
+      pathname === RESUME_STUDIO_BASE ||
+      pathname.startsWith(`${RESUME_STUDIO_BASE}/`))
   ) {
     return null;
   }

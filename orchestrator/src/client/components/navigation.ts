@@ -34,10 +34,10 @@ export const NAV_LINKS: NavLink[] = [
     activePaths: ["/applications"],
   },
   {
-    to: "/design-resume",
+    to: "/profile/studio/resume",
     label: "Resume Studio",
     icon: FilePenLine,
-    activePaths: ["/design-resume"],
+    activePaths: ["/profile"],
   },
   { to: "/settings", label: "Settings", icon: Settings },
 ];

@@ -21,6 +21,7 @@ import type { SectionWorkspaceBadge } from "@client/components/section-workspace
 import { useDesignResume } from "@client/hooks/useDesignResume";
 import { useSettings } from "@client/hooks/useSettings";
 import { useTracerReadiness } from "@client/hooks/useTracerReadiness";
+import { resumeSectionPath } from "@client/lib/routes";
 import type {
   DesignResumeDocument,
   DesignResumeJson,
@@ -579,7 +580,7 @@ export function useDesignResumeStudio() {
   const handleMobileSectionSelect = (sectionId: DesignResumeSectionId) => {
     setMobileWorkspaceView("edit");
     setMobileSectionPickerOpen(false);
-    navigate(`/design-resume/${sectionId}`);
+    navigate(resumeSectionPath(sectionId));
   };
 
   const getDesignResumeSectionBadge = useCallback(

@@ -10,6 +10,7 @@ import {
   Routes,
   useLocation,
   useNavigate,
+  useParams,
 } from "react-router-dom";
 import { CSSTransition, SwitchTransition } from "react-transition-group";
 
@@ -20,7 +21,6 @@ import { useAnalyticsIdentity } from "./hooks/useAnalyticsIdentity";
 import { useDemoInfo } from "./hooks/useDemoInfo";
 import { setAuthNavigator } from "./lib/auth-navigation";
 import { ApplicationsPage } from "./pages/ApplicationsPage";
-import { DesignResumePage } from "./pages/DesignResumePage";
 import { GmailOauthCallbackPage } from "./pages/GmailOauthCallbackPage";
 import { HomePage } from "./pages/HomePage";
 import { JobPage } from "./pages/JobPage";
@@ -28,6 +28,7 @@ import { JobsFilteredPage } from "./pages/JobsFilteredPage";
 import { OfflinePage } from "./pages/OfflinePage";
 import { OnboardingPage } from "./pages/OnboardingPage";
 import { OrchestratorPage } from "./pages/OrchestratorPage";
+import { ProfileStudioPage } from "./pages/profile/ProfileStudioPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { SignInPage } from "./pages/SignInPage";
 import { SsoCallbackPage } from "./pages/SsoCallbackPage";
@@ -56,7 +57,20 @@ const REDIRECTS: Array<{ from: string; to: string }> = [
   { from: "/visa-sponsors", to: "/settings#visa-sponsors" },
   { from: "/spend", to: "/settings#spend" },
   { from: "/tracer-links", to: "/settings#tracer-links" },
+  { from: "/design-resume", to: "/profile/studio/resume" },
+  { from: "/design-resume/:section", to: "/profile/studio/resume/:section" },
+  { from: "/profile/studio", to: "/profile/studio/resume" },
 ];
+
+/** Redirect that substitutes `:param` placeholders in `to` from the matched route. */
+function ParamRedirect({ to }: { to: string }) {
+  const params = useParams();
+  const target = to.replace(
+    /:([A-Za-z]+)/g,
+    (_, key: string) => params[key] ?? "",
+  );
+  return <Navigate to={target} replace />;
+}
 
 const DEMO_WAITLIST_BANNER_DISMISSED_KEY = "jobops.demoWaitlistBannerDismissed";
 
@@ -176,7 +190,7 @@ export const App: React.FC = () => {
                   <Route
                     key={from}
                     path={from}
-                    element={<Navigate to={to} replace />}
+                    element={<ParamRedirect to={to} />}
                   />
                 ))}
 
@@ -192,10 +206,13 @@ export const App: React.FC = () => {
                   path="/applications/:tab"
                   element={<ApplicationsPage />}
                 />
-                <Route path="/design-resume" element={<DesignResumePage />} />
                 <Route
-                  path="/design-resume/:section"
-                  element={<DesignResumePage />}
+                  path="/profile/studio/:doc"
+                  element={<ProfileStudioPage />}
+                />
+                <Route
+                  path="/profile/studio/:doc/:section"
+                  element={<ProfileStudioPage />}
                 />
                 <Route path="/onboarding" element={<OnboardingPage />} />
                 <Route path="/offline" element={<OfflinePage />} />

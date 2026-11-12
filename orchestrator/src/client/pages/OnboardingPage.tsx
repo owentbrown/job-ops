@@ -1,6 +1,7 @@
 import { PageHeader, PageMain } from "@client/components/layout";
 import { useDesignResume } from "@client/hooks/useDesignResume";
 import { useOnboardingStatus } from "@client/hooks/useOnboardingStatus";
+import { RESUME_STUDIO_BASE } from "@client/lib/routes";
 import {
   formatCountryLabel,
   SUPPORTED_COUNTRY_KEYS,
@@ -896,7 +897,7 @@ function ResumeStep({
             </div>
           </div>
           <Button type="button" variant="outline" className="w-full" asChild>
-            <a href="/design-resume">
+            <a href={RESUME_STUDIO_BASE}>
               <BriefcaseBusiness className="h-4 w-4" />
               Edit in Resume Studio
             </a>

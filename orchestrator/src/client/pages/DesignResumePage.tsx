@@ -18,6 +18,7 @@ import {
 import { PageHeader, PageMain } from "@client/components/layout";
 import { SectionWorkspacePanel } from "@client/components/section-workspace/SectionWorkspace";
 import { useDesignResumeStudio } from "@client/hooks/useDesignResumeStudio";
+import { RESUME_STUDIO_BASE, resumeSectionPath } from "@client/lib/routes";
 import type { DesignResumeJson } from "@shared/types";
 import {
   Download,
@@ -57,7 +58,9 @@ import { bucketCount, trackProductEvent } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 import { formatUserFacingError } from "../lib/error-format";
 
-export const DesignResumePage: React.FC = () => {
+export const DesignResumePage: React.FC<{ toolbar?: React.ReactNode }> = ({
+  toolbar,
+}) => {
   const navigate = useNavigate();
   const {
     draft,
@@ -106,7 +109,7 @@ export const DesignResumePage: React.FC = () => {
   } = useDesignResumeStudio();
 
   if (!activeSectionIsValid) {
-    return <Navigate to="/design-resume" replace />;
+    return <Navigate to={RESUME_STUDIO_BASE} replace />;
   }
 
   if (isLoading) {
@@ -118,6 +121,7 @@ export const DesignResumePage: React.FC = () => {
           subtitle="Loading your resume"
         />
         <PageMain className={DESIGN_RESUME_PAGE_MAIN_CLASS_NAME}>
+          {toolbar}
           <div className="rounded-2xl border border-border/70 bg-card px-6 py-20 text-center text-sm text-muted-foreground">
             Loading Resume Studio...
           </div>
@@ -280,6 +284,7 @@ export const DesignResumePage: React.FC = () => {
       />
 
       <PageMain className={DESIGN_RESUME_PAGE_MAIN_CLASS_NAME}>
+        {toolbar}
         {!draft ? (
           <div className="flex h-full items-center justify-center rounded-2xl border border-border/70 bg-card px-6 py-20 text-center">
             <div className="mx-auto max-w-xl space-y-4">
@@ -372,11 +377,7 @@ export const DesignResumePage: React.FC = () => {
                     draft={draft}
                     onUpdateResumeJson={updateResumeJson}
                     onSectionSelect={(sectionId) =>
-                      navigate(
-                        sectionId
-                          ? `/design-resume/${sectionId}`
-                          : "/design-resume",
-                      )
+                      navigate(resumeSectionPath(sectionId))
                     }
                   />
 
@@ -445,11 +446,7 @@ export const DesignResumePage: React.FC = () => {
                     draft={draft}
                     onUpdateResumeJson={updateResumeJson}
                     onSectionSelect={(sectionId) =>
-                      navigate(
-                        sectionId
-                          ? `/design-resume/${sectionId}`
-                          : "/design-resume",
-                      )
+                      navigate(resumeSectionPath(sectionId))
                     }
                   />
                 </>

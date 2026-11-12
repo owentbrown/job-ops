@@ -3,7 +3,8 @@
  * by period, day, task, pipeline run, job and model.
  */
 import * as api from "@client/api";
-import { PageHeader, PageMain, SectionCard } from "@client/components/layout";
+import { SectionCard } from "@client/components/layout";
+import { PageFrame } from "@client/components/PageFrame";
 import type { SpendJobRow, SpendReport } from "@shared/types.js";
 import { useQuery } from "@tanstack/react-query";
 import { CircleDollarSign, Loader2, Tags, TriangleAlert } from "lucide-react";
@@ -142,7 +143,7 @@ export function SpendPage() {
 
   return (
     <>
-      <PageHeader
+      <PageFrame
         icon={CircleDollarSign}
         title="Spend"
         subtitle="Estimated AI cost, from the tokens each call used"
@@ -156,9 +157,7 @@ export function SpendPage() {
             Prices
           </Button>
         }
-      />
-
-      <PageMain>
+      >
         <div className="flex flex-wrap items-center justify-between gap-3">
           <Tabs
             value={period}
@@ -571,7 +570,7 @@ export function SpendPage() {
             </p>
           </>
         )}
-      </PageMain>
+      </PageFrame>
 
       <PricingDialog open={pricingOpen} onOpenChange={setPricingOpen} />
     </>

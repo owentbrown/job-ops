@@ -1,6 +1,6 @@
 import * as api from "@client/api";
-import { PageHeader, PageMain } from "@client/components/layout";
 import { ManualImportSheet } from "@client/components/ManualImportSheet";
+import { PageFrame } from "@client/components/PageFrame";
 import { useSettings } from "@client/hooks/useSettings";
 import { showErrorToast } from "@client/lib/error-toast";
 import { queryKeys } from "@client/lib/queryKeys";
@@ -586,13 +586,11 @@ export const WatchlistPage: React.FC = () => {
 
   return (
     <>
-      <PageHeader
+      <PageFrame
         icon={Eye}
         title="Watchlist"
         subtitle="Career pages you're watching"
-      />
-
-      <PageMain>
+      >
         <div className="space-y-3">
           <WatchlistSourcesCard
             sourceDrafts={sourceDrafts}
@@ -649,7 +647,7 @@ export const WatchlistPage: React.FC = () => {
             ))}
           </Accordion>
         </div>
-      </PageMain>
+      </PageFrame>
 
       <ManualImportSheet
         open={importState.open}

@@ -1,3 +1,4 @@
+import { PageFrame } from "@client/components/PageFrame";
 import { formatCountryLabel } from "@shared/location-support.js";
 import type {
   VisaSponsor,
@@ -43,8 +44,6 @@ import {
   EmptyState,
   ListItem,
   ListPanel,
-  PageHeader,
-  PageMain,
   ScoreMeter,
   SplitLayout,
   StatusIndicator,
@@ -357,7 +356,7 @@ export const VisaSponsorsPage: React.FC = () => {
 
   return (
     <>
-      <PageHeader
+      <PageFrame
         icon={Shield}
         title="Visa Sponsors"
         statusIndicator={
@@ -393,9 +392,7 @@ export const VisaSponsorsPage: React.FC = () => {
             </Button>
           </>
         }
-      />
-
-      <PageMain>
+      >
         {/* Search section */}
         <section className="rounded-xl border border-border/60 bg-card/40 p-4">
           <div className="grid gap-4">
@@ -568,7 +565,7 @@ export const VisaSponsorsPage: React.FC = () => {
             {detailPanelContent}
           </DetailPanel>
         </SplitLayout>
-      </PageMain>
+      </PageFrame>
 
       <Drawer open={isDetailDrawerOpen} onOpenChange={setIsDetailDrawerOpen}>
         <DrawerContent className="max-h-[90vh]">

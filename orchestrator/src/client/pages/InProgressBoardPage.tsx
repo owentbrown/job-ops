@@ -2,7 +2,7 @@ import {
   type LogEventFormValues,
   LogEventModal,
 } from "@client/components/LogEventModal";
-import { PageHeader, PageMain } from "@client/components/layout";
+import { PageFrame } from "@client/components/PageFrame";
 import {
   APPLICATION_STAGES,
   type ApplicationStage,
@@ -288,7 +288,7 @@ export const InProgressBoardPage: React.FC = () => {
 
   return (
     <>
-      <PageHeader
+      <PageFrame
         icon={Columns3}
         title="In Progress Board"
         subtitle="Kanban view of application stages"
@@ -320,8 +320,8 @@ export const InProgressBoardPage: React.FC = () => {
             </Button>
           </div>
         }
-      />
-      <PageMain className="flex h-[calc(100dvh-5rem)] max-w-[1600px] flex-col">
+        mainClassName="flex h-[calc(100dvh-5rem)] max-w-[1600px] flex-col"
+      >
         {isLoading ? (
           <div className="rounded-lg border border-dashed border-border/60 p-6 text-sm text-muted-foreground">
             Loading board...
@@ -457,7 +457,7 @@ export const InProgressBoardPage: React.FC = () => {
             </div>
           </div>
         )}
-      </PageMain>
+      </PageFrame>
 
       <LogEventModal
         isOpen={logEventTarget != null}

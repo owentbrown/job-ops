@@ -1,3 +1,4 @@
+import { PageFrame } from "@client/components/PageFrame";
 import type {
   JobListItem,
   PostApplicationInboxItem,
@@ -54,7 +55,7 @@ import {
 import { trackProductEvent } from "@/lib/analytics";
 import { formatDateTime } from "@/lib/utils";
 import * as api from "../api";
-import { EmptyState, PageHeader, PageMain } from "../components";
+import { EmptyState } from "../components";
 import { EmailViewerList } from "./tracking-inbox/EmailViewerList";
 
 const PROVIDER_OPTIONS: PostApplicationProvider[] = [
@@ -622,7 +623,7 @@ export const TrackingInboxPage: React.FC = () => {
 
   return (
     <>
-      <PageHeader
+      <PageFrame
         icon={Inbox}
         title="Tracking Inbox"
         subtitle="Post-application message review"
@@ -642,9 +643,8 @@ export const TrackingInboxPage: React.FC = () => {
             Refresh
           </Button>
         }
-      />
-
-      <PageMain className="space-y-4">
+        mainClassName="space-y-4"
+      >
         <section className="space-y-1 px-1">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold tracking-tight">
@@ -868,7 +868,7 @@ export const TrackingInboxPage: React.FC = () => {
             )}
           </CardContent>
         </Card>
-      </PageMain>
+      </PageFrame>
 
       <Dialog
         open={isRunModalOpen}

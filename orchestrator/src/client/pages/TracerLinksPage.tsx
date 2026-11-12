@@ -1,5 +1,6 @@
 import * as api from "@client/api";
-import { PageHeader, PageMain, SectionCard } from "@client/components/layout";
+import { SectionCard } from "@client/components/layout";
+import { PageFrame } from "@client/components/PageFrame";
 import type {
   JobTracerLinkAnalyticsItem,
   TracerAnalyticsResponse,
@@ -283,393 +284,385 @@ export const TracerLinksPage: React.FC = () => {
   };
 
   return (
-    <>
-      <PageHeader
-        icon={BarChart3}
-        title="Tracer Links"
-        subtitle="Outbound resume link analytics"
-      />
-
-      <PageMain>
-        <SectionCard className="p-0">
-          <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="filters" className="border-none">
-              <AccordionTrigger className="px-4 py-3 hover:no-underline">
-                <div className="text-sm font-semibold">Filters</div>
-              </AccordionTrigger>
-              <AccordionContent className="px-4 pb-4">
-                <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
-                  <div className="space-y-1">
-                    <Label htmlFor="tracer-from-date">From date</Label>
-                    <Input
-                      id="tracer-from-date"
-                      type="date"
-                      value={fromDate}
-                      onChange={(event) => setFromDate(event.target.value)}
-                      onBlur={trackFiltersApplied}
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <Label htmlFor="tracer-to-date">To date</Label>
-                    <Input
-                      id="tracer-to-date"
-                      type="date"
-                      value={toDate}
-                      onChange={(event) => setToDate(event.target.value)}
-                      onBlur={trackFiltersApplied}
-                    />
-                  </div>
-                  <label
-                    htmlFor="tracer-include-bots"
-                    className="flex cursor-pointer items-end gap-2 pb-2"
-                  >
-                    <Checkbox
-                      id="tracer-include-bots"
-                      checked={includeBots}
-                      onCheckedChange={(checked) => {
-                        setIncludeBots(Boolean(checked));
-                        trackProductEvent("tracer_filters_applied", {
-                          include_bots: Boolean(checked),
-                          has_from: Boolean(fromDate),
-                          has_to: Boolean(toDate),
-                          date_range_days_bucket: getDateRangeDaysBucket(),
-                        });
-                      }}
-                    />
-                    <span className="text-sm">Include likely bots</span>
-                  </label>
+    <PageFrame
+      icon={BarChart3}
+      title="Tracer Links"
+      subtitle="Outbound resume link analytics"
+    >
+      <SectionCard className="p-0">
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="filters" className="border-none">
+            <AccordionTrigger className="px-4 py-3 hover:no-underline">
+              <div className="text-sm font-semibold">Filters</div>
+            </AccordionTrigger>
+            <AccordionContent className="px-4 pb-4">
+              <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
+                <div className="space-y-1">
+                  <Label htmlFor="tracer-from-date">From date</Label>
+                  <Input
+                    id="tracer-from-date"
+                    type="date"
+                    value={fromDate}
+                    onChange={(event) => setFromDate(event.target.value)}
+                    onBlur={trackFiltersApplied}
+                  />
                 </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </SectionCard>
-
-        {error && (
-          <SectionCard>
-            <p className="text-sm text-destructive">{error}</p>
-          </SectionCard>
-        )}
-
-        <div className="grid gap-3 md:grid-cols-3">
-          <SectionCard className="space-y-1">
-            <p className="text-xs text-muted-foreground">Total Views</p>
-            <p className="text-3xl font-semibold tabular-nums">
-              {totalViews.toLocaleString()}
-            </p>
-          </SectionCard>
-          <SectionCard className="space-y-1">
-            <p className="text-xs text-muted-foreground">Unique Jobs Reached</p>
-            <p className="text-3xl font-semibold tabular-nums">
-              {uniqueJobsReached.toLocaleString()}
-            </p>
-          </SectionCard>
-          <SectionCard className="space-y-1">
-            <p className="text-xs text-muted-foreground">Human Clicks</p>
-            <p className="text-3xl font-semibold tabular-nums">
-              {humanClicks.toLocaleString()}
-            </p>
-          </SectionCard>
-        </div>
-
-        <SectionCard className="space-y-4">
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <h2 className="text-sm font-semibold">
-                Resume Clicks Last {visibleDays} Days
-              </h2>
-              <p className="text-xs text-muted-foreground">
-                Daily click activity from tracer links.
-              </p>
-            </div>
-          </div>
-          {isLoading ? (
-            <div className="flex h-[240px] items-center justify-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Loading analytics...
-            </div>
-          ) : (
-            <ChartContainer config={chartConfig} className="h-[240px] w-full">
-              <BarChart
-                data={chartData}
-                margin={{ top: 8, right: 8, left: -12, bottom: 0 }}
-              >
-                <CartesianGrid vertical={false} />
-                <XAxis
-                  dataKey="day"
-                  axisLine={false}
-                  tickLine={false}
-                  tickMargin={8}
-                  minTickGap={24}
-                  tickFormatter={(value) => formatDayLabel(String(value))}
-                />
-                <YAxis axisLine={false} tickLine={false} width={30} />
-                <ChartTooltip
-                  cursor={{ fill: "var(--color-clicks)", opacity: 0.18 }}
-                  content={
-                    <ChartTooltipContent
-                      nameKey="clicks"
-                      labelFormatter={(value) => formatDayLabel(String(value))}
-                    />
-                  }
-                />
-                <Bar
-                  dataKey="clicks"
-                  fill="var(--color-clicks)"
-                  radius={[4, 4, 0, 0]}
-                />
-              </BarChart>
-            </ChartContainer>
-          )}
-        </SectionCard>
-
-        <SectionCard>
-          <div className="mb-3">
-            <h3 className="text-sm font-semibold">Application Activity</h3>
-          </div>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Job</TableHead>
-                <TableHead className="w-[90px]">Clicks</TableHead>
-                <TableHead className="w-[140px]">Last active</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {(analytics?.topJobs ?? []).map((row, index) => (
-                <TableRow
-                  key={row.jobId}
-                  className="cursor-pointer"
-                  data-state={
-                    selectedJobId === row.jobId ? "selected" : undefined
-                  }
-                  onClick={() => handleSelectTopJob(row, index + 1)}
+                <div className="space-y-1">
+                  <Label htmlFor="tracer-to-date">To date</Label>
+                  <Input
+                    id="tracer-to-date"
+                    type="date"
+                    value={toDate}
+                    onChange={(event) => setToDate(event.target.value)}
+                    onBlur={trackFiltersApplied}
+                  />
+                </div>
+                <label
+                  htmlFor="tracer-include-bots"
+                  className="flex cursor-pointer items-end gap-2 pb-2"
                 >
-                  <TableCell>
-                    <div className="font-medium">{row.title}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {row.employer}
-                    </div>
-                  </TableCell>
-                  <TableCell>{row.clicks}</TableCell>
-                  <TableCell>
-                    {formatRecentActivity(row.lastClickedAt)}
-                  </TableCell>
-                </TableRow>
-              ))}
-              {(analytics?.topJobs.length ?? 0) === 0 && !isLoading && (
-                <TableRow>
-                  <TableCell
-                    colSpan={3}
-                    className="text-sm text-muted-foreground"
-                  >
-                    No tracer-link activity yet.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </SectionCard>
+                  <Checkbox
+                    id="tracer-include-bots"
+                    checked={includeBots}
+                    onCheckedChange={(checked) => {
+                      setIncludeBots(Boolean(checked));
+                      trackProductEvent("tracer_filters_applied", {
+                        include_bots: Boolean(checked),
+                        has_from: Boolean(fromDate),
+                        has_to: Boolean(toDate),
+                        date_range_days_bucket: getDateRangeDaysBucket(),
+                      });
+                    }}
+                  />
+                  <span className="text-sm">Include likely bots</span>
+                </label>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </SectionCard>
 
-        <Dialog open={isDrilldownOpen} onOpenChange={setIsDrilldownOpen}>
-          <DialogContent className="max-h-[80vh] max-w-3xl overflow-hidden">
-            <DialogHeader>
-              <DialogTitle>
-                Job Links{jobDrilldown ? `: ${jobDrilldown.job.title}` : ""}
-              </DialogTitle>
-              <DialogDescription>
-                Destination links and click activity for the selected job.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-2 overflow-y-auto pr-1">
-              {isDrilldownLoading ? (
-                <div className="flex items-center gap-2 py-2 text-sm text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Loading links...
-                </div>
-              ) : jobDrilldown ? (
-                <>
-                  <div className="rounded-md border border-border/60 bg-muted/20 px-3 py-2">
-                    <div className="grid gap-2 text-xs sm:grid-cols-3">
-                      <p>
-                        Human clicks:{" "}
-                        <span className="font-semibold tabular-nums">
-                          {drilldownSummary?.humanClicks ?? 0}
-                        </span>
-                      </p>
-                      <p>
-                        Total clicks:{" "}
-                        <span className="font-semibold tabular-nums">
-                          {drilldownSummary?.totalClicks ?? 0}
-                        </span>
-                      </p>
-                      <p>
-                        Last activity:{" "}
-                        <span className="font-semibold">
-                          {formatRelativeTime(
-                            drilldownSummary?.lastActivityAt ?? null,
-                          )}
-                        </span>
-                      </p>
-                    </div>
-                    <div className="mt-2 flex gap-2">
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant={
-                          drilldownMode === "human" ? "default" : "outline"
-                        }
-                        onClick={() => handleSetDrilldownMode("human")}
-                      >
-                        Human only
-                      </Button>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant={
-                          drilldownMode === "all" ? "default" : "outline"
-                        }
-                        onClick={() => handleSetDrilldownMode("all")}
-                      >
-                        Human + bots
-                      </Button>
-                    </div>
+      {error && (
+        <SectionCard>
+          <p className="text-sm text-destructive">{error}</p>
+        </SectionCard>
+      )}
+
+      <div className="grid gap-3 md:grid-cols-3">
+        <SectionCard className="space-y-1">
+          <p className="text-xs text-muted-foreground">Total Views</p>
+          <p className="text-3xl font-semibold tabular-nums">
+            {totalViews.toLocaleString()}
+          </p>
+        </SectionCard>
+        <SectionCard className="space-y-1">
+          <p className="text-xs text-muted-foreground">Unique Jobs Reached</p>
+          <p className="text-3xl font-semibold tabular-nums">
+            {uniqueJobsReached.toLocaleString()}
+          </p>
+        </SectionCard>
+        <SectionCard className="space-y-1">
+          <p className="text-xs text-muted-foreground">Human Clicks</p>
+          <p className="text-3xl font-semibold tabular-nums">
+            {humanClicks.toLocaleString()}
+          </p>
+        </SectionCard>
+      </div>
+
+      <SectionCard className="space-y-4">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h2 className="text-sm font-semibold">
+              Resume Clicks Last {visibleDays} Days
+            </h2>
+            <p className="text-xs text-muted-foreground">
+              Daily click activity from tracer links.
+            </p>
+          </div>
+        </div>
+        {isLoading ? (
+          <div className="flex h-[240px] items-center justify-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            Loading analytics...
+          </div>
+        ) : (
+          <ChartContainer config={chartConfig} className="h-[240px] w-full">
+            <BarChart
+              data={chartData}
+              margin={{ top: 8, right: 8, left: -12, bottom: 0 }}
+            >
+              <CartesianGrid vertical={false} />
+              <XAxis
+                dataKey="day"
+                axisLine={false}
+                tickLine={false}
+                tickMargin={8}
+                minTickGap={24}
+                tickFormatter={(value) => formatDayLabel(String(value))}
+              />
+              <YAxis axisLine={false} tickLine={false} width={30} />
+              <ChartTooltip
+                cursor={{ fill: "var(--color-clicks)", opacity: 0.18 }}
+                content={
+                  <ChartTooltipContent
+                    nameKey="clicks"
+                    labelFormatter={(value) => formatDayLabel(String(value))}
+                  />
+                }
+              />
+              <Bar
+                dataKey="clicks"
+                fill="var(--color-clicks)"
+                radius={[4, 4, 0, 0]}
+              />
+            </BarChart>
+          </ChartContainer>
+        )}
+      </SectionCard>
+
+      <SectionCard>
+        <div className="mb-3">
+          <h3 className="text-sm font-semibold">Application Activity</h3>
+        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Job</TableHead>
+              <TableHead className="w-[90px]">Clicks</TableHead>
+              <TableHead className="w-[140px]">Last active</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {(analytics?.topJobs ?? []).map((row, index) => (
+              <TableRow
+                key={row.jobId}
+                className="cursor-pointer"
+                data-state={
+                  selectedJobId === row.jobId ? "selected" : undefined
+                }
+                onClick={() => handleSelectTopJob(row, index + 1)}
+              >
+                <TableCell>
+                  <div className="font-medium">{row.title}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {row.employer}
                   </div>
-                  {drilldownGroupedLinks.active.map((row) => (
-                    <div
-                      key={row.tracerLinkId}
-                      className="flex items-center justify-between gap-3 rounded-md border border-border/60 px-3 py-2"
+                </TableCell>
+                <TableCell>{row.clicks}</TableCell>
+                <TableCell>{formatRecentActivity(row.lastClickedAt)}</TableCell>
+              </TableRow>
+            ))}
+            {(analytics?.topJobs.length ?? 0) === 0 && !isLoading && (
+              <TableRow>
+                <TableCell
+                  colSpan={3}
+                  className="text-sm text-muted-foreground"
+                >
+                  No tracer-link activity yet.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </SectionCard>
+
+      <Dialog open={isDrilldownOpen} onOpenChange={setIsDrilldownOpen}>
+        <DialogContent className="max-h-[80vh] max-w-3xl overflow-hidden">
+          <DialogHeader>
+            <DialogTitle>
+              Job Links{jobDrilldown ? `: ${jobDrilldown.job.title}` : ""}
+            </DialogTitle>
+            <DialogDescription>
+              Destination links and click activity for the selected job.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2 overflow-y-auto pr-1">
+            {isDrilldownLoading ? (
+              <div className="flex items-center gap-2 py-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading links...
+              </div>
+            ) : jobDrilldown ? (
+              <>
+                <div className="rounded-md border border-border/60 bg-muted/20 px-3 py-2">
+                  <div className="grid gap-2 text-xs sm:grid-cols-3">
+                    <p>
+                      Human clicks:{" "}
+                      <span className="font-semibold tabular-nums">
+                        {drilldownSummary?.humanClicks ?? 0}
+                      </span>
+                    </p>
+                    <p>
+                      Total clicks:{" "}
+                      <span className="font-semibold tabular-nums">
+                        {drilldownSummary?.totalClicks ?? 0}
+                      </span>
+                    </p>
+                    <p>
+                      Last activity:{" "}
+                      <span className="font-semibold">
+                        {formatRelativeTime(
+                          drilldownSummary?.lastActivityAt ?? null,
+                        )}
+                      </span>
+                    </p>
+                  </div>
+                  <div className="mt-2 flex gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={
+                        drilldownMode === "human" ? "default" : "outline"
+                      }
+                      onClick={() => handleSetDrilldownMode("human")}
                     >
-                      <div className="min-w-0">
-                        <p className="truncate text-sm">{row.destinationUrl}</p>
-                        <p className="truncate text-xs text-muted-foreground">
-                          Last click: {formatUnixTimestamp(row.lastClickedAt)}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-semibold tabular-nums">
-                          {getRowClicks(row)} Clicks
-                        </p>
-                        <a
-                          href={row.destinationUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex"
-                          onClick={() =>
-                            trackProductEvent("tracer_external_link_opened", {
-                              origin: "drilldown",
-                              drilldown_mode: drilldownMode,
-                            })
-                          }
-                        >
-                          <Button
-                            type="button"
-                            size="icon"
-                            variant="ghost"
-                            className="h-7 w-7"
-                          >
-                            <ExternalLink className="h-4 w-4" />
-                          </Button>
-                        </a>
+                      Human only
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant={drilldownMode === "all" ? "default" : "outline"}
+                      onClick={() => handleSetDrilldownMode("all")}
+                    >
+                      Human + bots
+                    </Button>
+                  </div>
+                </div>
+                {drilldownGroupedLinks.active.map((row) => (
+                  <div
+                    key={row.tracerLinkId}
+                    className="flex items-center justify-between gap-3 rounded-md border border-border/60 px-3 py-2"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm">{row.destinationUrl}</p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        Last click: {formatUnixTimestamp(row.lastClickedAt)}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold tabular-nums">
+                        {getRowClicks(row)} Clicks
+                      </p>
+                      <a
+                        href={row.destinationUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex"
+                        onClick={() =>
+                          trackProductEvent("tracer_external_link_opened", {
+                            origin: "drilldown",
+                            drilldown_mode: drilldownMode,
+                          })
+                        }
+                      >
                         <Button
                           type="button"
                           size="icon"
                           variant="ghost"
                           className="h-7 w-7"
-                          onClick={() =>
-                            void handleCopyDestination(row.destinationUrl, true)
-                          }
                         >
-                          <Copy className="h-4 w-4" />
+                          <ExternalLink className="h-4 w-4" />
                         </Button>
-                      </div>
+                      </a>
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        className="h-7 w-7"
+                        onClick={() =>
+                          void handleCopyDestination(row.destinationUrl, true)
+                        }
+                      >
+                        <Copy className="h-4 w-4" />
+                      </Button>
                     </div>
-                  ))}
-                  {drilldownGroupedLinks.inactive.length > 0 && (
-                    <Accordion type="single" collapsible className="w-full">
-                      <AccordionItem value="inactive-links">
-                        <AccordionTrigger className="py-2 text-sm hover:no-underline">
-                          No activity yet (
-                          {drilldownGroupedLinks.inactive.length})
-                        </AccordionTrigger>
-                        <AccordionContent className="space-y-2 pt-1">
-                          {drilldownGroupedLinks.inactive.map((row) => (
-                            <div
-                              key={row.tracerLinkId}
-                              className="flex items-center justify-between gap-3 rounded-md border border-border/60 px-3 py-2"
-                            >
-                              <div className="min-w-0">
-                                <p className="truncate text-sm">
-                                  {row.destinationUrl}
-                                </p>
-                                <p className="truncate text-xs text-muted-foreground">
-                                  Last click:{" "}
-                                  {formatUnixTimestamp(row.lastClickedAt)}
-                                </p>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <p className="text-sm font-semibold tabular-nums">
-                                  {getRowClicks(row)} Clicks
-                                </p>
-                                <a
-                                  href={row.destinationUrl}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="inline-flex"
-                                  onClick={() =>
-                                    trackProductEvent(
-                                      "tracer_external_link_opened",
-                                      {
-                                        origin: "drilldown",
-                                        drilldown_mode: drilldownMode,
-                                      },
-                                    )
-                                  }
-                                >
-                                  <Button
-                                    type="button"
-                                    size="icon"
-                                    variant="ghost"
-                                    className="h-7 w-7"
-                                  >
-                                    <ExternalLink className="h-4 w-4" />
-                                  </Button>
-                                </a>
+                  </div>
+                ))}
+                {drilldownGroupedLinks.inactive.length > 0 && (
+                  <Accordion type="single" collapsible className="w-full">
+                    <AccordionItem value="inactive-links">
+                      <AccordionTrigger className="py-2 text-sm hover:no-underline">
+                        No activity yet ({drilldownGroupedLinks.inactive.length}
+                        )
+                      </AccordionTrigger>
+                      <AccordionContent className="space-y-2 pt-1">
+                        {drilldownGroupedLinks.inactive.map((row) => (
+                          <div
+                            key={row.tracerLinkId}
+                            className="flex items-center justify-between gap-3 rounded-md border border-border/60 px-3 py-2"
+                          >
+                            <div className="min-w-0">
+                              <p className="truncate text-sm">
+                                {row.destinationUrl}
+                              </p>
+                              <p className="truncate text-xs text-muted-foreground">
+                                Last click:{" "}
+                                {formatUnixTimestamp(row.lastClickedAt)}
+                              </p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <p className="text-sm font-semibold tabular-nums">
+                                {getRowClicks(row)} Clicks
+                              </p>
+                              <a
+                                href={row.destinationUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex"
+                                onClick={() =>
+                                  trackProductEvent(
+                                    "tracer_external_link_opened",
+                                    {
+                                      origin: "drilldown",
+                                      drilldown_mode: drilldownMode,
+                                    },
+                                  )
+                                }
+                              >
                                 <Button
                                   type="button"
                                   size="icon"
                                   variant="ghost"
                                   className="h-7 w-7"
-                                  onClick={() =>
-                                    void handleCopyDestination(
-                                      row.destinationUrl,
-                                      false,
-                                    )
-                                  }
                                 >
-                                  <Copy className="h-4 w-4" />
+                                  <ExternalLink className="h-4 w-4" />
                                 </Button>
-                              </div>
+                              </a>
+                              <Button
+                                type="button"
+                                size="icon"
+                                variant="ghost"
+                                className="h-7 w-7"
+                                onClick={() =>
+                                  void handleCopyDestination(
+                                    row.destinationUrl,
+                                    false,
+                                  )
+                                }
+                              >
+                                <Copy className="h-4 w-4" />
+                              </Button>
                             </div>
-                          ))}
-                        </AccordionContent>
-                      </AccordionItem>
-                    </Accordion>
-                  )}
-                  {jobDrilldown.links.length === 0 && (
-                    <p className="text-sm text-muted-foreground">
-                      No tracer links recorded for this job yet.
-                    </p>
-                  )}
-                </>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  Select a job from Application Activity.
-                </p>
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
-      </PageMain>
-    </>
+                          </div>
+                        ))}
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                )}
+                {jobDrilldown.links.length === 0 && (
+                  <p className="text-sm text-muted-foreground">
+                    No tracer links recorded for this job yet.
+                  </p>
+                )}
+              </>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                Select a job from Application Activity.
+              </p>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </PageFrame>
   );
 };

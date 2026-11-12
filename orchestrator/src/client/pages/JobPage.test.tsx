@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { AppearanceProvider } from "@/client/lib/appearance/AppearanceProvider";
 import { celebrateOffer } from "@/client/lib/celebrate";
 import { editorHtmlToMarkdown } from "@/client/lib/jobNoteContent";
 import * as privatePdf from "@/client/lib/private-pdf";
@@ -291,6 +292,26 @@ const renderJobPage = (initialEntry: RouterInitialEntry = "/job/job-1/notes") =>
       </Routes>
     </MemoryRouter>,
   );
+
+describe("JobPage header", () => {
+  it("shows the light/dark toggle", async () => {
+    localStorage.clear();
+    render(
+      <AppearanceProvider>
+        <MemoryRouter initialEntries={["/job/job-1/overview"]}>
+          <Routes>
+            <Route path="/job/:id/:view?" element={<JobPage />} />
+          </Routes>
+        </MemoryRouter>
+      </AppearanceProvider>,
+    );
+    expect(
+      await screen.findByRole("button", {
+        name: /Switch to (dark|light) mode/,
+      }),
+    ).toBeInTheDocument();
+  });
+});
 
 describe("JobPage deletion", () => {
   it("requires confirmation and does nothing when cancelled", async () => {

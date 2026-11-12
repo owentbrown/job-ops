@@ -33,6 +33,7 @@ import {
 import { toast } from "sonner";
 import { JobBriefPane } from "@/client/components/JobBriefPane";
 import { JobDescriptionPanel } from "@/client/components/JobDescriptionPanel";
+import { HeaderModeToggle } from "@/client/components/layout";
 import { invalidateJobData } from "@/client/hooks/queries/invalidate";
 import {
   useCheckSponsorMutation,
@@ -578,32 +579,36 @@ export const JobPage: React.FC = () => {
           <ArrowLeft className="h-4 w-4" />
           Back
         </Button>
-        {job && (
-          <div className="flex items-center gap-2">
-            <Badge
-              variant="outline"
-              className="border-success/30 bg-success/10 text-success"
-            >
-              {currentStage
-                ? STAGE_LABELS[currentStage as ApplicationStage] || currentStage
-                : job.status}
-            </Badge>
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={() => setIsDeleteJobModalOpen(true)}
-              disabled={
-                isBusy ||
-                isUploadingPdf ||
-                isRegeneratingPdf ||
-                job.status === "processing"
-              }
-            >
-              <Trash2 data-icon="inline-start" />
-              {activeAction === "delete-job" ? "Deleting..." : "Delete job"}
-            </Button>
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          {job && (
+            <>
+              <Badge
+                variant="outline"
+                className="border-success/30 bg-success/10 text-success"
+              >
+                {currentStage
+                  ? STAGE_LABELS[currentStage as ApplicationStage] ||
+                    currentStage
+                  : job.status}
+              </Badge>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => setIsDeleteJobModalOpen(true)}
+                disabled={
+                  isBusy ||
+                  isUploadingPdf ||
+                  isRegeneratingPdf ||
+                  job.status === "processing"
+                }
+              >
+                <Trash2 data-icon="inline-start" />
+                {activeAction === "delete-job" ? "Deleting..." : "Delete job"}
+              </Button>
+            </>
+          )}
+          <HeaderModeToggle />
+        </div>
       </div>
 
       {!job && (

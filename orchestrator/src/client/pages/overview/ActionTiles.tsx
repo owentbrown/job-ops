@@ -9,7 +9,6 @@ type Tile = {
   count: number;
   noun: string;
   to: string;
-  cta: string;
 };
 
 const TileShell: React.FC<{

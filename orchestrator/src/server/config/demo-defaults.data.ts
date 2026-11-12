@@ -688,7 +688,7 @@ export const DEMO_BASE_STAGE_EVENTS: DemoDefaultStageEvent[] = [
     id: "demo-event-hm-4",
     applicationId: "demo-job-applied-4",
     fromStage: "screening",
-    toStage: "screening",
+    toStage: "interview",
     title: "Hiring manager interview",
     occurredOffsetMinutes: 1320,
     metadata: { eventLabel: "Team Match", actor: "user" },
@@ -696,7 +696,7 @@ export const DEMO_BASE_STAGE_EVENTS: DemoDefaultStageEvent[] = [
   {
     id: "demo-event-offer-4",
     applicationId: "demo-job-applied-4",
-    fromStage: "screening",
+    fromStage: "interview",
     toStage: "offer",
     title: "Offer received",
     occurredOffsetMinutes: 1200,

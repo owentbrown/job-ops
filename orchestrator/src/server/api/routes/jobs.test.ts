@@ -2057,7 +2057,7 @@ describe.sequential("Jobs API routes", () => {
         }),
       );
 
-      // 2. Transition to recruiter_screen with metadata
+      // 2. Transition to screening with metadata
       await fetch(`${baseUrl}/api/jobs/${jobId}/stages`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

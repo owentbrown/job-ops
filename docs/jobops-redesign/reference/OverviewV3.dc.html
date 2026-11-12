@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>JobOps Overview v3</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#0E5E54}a:hover{color:#0A4A42}
+</style>
+</helmet>
+<div style="display: flex; flex-wrap: wrap; min-height: 2300px; background: #F5F3EE; font-family: Inter, system-ui, sans-serif; color: #151A21">
+<nav aria-label="Primary" style="flex: 0 0 248px; width: 248px; box-sizing: border-box; background: #101820; padding: 28px 16px 20px; display: flex; flex-direction: column; gap: 4px">
+<div style="display: flex; align-items: center; gap: 10px; padding: 0 12px 24px">
+<div style="width: 28px; height: 28px; border-radius: 7px; background: #7CD1B8; color: #101820; display: flex; align-items: center; justify-content: center; font-family: 'Instrument Serif', Georgia, serif; font-size: 20px">J</div>
+<div style="font-family: 'Instrument Serif', Georgia, serif; font-size: 26px; color: #FFFFFF; letter-spacing: 0.01em">JobOps</div>
+</div>
+<sc-for list="{{nav}}" as="item" hint-placeholder-count="11">
+<a href="{{item.href}}" style="{{item.style}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{item.d}}"></path></svg><span>{{item.label}}</span></a>
+</sc-for>
+<div style="flex: 1 1 24px; min-height: 24px"></div>
+<div style="border-top: 1px solid rgba(255,255,255,0.1); padding-top: 16px; display: flex; flex-direction: column; gap: 12px">
+<button style="height: 40px; display: flex; align-items: center; gap: 10px; padding: 0 12px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14); border-radius: 8px; color: #E6EBF0; font: 500 14px Inter, sans-serif; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21c0-4 3.6-6 8-6s8 2 8 6"></path></svg>Account</button>
+<div style="display: flex; align-items: center; justify-content: space-between; padding: 0 4px"><span style="font: 400 12px 'JetBrains Mono', monospace; color: #8D98A5">Version v0.14.0</span><button aria-label="Collapse sidebar" style="width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; background: transparent; border: 1px solid rgba(255,255,255,0.14); border-radius: 8px; color: #B4BEC9; cursor: pointer"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></button></div>
+</div>
+</nav>
+<main style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 28px 40px 72px; display: flex; flex-direction: column; gap: 36px">
+<header style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px">
+<div>
+<h1 style="margin: 0; font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 44px; line-height: 1.1; letter-spacing: -0.01em">Overview</h1>
+<div style="font-size: 14px; color: #5E6670; margin-top: 6px">Status, actions and insights</div>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px">
+<div role="group" aria-label="Data source for this mockup" style="display: inline-flex; padding: 4px; gap: 2px; background: #EDEAE2; border-radius: 10px"><sc-for list="{{dataOpts}}" as="o" hint-placeholder-count="2"><button aria-pressed="{{o.pressed}}" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button></sc-for></div>
+<div role="group" aria-label="Date range" style="display: inline-flex; padding: 4px; gap: 2px; background: #EDEAE2; border-radius: 10px">
+<button aria-pressed="true" style="height: 32px; padding: 0 14px; border: 0; border-radius: 7px; background: #FFFFFF; color: #151A21; font: 600 13px 'JetBrains Mono', monospace; box-shadow: 0 1px 2px rgba(21,26,33,0.1); cursor: pointer">7d</button>
+<button aria-pressed="false" style="height: 32px; padding: 0 14px; border: 0; border-radius: 7px; background: transparent; color: #3A424C; font: 500 13px 'JetBrains Mono', monospace; cursor: pointer">14d</button>
+<button aria-pressed="false" style="height: 32px; padding: 0 14px; border: 0; border-radius: 7px; background: transparent; color: #3A424C; font: 500 13px 'JetBrains Mono', monospace; cursor: pointer">30d</button>
+<button aria-pressed="false" style="height: 32px; padding: 0 14px; border: 0; border-radius: 7px; background: transparent; color: #3A424C; font: 500 13px 'JetBrains Mono', monospace; cursor: pointer">90d</button>
+</div>
+</div>
+</header>
+<section aria-label="Pipeline" style="display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; align-items: baseline; gap: 12px"><span style="font: 500 12px 'JetBrains Mono', monospace; color: #5E6670">01</span><h2 style="margin: 0; font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 28px">Pipeline</h2></div>
+<div style="background: #FFFFFF; border: 1px solid #E4E0D6; border-radius: 16px; padding: 28px 32px; display: flex; flex-direction: column; gap: 22px">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; gap: 12px">
+<div><h3 style="margin: 0; font-size: 15px; font-weight: 600">Where everything is now</h3><div style="font-size: 13px; color: #5E6670; margin-top: 2px">Every application you’ve sent, by current status.</div></div>
+<div style="display: flex; align-items: baseline; gap: 8px"><span style="font: 500 40px 'JetBrains Mono', monospace; line-height: 1">{{total}}</span><span style="font-size: 14px; color: #5E6670">applications</span></div>
+</div>
+<div role="img" aria-label="{{barLabel}}" style="display: flex; gap: 3px; height: 44px"><sc-for list="{{segs}}" as="g" hint-placeholder-count="6"><div style="{{g}}"></div></sc-for></div>
+<div style="display: flex; flex-wrap: wrap; gap: 14px 8px"><sc-for list="{{legend}}" as="l" hint-placeholder-count="6"><div style="flex: 1 1 130px; display: flex; align-items: flex-start; gap: 10px"><span style="{{l.dot}}"></span><div><div style="font-size: 13px; color: #3A424C">{{l.label}}</div><div style="display: flex; align-items: baseline; gap: 8px; margin-top: 2px"><span style="font: 500 20px 'JetBrains Mono', monospace">{{l.n}}</span><span style="font: 400 12px 'JetBrains Mono', monospace; color: #5E6670">{{l.pct}}</span></div></div></div></sc-for></div>
+
+</div>
+</section>
+<section aria-label="Needs your action" style="display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; align-items: baseline; gap: 12px"><span style="font: 500 12px 'JetBrains Mono', monospace; color: #5E6670">02</span><h2 style="margin: 0; font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 28px">Needs your action</h2></div>
+<div style="display: flex; flex-wrap: wrap; gap: 20px">
+<a href="#" aria-label="Solve browser check, Hiring Cafe" style="flex: 1 1 280px; box-sizing: border-box; min-height: 210px; padding: 28px; border-radius: 18px; text-decoration: none; color: #151A21; display: flex; flex-direction: column; justify-content: space-between; gap: 22px; background: #FFF4DD; border: 1px solid #F0D9A5">
+<div style="display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #8A5200"><span style="width: 8px; height: 8px; border-radius: 50%; background: #D9922B"></span>Blocking your search</div>
+<div><div style="font-family: 'Instrument Serif', Georgia, serif; font-size: 40px; line-height: 1.05">Solve browser check</div><div style="font-size: 14px; color: #6B4A12; margin-top: 8px">Hiring Cafe</div></div>
+<span style="display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; height: 40px; padding: 0 18px; border-radius: 10px; background: #151A21; color: #FFFFFF; font-size: 14px; font-weight: 600">Solve<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span>
+</a>
+<a href="#" aria-label="{{act.review}} jobs to review" style="flex: 1 1 280px; box-sizing: border-box; min-height: 210px; padding: 28px; border-radius: 18px; text-decoration: none; color: #151A21; display: flex; flex-direction: column; justify-content: space-between; gap: 22px; background: #FFFFFF; border: 1px solid #E4E0D6">
+<div style="display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #0E5E54"><span style="width: 8px; height: 8px; border-radius: 50%; background: #0E5E54"></span>Ready</div>
+<div><div style="font: 500 76px 'JetBrains Mono', monospace; line-height: 1">{{act.review}}</div><div style="font-size: 20px; margin-top: 8px">jobs to review</div></div>
+<span style="display: inline-flex; align-items: center; gap: 8px; color: #0E5E54; font-size: 14px; font-weight: 600">Open Ready<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span>
+</a>
+<a href="#" aria-label="{{act.discovered}} new jobs discovered" style="flex: 1 1 280px; box-sizing: border-box; min-height: 210px; padding: 28px; border-radius: 18px; text-decoration: none; color: #151A21; display: flex; flex-direction: column; justify-content: space-between; gap: 22px; background: #FFFFFF; border: 1px solid #E4E0D6">
+<div style="display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #5E6670"><span style="width: 8px; height: 8px; border-radius: 50%; background: #9AA1A9"></span>Discovered</div>
+<div><div style="font: 500 76px 'JetBrains Mono', monospace; line-height: 1">{{act.discovered}}</div><div style="font-size: 20px; margin-top: 8px">new jobs discovered</div></div>
+<span style="display: inline-flex; align-items: center; gap: 8px; color: #0E5E54; font-size: 14px; font-weight: 600">Open Discovered<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span>
+</a>
+<a href="#" aria-label="{{act.emails}} emails to match or confirm" style="flex: 1 1 280px; box-sizing: border-box; min-height: 210px; padding: 28px; border-radius: 18px; text-decoration: none; color: #151A21; display: flex; flex-direction: column; justify-content: space-between; gap: 22px; background: #FFFFFF; border: 1px solid #E4E0D6">
+<div style="display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #5E6670"><span style="width: 8px; height: 8px; border-radius: 50%; background: #3F9A8B"></span>Tracking inbox</div>
+<div><div style="font: 500 76px 'JetBrains Mono', monospace; line-height: 1">{{act.emails}}</div><div style="font-size: 20px; margin-top: 8px">emails to match or confirm</div></div>
+<span style="display: inline-flex; align-items: center; gap: 8px; color: #0E5E54; font-size: 14px; font-weight: 600">Open inbox <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></span>
+</a>
+</div>
+<div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px 28px; padding: 14px 20px; background: #EDEAE2; border-radius: 12px; font-size: 13px; color: #3A424C"><span style="font-weight: 600; color: #151A21">Search engine</span><span>Daily 8:00 AM</span><span style="font-family: 'JetBrains Mono', monospace">Last run 180 / 180 searches</span><span style="font-family: 'JetBrains Mono', monospace">446 results · 419 unique</span><span style="font-family: 'JetBrains Mono', monospace">742 all jobs</span></div>
+</section>
+<section aria-label="Insights" style="display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; align-items: baseline; gap: 12px"><span style="font: 500 12px 'JetBrains Mono', monospace; color: #5E6670">03</span><h2 style="margin: 0; font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 28px">Insights</h2></div>
+<div style="background: #FFFFFF; border: 1px solid #E4E0D6; border-radius: 16px; padding: 24px 28px; display: flex; flex-wrap: wrap; gap: 28px">
+<div style="flex: 3 1 420px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+<div><h3 style="margin: 0; font-size: 15px; font-weight: 600">Pace</h3><div style="font-size: 13px; color: #5E6670; margin-top: 2px">Applications per day, last 7 days.</div></div>
+<div style="display: flex; align-items: flex-end; gap: 10px; height: 150px; border-bottom: 1px solid #C9C3B4"><sc-for list="{{days}}" as="d" hint-placeholder-count="7"><div style="flex: 1; display: flex; align-items: flex-end; justify-content: center; height: 100%"><div role="img" aria-label="{{d.label}}" style="{{d.bar}}"></div></div></sc-for></div>
+<div style="display: flex; gap: 10px; font: 400 11px 'JetBrains Mono', monospace; color: #5E6670"><span style="flex: 1; text-align: center">4 Nov</span><span style="flex: 1; text-align: center">5 Nov</span><span style="flex: 1; text-align: center">6 Nov</span><span style="flex: 1; text-align: center">7 Nov</span><span style="flex: 1; text-align: center">8 Nov</span><span style="flex: 1; text-align: center">9 Nov</span><span style="flex: 1; text-align: center">10 Nov</span></div>
+</div>
+<div style="flex: 1 1 200px; display: flex; flex-direction: column; justify-content: center; gap: 0"><sc-for list="{{paceStats}}" as="p" hint-placeholder-count="3"><div style="padding: 16px 0; border-bottom: 1px solid #ECE8DE"><div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #5E6670">{{p.label}}</div><div style="font: 500 26px 'JetBrains Mono', monospace; margin-top: 4px">{{p.value}}</div></div></sc-for></div>
+</div>
+<div style="background: #FFFFFF; border: 1px solid #E4E0D6; border-radius: 16px; padding: 24px 28px; display: flex; flex-direction: column; gap: 18px">
+<div><h3 style="margin: 0; font-size: 15px; font-weight: 600">Replies</h3><div style="font-size: 13px; color: #5E6670; margin-top: 2px">{{repliesNote}}</div></div>
+<div style="display: flex; flex-wrap: wrap; gap: 14px"><sc-for list="{{tiles}}" as="t" hint-placeholder-count="5"><div style="flex: 1 1 170px; padding: 18px; background: #F5F3EE; border-radius: 12px"><div style="font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #5E6670">{{t.label}}</div><div style="font: 500 30px 'JetBrains Mono', monospace; margin-top: 6px">{{t.value}}</div><div style="font-size: 12px; color: #5E6670; margin-top: 4px">{{t.sub}}</div></div></sc-for></div>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 20px">
+<div style="flex: 1 1 440px; min-width: 0; background: #FFFFFF; border: 1px solid #E4E0D6; border-radius: 16px; padding: 24px 28px; display: flex; flex-direction: column; gap: 18px">
+<div><h3 style="margin: 0; font-size: 15px; font-weight: 600">Response rate by role</h3><div style="font-size: 13px; color: #5E6670; margin-top: 2px">What kinds of roles are actually getting replies.</div></div>
+<div style="display: flex; flex-direction: column; gap: 14px"><sc-for list="{{roles}}" as="r" hint-placeholder-count="5"><div><div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 7px"><span style="font-weight: 500">{{r.name}}</span><span style="font: 500 13px 'JetBrains Mono', monospace; color: #3A424C">{{r.text}}</span></div><div style="height: 8px; border-radius: 999px; background: #ECE8DE; overflow: hidden"><div style="{{r.bar}}"></div></div></div></sc-for></div>
+<div style="padding: 12px 14px; background: #F5F3EE; border-radius: 10px; font-size: 13px; color: #3A424C">{{roleNote}}</div>
+</div>
+<div style="flex: 1 1 440px; min-width: 0; background: #FFFFFF; border: 1px solid #E4E0D6; border-radius: 16px; padding: 24px 28px; display: flex; flex-direction: column; gap: 18px">
+<div><h3 style="margin: 0; font-size: 15px; font-weight: 600">Why you skip</h3><div style="font-size: 13px; color: #5E6670; margin-top: 2px">Top skip reasons, and strong matches you may want to revisit.</div></div>
+<div style="display: flex; flex-direction: column; gap: 14px"><sc-for list="{{reasons}}" as="r" hint-placeholder-count="5"><div><div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 7px"><span style="font-weight: 500">{{r.name}}</span><span style="font: 500 13px 'JetBrains Mono', monospace; color: #3A424C">{{r.text}}</span></div><div style="height: 8px; border-radius: 999px; background: #ECE8DE; overflow: hidden"><div style="{{r.bar}}"></div></div></div></sc-for></div>
+<div style="border-top: 1px solid #ECE8DE; padding-top: 16px">
+<div style="font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: #5E6670; margin-bottom: 10px">Skipped but scored 80+</div>
+<div style="display: flex; flex-direction: column; gap: 8px"><sc-for list="{{revisit}}" as="v" hint-placeholder-count="3"><div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid #E4E0D6; border-radius: 10px"><span style="flex: 0 0 36px; height: 28px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; background: #E3F1EC; color: #0E5E54; font: 600 13px 'JetBrains Mono', monospace">{{v.score}}</span><div style="flex: 1; min-width: 0"><div style="font-size: 14px; font-weight: 500">{{v.company}}</div><div style="font-size: 12px; color: #5E6670">{{v.role}}</div></div><a href="#" style="font-size: 13px; font-weight: 500">Reconsider</a></div></sc-for></div>
+</div>
+</div>
+</div>
+<div style="display: flex; flex-wrap: wrap; gap: 20px">
+<div style="flex: 1 1 440px; min-width: 0; background: #FFFFFF; border: 1px solid #E4E0D6; border-radius: 16px; padding: 24px 28px; display: flex; flex-direction: column; gap: 14px">
+<div><h3 style="margin: 0; font-size: 15px; font-weight: 600">Source yield</h3><div style="font-size: 13px; color: #5E6670; margin-top: 2px">Which job boards turn into replies.</div></div>
+<div style="display: flex; padding-bottom: 8px; border-bottom: 1px solid #E4E0D6; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: #5E6670"><span style="flex: 2">Source</span><span style="flex: 1; text-align: right">Results</span><span style="flex: 1; text-align: right">Applied</span><span style="flex: 1; text-align: right">Replied</span><span style="flex: 1; text-align: right">Rate</span></div>
+<sc-for list="{{sources}}" as="s" hint-placeholder-count="3"><div style="display: flex; align-items: baseline; padding: 6px 0 12px; border-bottom: 1px solid #ECE8DE; font: 500 14px 'JetBrains Mono', monospace"><span style="flex: 2; font-family: Inter, sans-serif">{{s.name}}</span><span style="flex: 1; text-align: right">{{s.results}}</span><span style="flex: 1; text-align: right">{{s.applied}}</span><span style="flex: 1; text-align: right">{{s.replied}}</span><span style="flex: 1; text-align: right; color: #0E5E54">{{s.rate}}</span></div></sc-for>
+</div>
+<div style="flex: 1 1 440px; min-width: 0; background: #FFFFFF; border: 1px solid #E4E0D6; border-radius: 16px; padding: 24px 28px; display: flex; flex-direction: column; gap: 18px">
+<div><h3 style="margin: 0; font-size: 15px; font-weight: 600">Does the match score predict replies?</h3><div style="font-size: 13px; color: #5E6670; margin-top: 2px">Reply rate by score band.</div></div>
+<div style="display: flex; flex-direction: column; gap: 14px"><sc-for list="{{bands}}" as="b" hint-placeholder-count="4"><div><div style="display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 7px"><span style="font-weight: 500">{{b.name}}</span><span style="font: 500 13px 'JetBrains Mono', monospace; color: #3A424C">{{b.text}}</span></div><div style="height: 8px; border-radius: 999px; background: #ECE8DE; overflow: hidden"><div style="{{b.bar}}"></div></div></div></sc-for></div>
+<div style="padding: 12px 14px; background: #F5F3EE; border-radius: 10px; font-size: 13px; color: #3A424C">{{scoreNote}}</div>
+</div>
+</div>
+</section>
+</main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2500}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { sample: true };
+}
+renderVals() {
+const ACTIVE = 'Overview';
+const NAV = [
+['Overview','Overview.dc.html','M3 11l9-8 9 8v10H3z'],
+['Jobs','Main.dc.html','M3 3h8v8H3zM13 3h8v8h-8zM3 13h8v8H3zM13 13h8v8h-8z'],
+['In Progress','InProgress.dc.html','M4 4h5v16H4zM11 4h5v10h-5zM18 4h2v6h-2z'],
+['Resume Studio','#','M6 3h9l4 4v14H6zM9 12h7M9 16h7'],
+['Tracking Inbox','#','M3 13l3-8h12l3 8v6H3zM3 13h5l1 3h6l1-3h5'],
+['Tracer Links','#','M10 14a4 4 0 0 0 5.6 0l3-3a4 4 0 0 0-5.6-5.6l-1 1M14 10a4 4 0 0 0-5.6 0l-3 3a4 4 0 0 0 5.6 5.6l1-1'],
+['Visa Sponsors','#','M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z'],
+['Watchlist','#','M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z'],
+['Filtered','#','M3 4h18l-7 9v6l-4 2v-8z'],
+['Spend','Spend.dc.html','M12 3v18M16 7H10a3 3 0 0 0 0 6h4a3 3 0 0 1 0 6H8'],
+['Settings','#','M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM4 12h2M18 12h2M12 4v2M12 18v2']
+];
+const base = 'display:flex;align-items:center;gap:12px;height:40px;padding:0 12px;border-radius:8px;font-size:14px;font-weight:500;text-decoration:none;';
+const nav = NAV.map(([label, href, d]) => ({ label, href, d, style: base + (label === ACTIVE ? 'background:rgba(255,255,255,0.09);color:#FFFFFF;box-shadow:inset 2px 0 0 #7CD1B8' : 'color:#B4BEC9') }));
+const sample = this.state.sample;
+const seg = (on) => 'height:32px;padding:0 14px;border:0;border-radius:7px;cursor:pointer;font:' + (on ? '600' : '500') + ' 13px Inter,sans-serif;color:' + (on ? '#151A21' : '#3A424C') + ';background:' + (on ? '#FFFFFF' : 'transparent') + ';box-shadow:' + (on ? '0 1px 2px rgba(21,26,33,0.1)' : 'none');
+const dataOpts = [[true, 'Sample data'], [false, 'Your data']].map(([v, label]) => ({ label, pressed: sample === v, style: seg(sample === v), pick: () => this.setState({ sample: v }) }));
+const STATUS = [['Awaiting reply', '#CFC9BA'], ['Screening', '#9FD0C4'], ['Interview', '#3F9A8B'], ['Offer', '#0E5E54'], ['Rejected', '#D9A4A4']];
+const D = sample ? {
+st: [24, 7, 6, 1, 10],
+days: [5, 7, 3, 8, 6, 9, 10],
+act: { review: '12', discovered: '23', emails: '5' },
+pace: [['Average per day', '6.9'], ['Best day', 'Tue · 10'], ['Found → applied', '2.1 days']],
+repliesNote: 'Sample data. How replies are coming in.',
+tiles: [['Response rate', '29%', '14 of 48 applications'], ['Median time to response', '3.5 days', 'from applying to first reply'], ['Emails matched', '22', 'replies linked to a job']],
+roles: [['Product Manager', 39, '7 of 18 · 39%'], ['Associate Product Manager', 25, '2 of 8 · 25%'], ['Product Operations', 22, '2 of 9 · 22%'], ['Customer Success', 14, '1 of 7 · 14%'], ['Strategy & Operations', 33, '2 of 6 · 33%']],
+roleNote: 'Focus check: 15% of applications (7 of 48) are outside your target roles.',
+reasons: [['Seniority mismatch', 14, '14'], ['Location', 9, '9'], ['Low score', 7, '7'], ['Sponsorship', 4, '4'], ['Stale posting', 3, '3']],
+revisit: [['82', 'Fidelity Canada', 'Business Process Manager'], ['85', 'Sample Co A', 'Strategy Lead'], ['81', 'Sample Co B', 'Operations Manager']],
+sources: [['Hiring Cafe', '210', '15', '4', '27%'], ['startup.jobs', '150', '18', '6', '33%'], ['JobSpy', '86', '15', '4', '27%']],
+bands: [['Below 70', 17, '1 of 6 · 17%'], ['70–79', 22, '4 of 18 · 22%'], ['80–89', 37, '7 of 19 · 37%'], ['90+', 40, '2 of 5 · 40%']],
+scoreNote: 'Higher scores get more replies, so the score is a useful filter.'
+} : {
+st: [12, 0, 0, 0, 0],
+days: [0, 0, 0, 0, 0, 4, 8],
+act: { review: '—', discovered: '0', emails: '0' },
+pace: [['Average per day', '1.7'], ['Best day', 'Tue · 8'], ['Found → applied', '—']],
+repliesNote: 'Too early to read. These fill in after your first reply.',
+tiles: [['Response rate', '—', '0 of 12 so far'], ['Median time to response', '—', 'needs a first reply'], ['Emails matched', '—', 'not tracked yet']],
+roles: [['Product Manager', 0, '—'], ['Associate Product Manager', 0, '—'], ['Product Operations', 0, '—'], ['Customer Success', 0, '—'], ['Strategy & Operations', 0, '—']],
+roleNote: 'Appears as applications are tagged by role.',
+reasons: [['Seniority mismatch', 0, '—'], ['Location', 0, '—'], ['Low score', 0, '—'], ['Sponsorship', 0, '—'], ['Stale posting', 0, '—']],
+revisit: [['82', 'Fidelity Canada', 'Business Process Manager']],
+sources: [['Hiring Cafe', '—', '—', '—', '—'], ['startup.jobs', '—', '—', '—', '—'], ['JobSpy', '—', '—', '—', '—']],
+bands: [['Below 70', 0, '—'], ['70–79', 0, '—'], ['80–89', 0, '—'], ['90+', 0, '—']],
+scoreNote: 'Appears once scored applications get replies.'
+};
+const total = D.st.reduce((a, b) => a + b, 0);
+const segs = STATUS.map(([, c], i) => ({ n: D.st[i], c })).filter(x => x.n > 0).map(x => 'flex:' + x.n + ' 1 0;min-width:10px;border-radius:8px;background:' + x.c);
+const legend = STATUS.map(([label, c], i) => ({ label, n: String(D.st[i]), pct: Math.round(D.st[i] / total * 100) + '%', dot: 'flex:0 0 12px;height:12px;border-radius:4px;margin-top:3px;background:' + c }));
+const barLabel = STATUS.map(([l], i) => D.st[i] + ' ' + l.toLowerCase()).join(', ');
+const dmax = Math.max.apply(null, D.days) || 1;
+const days = D.days.map(v => ({ label: v + ' applications', bar: 'width:56%;max-width:64px;border-radius:6px 6px 0 0;background:#0E5E54;height:' + (v === 0 ? 0 : Math.max(4, Math.round(v / dmax * 100))) + '%' }));
+const barRows = (rows) => rows.map(([name, pct, text]) => ({ name, text, bar: 'height:100%;background:#0E5E54;width:' + Math.round(pct * 2.2) + '%' }));
+const reasonMax = Math.max.apply(null, D.reasons.map(r => r[1])) || 1;
+const reasons = D.reasons.map(([name, n, text]) => ({ name, text, bar: 'height:100%;background:#B88A3B;width:' + Math.round(n / reasonMax * 100) + '%' }));
+return {
+nav, dataOpts, total: String(total), segs, legend, barLabel, days,
+act: D.act,
+paceStats: D.pace.map(([label, value]) => ({ label, value })),
+repliesNote: D.repliesNote,
+tiles: D.tiles.map(([label, value, sub]) => ({ label, value, sub })),
+roles: barRows(D.roles), roleNote: D.roleNote,
+reasons,
+revisit: D.revisit.map(([score, company, role]) => ({ score, company, role })),
+sources: D.sources.map(([name, results, applied, replied, rate]) => ({ name, results, applied, replied, rate })),
+bands: barRows(D.bands).map(r => Object.assign(r, { bar: 'height:100%;background:#0E5E54;width:' + Math.round((parseInt((r.text.split('·')[1] || '0')) || 0) * 2.2) + '%' })),
+scoreNote: D.scoreNote
+};
+}
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>JobOps Appearance Switcher</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600&family=Instrument+Serif&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+button{font-family:inherit}
+</style>
+</helmet>
+<div style="min-height: 2300px; background: #E9E7E2; font-family: Inter, system-ui, sans-serif; color: #1A1D21; box-sizing: border-box; padding: 48px 48px 72px">
+<div style="max-width: 1344px; margin: 0 auto; display: flex; flex-direction: column; gap: 32px">
+<div>
+<h1 style="margin: 0; font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; font-size: 44px; letter-spacing: -0.01em">Appearance switcher demo</h1>
+<p style="margin: 8px 0 0; font-size: 15px; color: #4A5058; max-width: 760px">Click <b>Appearance</b> at the bottom of the sidebar, or the sun/moon button at the top right. Everything re-themes live. Each colour pair sets the big surfaces (sidebar, page tint, soft fills) and the action colour (buttons, links, bars), and the three themes differ in structure, not just type. Status colours keep their meaning.</p>
+</div>
+
+<section aria-label="Live app preview" style="{{P.frame}}">
+<div style="{{P.side}}">
+<div style="{{P.brand}}">JobOps</div>
+<sc-for list="{{nav}}" as="n" hint-placeholder-count="7"><div style="{{n.style}}">{{n.label}}</div></sc-for>
+<div style="margin-top: auto; display: flex; flex-direction: column; gap: 4px; padding-top: 24px">
+<div style="position: relative">
+<button aria-haspopup="dialog" aria-expanded="{{pop.expanded}}" onClick="{{pop.toggle}}" style="{{P.appBtn}}">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 2-.9 2-2 0-.6-.2-1-.6-1.4-.3-.4-.5-.8-.5-1.3 0-1.1.9-2 2-2H17a4 4 0 0 0 4-4c0-4-4-7.3-9-7.3z"></path><circle cx="7.5" cy="11" r="1"></circle><circle cx="10.5" cy="7" r="1"></circle><circle cx="15" cy="7.5" r="1"></circle></svg>
+<span style="display: flex; flex-direction: column; align-items: flex-start; line-height: 1.2"><span>Appearance</span><span style="{{P.appSub}}">{{summary}}</span></span>
+</button>
+<span style="{{P.badge1}}">1</span>
+</div>
+<div style="{{P.collapse}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>Collapse</div>
+</div>
+</div>
+
+<div style="{{P.main}}">
+<div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px">
+<div style="{{P.h1}}">Overview</div>
+<div style="display: flex; align-items: center; gap: 10px">
+<span style="{{P.mut13}}">Last 14 days</span>
+<div style="position: relative">
+<button aria-label="{{quick.label}}" onClick="{{quick.pick}}" style="{{P.quick}}">{{quick.glyph}}</button>
+<span style="{{P.badge2}}">2</span>
+</div>
+</div>
+</div>
+
+<div style="{{P.card}}">
+<div style="display: flex; align-items: baseline; gap: 12px"><span style="{{P.big}}">48</span><span style="{{P.h2}}">applications</span></div>
+<div role="img" aria-label="24 awaiting reply, 7 screening, 6 interview, 1 offer, 10 rejected" style="{{P.bar}}"><sc-for list="{{segs}}" as="s" hint-placeholder-count="5"><div style="{{s}}"></div></sc-for></div>
+<div style="display: flex; flex-wrap: wrap; gap: 10px 28px"><sc-for list="{{legend}}" as="l" hint-placeholder-count="5"><div style="display: flex; align-items: baseline; gap: 8px"><span style="{{l.dot}}"></span><span style="{{P.mut13}}">{{l.label}}</span><span style="{{P.num}}">{{l.n}}</span></div></sc-for></div>
+</div>
+
+<div style="{{P.tilesWrap}}">
+<div style="{{P.warn}}">
+<div style="{{P.warnLabel}}">Blocking your search</div>
+<div><div style="{{P.tileTitle}}">Solve browser check</div><div style="{{P.warnSub}}">Hiring Cafe</div></div>
+<span style="{{P.dark}}">Solve</span>
+</div>
+<sc-for list="{{tiles}}" as="t" hint-placeholder-count="3">
+<div style="{{t.style}}">
+<div style="{{P.tileLabel}}">{{t.label}}</div>
+<div><div style="{{P.tileNum}}">{{t.n}}</div><div style="{{P.tileText}}">{{t.text}}</div></div>
+<span style="{{P.link}}">{{t.cta}}</span>
+</div>
+</sc-for>
+</div>
+
+<div style="display: flex; flex-wrap: wrap; gap: 14px; align-items: center">
+<span style="{{P.btn1}}">Add a job</span>
+<span style="{{P.btn2}}">Repeat last search</span>
+<span style="{{P.pill}}">SEARCH RUNNING</span>
+<span style="{{P.danger}}">Cancel run</span>
+</div>
+</div>
+
+<div style="{{pop.panel}}" role="dialog" aria-label="Appearance">
+<div style="display: flex; justify-content: space-between; align-items: center"><div style="{{P.popTitle}}">Appearance</div><button onClick="{{pop.toggle}}" aria-label="Close" style="{{P.close}}">✕</button></div>
+<div>
+<div style="{{P.cap}}">Mode</div>
+<div style="display: flex; gap: 6px"><sc-for list="{{modeOpts}}" as="o" hint-placeholder-count="3"><button aria-pressed="{{o.pressed}}" onClick="{{o.pick}}" style="{{o.style}}">{{o.label}}</button></sc-for></div>
+<div style="{{pop.sysRow}}"><span>{{sysText}}</span><button onClick="{{sysToggle}}" style="{{P.linkBtn}}">{{sysBtn}}</button></div>
+</div>
+<div>
+<div style="{{P.cap}}">Theme</div>
+<div style="display: flex; gap: 8px"><sc-for list="{{themeOpts}}" as="o" hint-placeholder-count="3">
+<button aria-pressed="{{o.pressed}}" onClick="{{o.pick}}" style="{{o.style}}">
+<span style="{{o.swatch}}"><span style="{{o.bar1}}"></span><span style="{{o.bar2}}"></span></span>
+<span style="font-size: 12px; font-weight: 600">{{o.label}}</span>
+</button></sc-for></div>
+</div>
+<div>
+<div style="{{P.cap}}">Colours <span style="font-weight: 400; text-transform: none; letter-spacing: 0">· {{accName}} <span style="opacity: 0.7">(left: sidebar, right: actions)</span></span></div>
+<div style="display: flex; gap: 10px; padding: 3px"><sc-for list="{{accOpts}}" as="o" hint-placeholder-count="6"><button aria-label="{{o.label}}" aria-pressed="{{o.pressed}}" onClick="{{o.pick}}" style="{{o.style}}"></button></sc-for></div>
+</div>
+<div style="{{P.popFoot}}">All settings live in Settings → Appearance</div>
+</div>
+</section>
+
+<section aria-label="Where it lives">
+<h2 style="margin: 0 0 14px; font-size: 20px; font-weight: 600">Where the switcher lives</h2>
+<div style="display: flex; flex-wrap: wrap; gap: 20px">
+<div style="flex: 1 1 300px; background: #FFFFFF; border: 1px solid #D9D5C9; border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 8px"><div style="font: 500 12px 'JetBrains Mono', monospace; color: #4A5058">1 · PRIMARY</div><div style="font-size: 17px; font-weight: 600">Sidebar footer: “Appearance”</div><div style="font-size: 14px; color: #4A5058; line-height: 1.5">Always visible on every page, just above Collapse. Shows the current choice (“Editorial · Teal”) so it’s discoverable. Opens a small popover with mode, theme and accent, previewing live. When the sidebar is collapsed it shrinks to the palette icon. On narrow screens it sits at the bottom of the drawer.</div></div>
+<div style="flex: 1 1 300px; background: #FFFFFF; border: 1px solid #D9D5C9; border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 8px"><div style="font: 500 12px 'JetBrains Mono', monospace; color: #4A5058">2 · QUICK TOGGLE</div><div style="font-size: 17px; font-weight: 600">Sun / moon button in the page header</div><div style="font-size: 14px; color: #4A5058; line-height: 1.5">One click flips light and dark, because that is the change people make most often (evening job-hunting). It stays in the top-right of every page, beside the range picker or Add a job.</div></div>
+<div style="flex: 1 1 300px; background: #FFFFFF; border: 1px solid #D9D5C9; border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 8px"><div style="font: 500 12px 'JetBrains Mono', monospace; color: #4A5058">3 · FULL HOME</div><div style="font-size: 17px; font-weight: 600">Settings → Appearance</div><div style="font-size: 14px; color: #4A5058; line-height: 1.5">The same controls with larger theme previews, plus the “Match my device” explanation. The popover links here. First run: pick a theme during onboarding, defaulting to Editorial · Teal · System.</div></div>
+</div>
+</section>
+
+<section aria-label="Three personalities">
+<h2 style="margin: 0 0 4px; font-size: 20px; font-weight: 600">Three personalities, what actually changes</h2>
+<div style="font-size: 14px; color: #4A5058; margin-bottom: 18px">Each theme changes type, shape, sidebar, tile treatment, density and the status bar. The colour pair then paints whichever surfaces that theme exposes.</div>
+<div style="display: flex; flex-wrap: wrap; gap: 20px">
+<sc-for list="{{pitch}}" as="p" hint-placeholder-count="3">
+<div style="flex: 1 1 300px; background: #FFFFFF; border: 1px solid #D9D5C9; border-radius: 14px; padding: 22px; display: flex; flex-direction: column; gap: 10px">
+<div style="font: 500 12px 'JetBrains Mono', monospace; color: #4A5058">{{p.n}} · {{p.source}}</div>
+<div style="font-size: 20px; font-weight: 600">{{p.name}}</div>
+<div style="font-size: 14px; color: #4A5058; line-height: 1.4">{{p.line}}</div>
+<div style="display: flex; flex-direction: column; gap: 6px; font-size: 13px; line-height: 1.4"><sc-for list="{{p.rows}}" as="r" hint-placeholder-count="6"><div><b style="display: inline-block; width: 78px; color: #4A5058; font-weight: 600">{{r.k}}</b>{{r.v}}</div></sc-for></div>
+</div>
+</sc-for>
+</div>
+</section>
+
+<section aria-label="All theme and mode combinations">
+<h2 style="margin: 0 0 4px; font-size: 20px; font-weight: 600">All six looks</h2>
+<div style="font-size: 14px; color: #4A5058; margin-bottom: 18px">Uses the colour pair picked above. Top row light, bottom row dark.</div>
+<div style="display: flex; flex-wrap: wrap; gap: 20px">
+<sc-for list="{{gallery}}" as="g" hint-placeholder-count="6">
+<div style="flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 8px">
+<div style="font-size: 13px; font-weight: 600">{{g.label}}</div>
+<div style="{{g.panel}}">
+<div style="{{g.side}}"><span style="{{g.sbar1}}"></span><span style="{{g.sbar2}}"></span><span style="{{g.sbar2}}"></span></div>
+<div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px; padding: 6px 4px">
+<div style="{{g.title}}">Overview</div>
+<div style="display: flex; align-items: baseline; gap: 10px"><span style="{{g.num}}">12</span><span style="{{g.mut}}">jobs to review</span></div>
+<div style="{{g.bar}}"><sc-for list="{{g.segs}}" as="s" hint-placeholder-count="4"><div style="{{s}}"></div></sc-for></div>
+<div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap"><span style="{{g.btn}}">Open Ready</span><span style="{{g.pill}}">SEARCH RUNNING</span></div>
+</div>
+</div>
+</div>
+</sc-for>
+</div>
+</section>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1700}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { mode: 'system', osDark: false, theme: 'editorial', acc: 'evergreen', open: true };
+}
+renderVals() {
+const hx = (h) => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16));
+const mix = (A, B, k) => { const x = hx(A), y = hx(B); return '#' + [0, 1, 2].map(i => Math.round(x[i] * (1 - k) + y[i] * k).toString(16).padStart(2, '0')).join(''); };
+const THEMES = {
+editorial: { name: 'Editorial', hf: "'Instrument Serif', Georgia, serif", hw: 400, hs: 32, bf: 'Inter, sans-serif', mf: "'JetBrains Mono', monospace", r: 14, tileR: 18, btnR: 10, pillR: 8, popR: 16, navR: 8, navH: 38, pad: 24, tileH: 190, tileNum: 52, tileNumW: 500, sideStyle: 'dark', tileStyle: 'outline', cardBorder: true, shadow: 'none', barH: 28, barGap: 4, barR: 6, bgK: [0.04, 0.07], labelCase: true, h1s: 42,
+L: { bg: '#F5F3EE', surf: '#FFFFFF', ink: '#151A21', mut: '#5E6670', line: '#E4E0D6', track: '#ECE8DE' },
+D: { bg: '#151412', surf: '#1E1C19', ink: '#F2EEE6', mut: '#A8A196', line: '#33302A', track: '#33302A' } },
+ledger: { name: 'Ledger', hf: "'IBM Plex Sans', sans-serif", hw: 600, hs: 24, bf: "'IBM Plex Sans', sans-serif", mf: "'IBM Plex Mono', monospace", r: 4, tileR: 4, btnR: 4, pillR: 2, popR: 6, navR: 4, navH: 34, pad: 18, tileH: 150, tileNum: 40, tileNumW: 500, sideStyle: 'light', tileStyle: 'grid', cardBorder: true, shadow: 'none', barH: 14, barGap: 1, barR: 2, bgK: [0.03, 0.05], labelCase: true, h1s: 28,
+L: { bg: '#F1F4F8', surf: '#FFFFFF', ink: '#10233F', mut: '#4C5B70', line: '#CDD5E0', track: '#DCE3ED' },
+D: { bg: '#0E1218', surf: '#151B24', ink: '#E8ECF2', mut: '#9AA5B5', line: '#27303C', track: '#27303C' } },
+soft: { name: 'Soft', hf: "'DM Sans', sans-serif", hw: 700, hs: 28, bf: "'DM Sans', sans-serif", mf: "'DM Sans', sans-serif", r: 28, tileR: 28, btnR: 999, pillR: 999, popR: 24, navR: 999, navH: 42, pad: 28, tileH: 200, tileNum: 56, tileNumW: 700, sideStyle: 'float', tileStyle: 'filled', cardBorder: false, shadow: '0 8px 28px rgba(36,27,61,0.09)', barH: 20, barGap: 4, barR: 999, bgK: [0.09, 0.1], labelCase: false, h1s: 36,
+L: { bg: '#F4F1FB', surf: '#FFFFFF', ink: '#241B3D', mut: '#5F5877', line: '#E4DEF5', track: '#E9E3F8' },
+D: { bg: '#12101C', surf: '#1B182A', ink: '#EEEAFB', mut: '#A59FBF', line: '#2D2842', track: '#2D2842' } }
+};
+const ACC = [
+{ id: 'evergreen', name: 'Evergreen', nl: '#0E5E54', nd: '#5FD3BC', al: '#C2531F', ad: '#F59A6B' },
+{ id: 'harbour', name: 'Harbour', nl: '#12305C', nd: '#8DB4F0', al: '#0F766E', ad: '#5FD3BC' },
+{ id: 'twilight', name: 'Twilight', nl: '#3B2F8F', nd: '#A5A0FF', al: '#BE1E5A', ad: '#FF8FB5' },
+{ id: 'clay', name: 'Clay', nl: '#8A3A12', nd: '#F59A6B', al: '#0F6E7A', ad: '#6FD0DC' },
+{ id: 'orchid', name: 'Orchid', nl: '#5B3BC4', nd: '#B9A6FF', al: '#0E7490', ad: '#67E8F9' },
+{ id: 'slate', name: 'Slate', nl: '#1F2A44', nd: '#9AA8C7', al: '#4F46E5', ad: '#A5A0FF' }
+];
+const STAT = { light: ['#CFC9BA', '#9FD0C4', '#3F9A8B', '#0E5E54', '#D9A4A4'], dark: ['#6B665A', '#4F8F82', '#5FBFAB', '#8EE3CF', '#B9696A'] };
+const COUNTS = [24, 7, 6, 1, 10];
+const S = this.state;
+const eff = S.mode === 'system' ? (S.osDark ? 'dark' : 'light') : S.mode;
+const lt = eff === 'light';
+const a = ACC.find(x => x.id === S.acc);
+const tok = (theme, mode) => {
+const th = THEMES[theme];
+const m = mode === 'light';
+const c = m ? th.L : th.D;
+const nav = m ? a.nl : a.nd;
+const acc = m ? a.al : a.ad;
+const bg = mix(c.bg, nav, m ? th.bgK[0] : th.bgK[1]);
+const surf = c.surf;
+const o = Object.assign({}, th, c, { bg, acc, nav, accBright: a.ad, accInk: m ? '#FFFFFF' : '#0B0C14',
+pillBg: m ? '#FFF4DD' : '#3A2A08', pillFg: m ? '#8A5200' : '#FFC76B', amb: '#D9922B', warnLine: m ? '#F0D9A5' : '#6B4C14',
+dBg: m ? '#FBEDED' : '#3A1616', dFg: m ? '#A12B2B' : '#FF9B9B', dLine: m ? '#E3B4B4' : '#6B2A2A', st: STAT[mode], lt: m,
+tint: mix(surf, nav, m ? 0.1 : 0.16), tint2: mix(surf, nav, m ? 0.05 : 0.09) });
+if (th.sideStyle === 'dark') {
+o.side = m ? mix(nav, '#0A0F12', 0.6) : mix('#0A0A0A', nav, 0.12);
+o.sideInk = m ? mix('#FFFFFF', o.side, 0.28) : '#C9C2B6'; o.brandInk = '#FFFFFF'; o.navOnBg = 'rgba(255,255,255,0.1)'; o.navOnInk = '#FFFFFF'; o.navBar = a.ad;
+o.sbBg = 'rgba(255,255,255,0.06)'; o.sbBorder = 'rgba(255,255,255,0.16)'; o.sbInk = '#FFFFFF'; o.sbSub = o.sideInk; o.sideBorder = 'none';
+} else if (th.sideStyle === 'light') {
+o.side = m ? mix('#FFFFFF', nav, 0.05) : mix(c.bg, nav, 0.05);
+o.sideInk = c.mut; o.brandInk = c.ink; o.navOnBg = m ? mix('#FFFFFF', nav, 0.13) : mix(surf, nav, 0.2); o.navOnInk = acc; o.navBar = acc;
+o.sbBg = surf; o.sbBorder = c.line; o.sbInk = c.ink; o.sbSub = c.mut; o.sideBorder = '1px solid ' + c.line;
+} else {
+o.side = m ? mix(nav, '#000000', 0.18) : mix('#1B182A', nav, 0.28);
+o.sideInk = 'rgba(255,255,255,0.78)'; o.brandInk = '#FFFFFF'; o.navOnBg = 'rgba(255,255,255,0.2)'; o.navOnInk = '#FFFFFF'; o.navBar = 'transparent';
+o.sbBg = 'rgba(255,255,255,0.14)'; o.sbBorder = 'rgba(255,255,255,0.0)'; o.sbInk = '#FFFFFF'; o.sbSub = 'rgba(255,255,255,0.75)'; o.sideBorder = 'none';
+}
+return o;
+};
+const t = tok(S.theme, eff);
+const pillS = (x) => 'display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:' + x.pillR + 'px;background:' + x.pillBg + ';color:' + x.pillFg + ';font:600 10px ' + x.bf + ';letter-spacing:0.08em';
+const btn1 = (x, h) => 'display:inline-flex;align-items:center;height:' + h + 'px;padding:0 16px;border-radius:' + x.btnR + 'px;background:' + x.acc + ';color:' + x.accInk + ';font:600 13px ' + x.bf;
+const btn2 = (x, h) => 'display:inline-flex;align-items:center;height:' + h + 'px;padding:0 16px;border-radius:' + x.btnR + 'px;background:transparent;border:1px solid ' + x.line + ';color:' + x.ink + ';font:500 13px ' + x.bf;
+const badge = () => 'position:absolute;right:-6px;top:-8px;width:20px;height:20px;border-radius:50%;background:#E5484D;color:#FFFFFF;font:700 11px Inter,sans-serif;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px ' + t.bg;
+const float = t.sideStyle === 'float';
+const labelCss = t.labelCase ? 'font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:' + t.mut : 'font-size:13px;font-weight:600;color:' + t.acc;
+const P = {
+frame: 'position:relative;display:flex;flex-wrap:wrap;overflow:hidden;min-height:840px;border-radius:' + (t.r + 4) + 'px;border:1px solid rgba(0,0,0,0.14);background:' + t.bg + ';font-family:' + t.bf + ';color:' + t.ink,
+side: 'flex:0 0 ' + (float ? 220 : 236) + 'px;width:' + (float ? 220 : 236) + 'px;box-sizing:border-box;background:' + t.side + ';border-right:' + t.sideBorder + ';padding:22px 12px 14px;display:flex;flex-direction:column;gap:4px;' + (float ? 'margin:14px 0 14px 14px;border-radius:32px;' : ''),
+brand: 'font-family:' + t.hf + ';font-weight:' + t.hw + ';font-size:' + (t.sideStyle === 'light' ? 20 : 26) + 'px;color:' + t.brandInk + ';padding:0 12px 18px',
+main: 'flex:999 1 520px;min-width:0;box-sizing:border-box;padding:28px 32px 36px;display:flex;flex-direction:column;gap:20px',
+appBtn: 'width:100%;display:flex;align-items:center;gap:12px;height:48px;padding:0 14px;border-radius:' + t.navR + 'px;cursor:pointer;border:1px solid ' + t.sbBorder + ';background:' + t.sbBg + ';color:' + t.sbInk + ';font:600 13px ' + t.bf,
+appSub: 'font-size:11px;font-weight:400;color:' + t.sbSub,
+badge1: badge(), badge2: badge(),
+collapse: 'display:flex;align-items:center;gap:12px;height:' + t.navH + 'px;padding:0 14px;border-radius:' + t.navR + 'px;font-size:13px;font-weight:500;color:' + t.sideInk,
+quick: 'width:40px;height:40px;border-radius:' + Math.min(t.btnR, 12) + 'px;cursor:pointer;border:1px solid ' + t.line + ';background:' + t.surf + ';color:' + t.ink + ';font-size:18px;line-height:1',
+mut13: 'font-size:13px;color:' + t.mut,
+h1: 'font-family:' + t.hf + ';font-weight:' + t.hw + ';font-size:' + t.h1s + 'px;line-height:1.1',
+h2: 'font-family:' + t.hf + ';font-weight:' + t.hw + ';font-size:' + (t.hs - 6) + 'px;line-height:1.1',
+big: 'font:' + t.tileNumW + ' 44px ' + t.mf + ';line-height:1;color:' + t.ink,
+num: 'font:500 14px ' + t.mf + ';color:' + t.ink,
+card: 'background:' + t.surf + ';border:' + (t.cardBorder ? '1px solid ' + t.line : '0') + ';border-radius:' + t.r + 'px;box-shadow:' + t.shadow + ';padding:' + t.pad + 'px;display:flex;flex-direction:column;gap:18px',
+bar: 'display:flex;gap:' + t.barGap + 'px;height:' + t.barH + 'px',
+tilesWrap: t.tileStyle === 'grid' ? 'display:flex;flex-wrap:wrap;gap:1px;background:' + t.line + ';border:1px solid ' + t.line + ';border-radius:' + t.r + 'px;overflow:hidden' : 'display:flex;flex-wrap:wrap;gap:16px',
+warn: 'flex:1 1 180px;box-sizing:border-box;min-height:' + t.tileH + 'px;padding:' + (t.pad - 2) + 'px;border-radius:' + (t.tileStyle === 'grid' ? 0 : t.tileR) + 'px;background:' + t.pillBg + ';border:' + (t.tileStyle === 'grid' ? '0' : '1px solid ' + t.warnLine) + ';display:flex;flex-direction:column;justify-content:space-between;gap:16px',
+warnLabel: 'font-size:11px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:' + t.pillFg,
+warnSub: 'font-size:13px;margin-top:6px;color:' + t.pillFg,
+tileLabel: labelCss,
+tileTitle: 'font-family:' + t.hf + ';font-weight:' + t.hw + ';font-size:' + (t.hs - 2) + 'px;line-height:1.05;color:' + t.ink,
+tileNum: 'font:' + t.tileNumW + ' ' + t.tileNum + 'px ' + t.mf + ';line-height:1;color:' + t.ink,
+tileText: 'font-size:15px;margin-top:6px;color:' + t.ink,
+link: 'font-size:13px;font-weight:600;color:' + t.acc,
+dark: 'display:inline-flex;align-items:center;align-self:flex-start;height:36px;padding:0 18px;border-radius:' + t.btnR + 'px;background:' + (lt ? '#151A21' : '#F2EEE6') + ';color:' + (lt ? '#FFFFFF' : '#151A21') + ';font:600 13px ' + t.bf,
+btn1: btn1(t, 38), btn2: btn2(t, 38), pill: pillS(t),
+danger: 'display:inline-flex;align-items:center;height:38px;padding:0 16px;border-radius:' + t.btnR + 'px;background:' + t.dBg + ';border:1px solid ' + t.dLine + ';color:' + t.dFg + ';font:500 13px ' + t.bf,
+popTitle: 'font-family:' + t.hf + ';font-weight:' + t.hw + ';font-size:22px;color:' + t.ink,
+close: 'width:28px;height:28px;border:0;border-radius:6px;background:transparent;color:' + t.mut + ';cursor:pointer;font-size:14px',
+cap: 'font-size:11px;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:' + t.mut + ';margin-bottom:8px',
+linkBtn: 'border:0;background:transparent;padding:0;cursor:pointer;font:600 12px ' + t.bf + ';color:' + t.acc + ';text-decoration:underline',
+popFoot: 'font-size:12px;color:' + t.mut + ';border-top:1px solid ' + t.line + ';padding-top:12px'
+};
+const nav = ['Overview', 'Jobs', 'In Progress', 'Resume Studio', 'Tracking Inbox', 'Spend', 'Settings'].map(label => {
+const on = label === 'Overview';
+return { label, style: 'display:flex;align-items:center;height:' + t.navH + 'px;padding:0 14px;border-radius:' + t.navR + 'px;font-size:13px;font-weight:' + (on ? 600 : 500) + ';color:' + (on ? t.navOnInk : t.sideInk) + ';background:' + (on ? t.navOnBg : 'transparent') + ';box-shadow:' + (on && t.sideStyle !== 'float' ? 'inset 2px 0 0 ' + t.navBar : 'none') };
+});
+const segs = COUNTS.map((n, i) => 'flex:' + n + ' 1 0;min-width:8px;border-radius:' + t.barR + 'px;background:' + t.st[i]);
+const legend = ['Awaiting reply', 'Screening', 'Interview', 'Offer', 'Rejected'].map((label, i) => ({ label, n: String(COUNTS[i]), dot: 'flex:0 0 10px;width:10px;height:10px;border-radius:' + (t.r > 12 ? 999 : 3) + 'px;align-self:center;background:' + t.st[i] }));
+const tileBase = 'flex:1 1 180px;box-sizing:border-box;min-height:' + t.tileH + 'px;padding:' + (t.pad - 2) + 'px;display:flex;flex-direction:column;justify-content:space-between;gap:16px;';
+const tileStyleFor = (i) => {
+if (t.tileStyle === 'grid') return tileBase + 'background:' + t.surf + ';border-radius:0';
+if (t.tileStyle === 'filled') return tileBase + 'border-radius:' + t.tileR + 'px;box-shadow:' + t.shadow + ';background:' + mix(t.surf, t.nav, lt ? [0.16, 0.09, 0.03][i] : [0.26, 0.16, 0.08][i]);
+return tileBase + 'border-radius:' + t.tileR + 'px;background:' + t.surf + ';border:1px solid ' + t.line;
+};
+const tiles = [
+{ label: 'Ready', n: '12', text: 'jobs to review', cta: 'Open Ready →' },
+{ label: 'Discovered', n: '23', text: 'new jobs discovered', cta: 'Open Discovered →' },
+{ label: 'Tracking inbox', n: '5', text: 'emails to match or confirm', cta: 'Open inbox →' }
+].map((x, i) => Object.assign(x, { style: tileStyleFor(i) }));
+const seg = (on) => 'flex:1;height:34px;border-radius:' + Math.min(t.btnR, 12) + 'px;font:' + (on ? '600' : '500') + ' 12px ' + t.bf + ';cursor:pointer;border:1px solid ' + (on ? t.acc : t.line) + ';background:' + (on ? t.acc : 'transparent') + ';color:' + (on ? t.accInk : t.ink);
+const modeOpts = [['light', 'Light'], ['dark', 'Dark'], ['system', 'System']].map(([id, label]) => ({ label, pressed: S.mode === id, style: seg(S.mode === id), pick: () => this.setState({ mode: id }) }));
+const themeOpts = Object.keys(THEMES).map(id => {
+const x = tok(id, eff);
+const on = S.theme === id;
+const sideStyle = 'display:block;flex:0 0 14px;height:100%;background:' + x.side + ';border-radius:' + (x.sideStyle === 'float' ? 6 : (x.sideStyle === 'light' ? 0 : 2)) + 'px;' + (x.sideStyle === 'light' ? 'border-right:1px solid ' + x.line : '');
+return { label: THEMES[id].name, pressed: on, pick: () => this.setState({ theme: id }),
+style: 'flex:1;display:flex;flex-direction:column;gap:8px;align-items:stretch;padding:8px;border-radius:' + Math.min(t.popR, 12) + 'px;cursor:pointer;text-align:left;border:' + (on ? '2px solid ' + t.acc : '1px solid ' + t.line) + ';background:transparent;color:' + t.ink,
+swatch: 'display:flex;gap:5px;padding:5px;height:50px;box-sizing:border-box;border-radius:' + Math.min(x.r, 10) + 'px;background:' + x.bg + ';border:1px solid ' + x.line,
+bar1: sideStyle,
+bar2: 'display:block;flex:1;height:100%;border-radius:' + Math.min(x.tileR, 8) + 'px;background:' + (x.tileStyle === 'filled' ? x.tint : x.surf) + ';border:' + (x.tileStyle === 'filled' ? '0' : '1px solid ' + x.line) };
+});
+const accOpts = ACC.map(o => ({ label: o.name + ': sidebar ' + (lt ? o.nl : o.nd) + ', actions ' + (lt ? o.al : o.ad), pressed: S.acc === o.id, pick: () => this.setState({ acc: o.id }),
+style: 'width:34px;height:34px;border-radius:50%;cursor:pointer;padding:0;background:linear-gradient(90deg,' + (lt ? o.nl : o.nd) + ' 50%,' + (lt ? o.al : o.ad) + ' 50%);border:2px solid ' + t.surf + ';box-shadow:' + (S.acc === o.id ? '0 0 0 2px ' + t.ink : '0 0 0 1px ' + t.line) }));
+const modeName = S.mode === 'system' ? 'System' : (lt ? 'Light' : 'Dark');
+const summary = THEMES[S.theme].name + ' · ' + a.name + ' · ' + modeName;
+const pop = {
+expanded: S.open ? 'true' : 'false',
+toggle: () => this.setState({ open: !S.open }),
+panel: 'position:absolute;left:' + (float ? 26 : 14) + 'px;bottom:80px;width:330px;box-sizing:border-box;padding:20px;display:' + (S.open ? 'flex' : 'none') + ';flex-direction:column;gap:18px;z-index:5;border-radius:' + t.popR + 'px;background:' + t.surf + ';border:1px solid ' + t.line + ';box-shadow:0 18px 48px rgba(0,0,0,' + (lt ? '0.18' : '0.5') + ');color:' + t.ink + ';font-family:' + t.bf,
+sysRow: 'display:' + (S.mode === 'system' ? 'flex' : 'none') + ';justify-content:space-between;gap:10px;margin-top:8px;font-size:12px;color:' + t.mut
+};
+const quick = { label: lt ? 'Switch to dark mode' : 'Switch to light mode', glyph: lt ? '☾' : '☀', pick: () => this.setState({ mode: lt ? 'dark' : 'light' }) };
+const gallery = [];
+['light', 'dark'].forEach(mode => Object.keys(THEMES).forEach(id => {
+const x = tok(id, mode);
+const fl = x.sideStyle === 'float';
+gallery.push({
+label: x.name + ' · ' + (mode === 'light' ? 'Light' : 'Dark'),
+panel: 'box-sizing:border-box;display:flex;gap:10px;min-height:190px;padding:' + (fl ? 10 : 0) + 'px;overflow:hidden;border-radius:' + (x.r + 4) + 'px;background:' + x.bg + ';border:1px solid rgba(0,0,0,0.12);font-family:' + x.bf + ';color:' + x.ink,
+side: 'flex:0 0 44px;box-sizing:border-box;display:flex;flex-direction:column;gap:8px;padding:14px 10px;background:' + x.side + ';border-right:' + x.sideBorder + ';border-radius:' + (fl ? 18 : 0) + 'px',
+sbar1: 'display:block;height:8px;border-radius:4px;background:' + (x.sideStyle === 'light' ? x.acc : '#FFFFFF'),
+sbar2: 'display:block;height:6px;border-radius:3px;background:' + (x.sideStyle === 'light' ? x.line : 'rgba(255,255,255,0.4)'),
+title: 'font-family:' + x.hf + ';font-weight:' + x.hw + ';font-size:' + (x.hs - 2) + 'px;line-height:1.1',
+num: 'font:' + x.tileNumW + ' 32px ' + x.mf + ';color:' + x.ink,
+mut: 'font:400 13px ' + x.bf + ';color:' + x.mut,
+bar: 'display:flex;gap:' + x.barGap + 'px;height:' + Math.round(x.barH * 0.55) + 'px',
+segs: COUNTS.map((n, i) => 'flex:' + n + ' 1 0;border-radius:' + Math.min(x.barR, 6) + 'px;background:' + x.st[i]),
+btn: btn1(x, 32), pill: pillS(x)
+});
+}));
+const pitch = [
+{ n: '01', source: 'Editorial Paper + Warm Humanist', name: 'Editorial', line: 'Calm and considered, like a well-set report. The current concept.', rows: [
+{ k: 'Type', v: 'Serif display titles, mono numbers' }, { k: 'Shape', v: '14–18px radius, hairline borders, no shadows' }, { k: 'Sidebar', v: 'Deep accent-tinted column, full height' }, { k: 'Tiles', v: 'Separate outlined cards, huge numbers' }, { k: 'Density', v: 'Airy, generous padding' }, { k: 'Bar', v: 'Chunky segments with gaps' }] },
+{ n: '02', source: 'Bank Navy + Fintech Clean', name: 'Ledger', line: 'Sharp, dense and data-first. Feels like a trading or banking console.', rows: [
+{ k: 'Type', v: 'IBM Plex Sans + Plex Mono, uppercase labels' }, { k: 'Shape', v: '4px corners, square buttons, flat' }, { k: 'Sidebar', v: 'Light panel with divider and accent active row' }, { k: 'Tiles', v: 'One joined cell grid with 1px dividers' }, { k: 'Density', v: 'Compact, more on screen' }, { k: 'Bar', v: 'Thin flat ribbon, no gaps' }] },
+{ n: '03', source: 'Soft Pastel', name: 'Soft', line: 'Friendly and approachable, a consumer-app feel for a stressful search.', rows: [
+{ k: 'Type', v: 'DM Sans bold, sentence-case labels' }, { k: 'Shape', v: '28px radius, pill buttons and nav, soft shadows' }, { k: 'Sidebar', v: 'Floating rounded card in a vivid accent' }, { k: 'Tiles', v: 'Filled with accent tints, no outlines' }, { k: 'Density', v: 'Roomy, big touch targets' }, { k: 'Bar', v: 'Fat rounded pill segments' }] }
+];
+return { P, nav, segs, legend, tiles, modeOpts, themeOpts, accOpts, accName: a.name, summary, pop, quick, gallery, pitch,
+sysText: 'Following your device: ' + (S.osDark ? 'dark' : 'light'),
+sysBtn: S.osDark ? 'Simulate light device' : 'Simulate dark device',
+sysToggle: () => this.setState({ osDark: !S.osDark }) };
+}
+}
+</script>
+</body>
+</html>

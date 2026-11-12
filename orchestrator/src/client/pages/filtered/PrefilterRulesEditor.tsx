@@ -257,7 +257,7 @@ export const PrefilterRulesEditor: React.FC<{
   const invalid = Object.keys(errors).length > 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="prefilter-rules-editor">
       {status === "missing" ? (
         <p className="rounded-md border border-warning/30 bg-warning/10 p-3 text-sm">
           No rules file yet. These are defaults; Save creates{" "}

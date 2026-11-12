@@ -74,12 +74,8 @@ describe("FilteredJobsPage", () => {
     });
   });
 
-  const renderPage = () =>
-    renderWithQueryClient(
-      <MemoryRouter>
-        <FilteredJobsPage />
-      </MemoryRouter>,
-    );
+  const renderPage = (ui: React.ReactElement = <FilteredJobsPage />) =>
+    renderWithQueryClient(<MemoryRouter>{ui}</MemoryRouter>);
 
   it("shows the rules form from config and the preview counts", async () => {
     renderPage();
@@ -225,5 +221,25 @@ describe("FilteredJobsPage", () => {
     expect(screen.getByText("Floor must be a number.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Save rules" })).toBeDisabled();
     expect(screen.getByRole("button", { name: /Preview/ })).toBeDisabled();
+  });
+
+  it("shows only the list and a link to the rules when view is jobs", async () => {
+    renderPage(<FilteredJobsPage view="jobs" />);
+    expect(await screen.findByText(/Filtered jobs/)).toBeInTheDocument();
+    expect(screen.queryByRole("tab", { name: "Rules" })).toBeNull();
+    expect(
+      screen.getByRole("link", { name: /Edit filter rules/ }),
+    ).toHaveAttribute("href", "/settings#prefilter");
+    expect(
+      screen.queryByRole("button", { name: "Filter & score backlog" }),
+    ).toBeNull();
+  });
+
+  it("shows only the rules editor when view is rules", async () => {
+    renderPage(<FilteredJobsPage view="rules" />);
+    expect(screen.queryByRole("tab", { name: /Filtered jobs/ })).toBeNull();
+    expect(
+      await screen.findByTestId("prefilter-rules-editor"),
+    ).toBeInTheDocument();
   });
 });

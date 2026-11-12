@@ -127,4 +127,26 @@ describe.sequential("post-application message upsert transition semantics", () =
     expect(second.autoLinkTransitioned).toBe(false);
     expect(second.message.processingStatus).toBe("manual_linked");
   });
+
+  it("reads legacy stored stage targets as current stages", async () => {
+    const { message } = await upsertMessage({
+      externalMessageId: randomUUID(),
+      processingStatus: "pending_user",
+    });
+    // Simulate a row written before the five-stage model.
+    const { db, schema } = await import("../db/index");
+    const { eq } = await import("drizzle-orm");
+    await db
+      .update(schema.postApplicationMessages)
+      .set({
+        stageEventPayload: { suggestedStageTarget: "technical_interview" },
+      })
+      .where(eq(schema.postApplicationMessages.id, message.id));
+
+    const { getPostApplicationMessageById } = await import(
+      "./post-application-messages"
+    );
+    const reread = await getPostApplicationMessageById(message.id);
+    expect(reread?.stageTarget).toBe("interview");
+  });
 });

@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as api from "../api";
 import { _resetTracerReadinessCache } from "../hooks/useTracerReadiness";
+import { AppearanceProvider } from "../lib/appearance/AppearanceProvider";
 import { renderWithQueryClient } from "../test/renderWithQueryClient";
 import { SettingsPage } from "./SettingsPage";
 
@@ -1380,6 +1381,24 @@ describe("absorbed sections", () => {
       </MemoryRouter>,
     );
     expect(await screen.findByText(text)).toBeInTheDocument();
+  });
+
+  it("renders the Appearance controls from the #appearance deep link", async () => {
+    render(
+      <AppearanceProvider>
+        <MemoryRouter initialEntries={["/settings#appearance"]}>
+          <SettingsPage />
+        </MemoryRouter>
+      </AppearanceProvider>,
+    );
+    expect(
+      await screen.findByRole("group", { name: "Theme" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "Mode" })).toBeInTheDocument();
+    expect(screen.getByText(/follows your computer/i)).toBeInTheDocument();
+    expect(screen.getByText("Mode, theme and colours.")).toBeInTheDocument();
+    // Changes apply instantly: no save bar.
+    expect(screen.queryByRole("button", { name: /save changes/i })).toBeNull();
   });
 
   it("shows tracer analytics under the tracer links setup", async () => {

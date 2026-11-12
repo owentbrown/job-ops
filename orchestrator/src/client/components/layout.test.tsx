@@ -1,7 +1,12 @@
 import { fireEvent, screen, waitFor, within } from "@testing-library/react";
 import { Home } from "lucide-react";
 import { MemoryRouter, useLocation } from "react-router-dom";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  AppearanceContext,
+  type AppearanceContextValue,
+  AppearanceProvider,
+} from "../lib/appearance/AppearanceProvider";
 import { renderWithQueryClient } from "../test/renderWithQueryClient";
 import {
   PageHeader,
@@ -165,21 +170,158 @@ describe("PersistentSidebar", () => {
     );
   });
 
-  it("Appearance opens settings display and is active there", () => {
+  it("Appearance falls back to Settings -> Appearance without a provider", () => {
     renderSidebar("/overview");
     fireEvent.click(screen.getByRole("button", { name: "Appearance" }));
     expect(screen.getByTestId("path")).toHaveTextContent("/settings");
-    expect(screen.getByTestId("hash")).toHaveTextContent("#display");
-    expect(screen.getByRole("button", { name: "Appearance" })).toHaveAttribute(
-      "aria-current",
-      "page",
-    );
+    expect(screen.getByTestId("hash")).toHaveTextContent("#appearance");
   });
 
   it("navigates immediately on click", async () => {
     renderSidebar("/overview");
     fireEvent.click(screen.getByRole("button", { name: "Settings" }));
     expect(screen.getByTestId("path")).toHaveTextContent("/settings");
+  });
+});
+
+describe("Appearance popover", () => {
+  const renderWithAppearance = (path = "/overview") =>
+    renderWithQueryClient(
+      <AppearanceProvider>
+        <MemoryRouter initialEntries={[path]}>
+          <PersistentSidebar />
+          <Path />
+        </MemoryRouter>
+      </AppearanceProvider>,
+    );
+
+  beforeEach(() => localStorage.clear());
+
+  it("shows the current choice under the sidebar item", () => {
+    renderWithAppearance();
+    const trigger = screen.getByRole("button", { name: "Appearance" });
+    expect(trigger).toHaveAccessibleDescription(
+      "Editorial · Evergreen · System",
+    );
+    expect(trigger).toHaveAttribute("aria-haspopup", "dialog");
+  });
+
+  it("opens the controls in a popover, moves focus in and closes on Esc", async () => {
+    renderWithAppearance();
+    const trigger = screen.getByRole("button", { name: "Appearance" });
+    fireEvent.click(trigger);
+    const dialog = await screen.findByRole("dialog", { name: "Appearance" });
+    await waitFor(() =>
+      expect(dialog).toContainElement(document.activeElement as HTMLElement),
+    );
+    expect(
+      within(dialog).getByRole("group", { name: "Mode" }),
+    ).toBeInTheDocument();
+
+    fireEvent.click(within(dialog).getByRole("button", { name: "Soft" }));
+    fireEvent.click(within(dialog).getByRole("button", { name: "Dark" }));
+    expect(trigger).toHaveAccessibleDescription("Soft · Evergreen · Dark");
+
+    const link = within(dialog).getByRole("link", {
+      name: /all settings live in settings → appearance/i,
+    });
+    expect(link).toHaveAttribute("href", "/settings#appearance");
+
+    fireEvent.keyDown(dialog, { key: "Escape" });
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog", { name: "Appearance" })).toBeNull(),
+    );
+    await waitFor(() => expect(trigger).toHaveFocus());
+  });
+
+  it("the settings link closes the popover and navigates", async () => {
+    renderWithAppearance();
+    fireEvent.click(screen.getByRole("button", { name: "Appearance" }));
+    const dialog = await screen.findByRole("dialog", { name: "Appearance" });
+    fireEvent.click(within(dialog).getByRole("link"));
+    expect(screen.getByTestId("hash")).toHaveTextContent("#appearance");
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog", { name: "Appearance" })).toBeNull(),
+    );
+  });
+
+  it("opens from the mobile Sheet too", async () => {
+    renderWithQueryClient(
+      <AppearanceProvider>
+        <MemoryRouter initialEntries={["/overview"]}>
+          <PageHeader icon={Home} title="t" subtitle="s" />
+        </MemoryRouter>
+      </AppearanceProvider>,
+    );
+    openNav();
+    const sheet = await screen.findByRole("dialog");
+    fireEvent.click(within(sheet).getByRole("button", { name: "Appearance" }));
+    const popover = await screen.findByRole("dialog", { name: "Appearance" });
+    expect(
+      within(popover).getByRole("group", { name: "Theme" }),
+    ).toBeInTheDocument();
+  });
+});
+
+describe("PageHeader mode toggle", () => {
+  const renderHeader = (value: AppearanceContextValue) =>
+    renderWithQueryClient(
+      <AppearanceContext.Provider value={value}>
+        <MemoryRouter initialEntries={["/overview"]}>
+          <PageHeader
+            icon={Home}
+            title="t"
+            subtitle="s"
+            actions={<button type="button">act</button>}
+          />
+        </MemoryRouter>
+      </AppearanceContext.Provider>,
+    );
+  const value = (resolvedMode: "light" | "dark"): AppearanceContextValue => ({
+    choice: { mode: "system", theme: "editorial", colours: "evergreen" },
+    resolvedMode,
+    setMode: vi.fn(),
+    setTheme: vi.fn(),
+    setColours: vi.fn(),
+    toggleLightDark: vi.fn(),
+  });
+
+  it("offers dark mode in light mode and calls toggleLightDark", () => {
+    const v = value("light");
+    renderHeader(v);
+    fireEvent.click(
+      screen.getByRole("button", { name: "Switch to dark mode" }),
+    );
+    expect(v.toggleLightDark).toHaveBeenCalledTimes(1);
+  });
+
+  it("offers light mode in dark mode", () => {
+    renderHeader(value("dark"));
+    expect(
+      screen.getByRole("button", { name: "Switch to light mode" }),
+    ).toBeInTheDocument();
+  });
+
+  it("flips the real provider to an explicit mode", () => {
+    renderWithQueryClient(
+      <AppearanceProvider>
+        <MemoryRouter initialEntries={["/overview"]}>
+          <PageHeader icon={Home} title="t" subtitle="s" />
+        </MemoryRouter>
+      </AppearanceProvider>,
+    );
+    fireEvent.click(
+      screen.getByRole("button", { name: "Switch to dark mode" }),
+    );
+    expect(document.documentElement).toHaveAttribute("data-mode", "dark");
+    expect(
+      screen.getByRole("button", { name: "Switch to light mode" }),
+    ).toBeInTheDocument();
+  });
+
+  it("is omitted without an AppearanceProvider", () => {
+    renderAt("/overview");
+    expect(screen.queryByRole("button", { name: /switch to/i })).toBeNull();
   });
 });
 

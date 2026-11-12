@@ -3,17 +3,20 @@
  */
 
 import { getAppStatus, logout } from "@client/api";
+import { useOptionalAppearance } from "@client/lib/appearance/AppearanceProvider";
 import { PROFILE_BASE } from "@client/lib/routes";
 import { useQuery } from "@tanstack/react-query";
 import {
   LogOut,
   type LucideIcon,
   Menu,
+  Moon,
   Palette,
+  Sun,
   UserRound,
 } from "lucide-react";
-import React, { useContext, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import React, { useContext, useId, useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,6 +27,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Sheet,
   SheetContent,
@@ -37,6 +45,10 @@ import {
   loadRememberedAuthUsers,
   type RememberedAuthUser,
 } from "../lib/remembered-auth-users";
+import {
+  AppearanceControls,
+  describeAppearance,
+} from "./appearance/AppearanceControls";
 import { isNavActive, NAV_LINKS } from "./navigation";
 import { StatusBadgeIndicator } from "./StatusIndicator";
 
@@ -132,19 +144,6 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
       setTimeout(() => navigate(to), 150);
     } else {
       navigate(to);
-    }
-  };
-
-  const appearanceActive =
-    location.pathname === "/settings" && location.hash === "#display";
-
-  const handleAppearanceClick = () => {
-    onNavigated?.();
-    if (appearanceActive) return;
-    if (delayNavigation) {
-      setTimeout(() => navigate("/settings#display"), 150);
-    } else {
-      navigate("/settings#display");
     }
   };
 
@@ -277,22 +276,142 @@ export const SidebarNav: React.FC<SidebarNavProps> = ({
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          <button
-            type="button"
-            aria-current={appearanceActive ? "page" : undefined}
-            onClick={handleAppearanceClick}
-            className={cn(
-              SIDEBAR_FOOTER_ITEM_CLASS,
-              appearanceActive &&
-                "bg-sidebar-accent text-sidebar-accent-foreground",
-            )}
-          >
-            <Palette className="h-4 w-4" />
-            <span>Appearance</span>
-          </button>
+          <SidebarAppearanceItem
+            onNavigated={onNavigated}
+            delayNavigation={delayNavigation}
+          />
         </div>
       </div>
     </div>
+  );
+};
+
+const APPEARANCE_SETTINGS_PATH = "/settings#appearance";
+
+/**
+ * Sidebar footer "Appearance" item. Opens a popover with the compact
+ * controls (also inside the mobile Sheet: Radix layers nest, so the popover
+ * stacks above the drawer and Esc closes only the popover). Without an
+ * AppearanceProvider it falls back to navigating to Settings -> Appearance.
+ */
+const SidebarAppearanceItem: React.FC<SidebarNavProps> = ({
+  onNavigated,
+  delayNavigation = false,
+}) => {
+  const appearance = useOptionalAppearance();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const subtitleId = useId();
+  const onAppearancePage =
+    location.pathname === "/settings" && location.hash === "#appearance";
+
+  const label = (
+    <>
+      <Palette className="h-4 w-4 shrink-0" />
+      <span className="flex min-w-0 flex-col leading-tight">
+        <span>Appearance</span>
+        {appearance ? (
+          <span
+            id={subtitleId}
+            data-appearance-summary=""
+            className="truncate text-xs font-normal text-(--sidebar-footer-muted)"
+          >
+            {describeAppearance(appearance.choice)}
+          </span>
+        ) : null}
+      </span>
+    </>
+  );
+
+  if (!appearance) {
+    return (
+      <button
+        type="button"
+        onClick={() => {
+          onNavigated?.();
+          if (onAppearancePage) return;
+          if (delayNavigation) {
+            setTimeout(() => navigate(APPEARANCE_SETTINGS_PATH), 150);
+          } else {
+            navigate(APPEARANCE_SETTINGS_PATH);
+          }
+        }}
+        className={SIDEBAR_FOOTER_ITEM_CLASS}
+      >
+        {label}
+      </button>
+    );
+  }
+
+  return (
+    <Popover open={open} onOpenChange={setOpen} modal>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          aria-label="Appearance"
+          aria-describedby={subtitleId}
+          data-sidebar-appearance=""
+          className={cn(
+            SIDEBAR_FOOTER_ITEM_CLASS,
+            "h-auto min-h-(--nav-item-height) py-2",
+            (open || onAppearancePage) &&
+              "bg-sidebar-accent text-sidebar-accent-foreground",
+          )}
+        >
+          {label}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent
+        side="top"
+        align="start"
+        sideOffset={8}
+        collisionPadding={16}
+        aria-label="Appearance"
+        className="flex w-[min(330px,calc(100vw-2rem))] flex-col gap-4.5 p-5 shadow-lg"
+      >
+        <div className="font-heading text-base font-(weight:--heading-weight)">
+          Appearance
+        </div>
+        <AppearanceControls size="compact" />
+        <Link
+          to={APPEARANCE_SETTINGS_PATH}
+          onClick={() => {
+            setOpen(false);
+            onNavigated?.();
+          }}
+          className="border-t border-border pt-3 text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+        >
+          All settings live in Settings → Appearance
+        </Link>
+      </PopoverContent>
+    </Popover>
+  );
+};
+
+/**
+ * Sun/moon quick toggle for the page header: flips the resolved mode and
+ * sets it explicitly (leaves System). Hidden without an AppearanceProvider.
+ */
+export const HeaderModeToggle: React.FC<{ className?: string }> = ({
+  className,
+}) => {
+  const appearance = useOptionalAppearance();
+  if (!appearance) return null;
+  const dark = appearance.resolvedMode === "dark";
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="icon"
+      data-header-mode-toggle=""
+      aria-label={dark ? "Switch to light mode" : "Switch to dark mode"}
+      title={dark ? "Switch to light mode" : "Switch to dark mode"}
+      onClick={appearance.toggleLightDark}
+      className={cn("shrink-0", className)}
+    >
+      {dark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+    </Button>
   );
 };
 
@@ -349,8 +468,8 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container mx-auto flex flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-        <div className="flex min-w-0 items-center gap-3">
+      <div className="container mx-auto flex flex-wrap items-center gap-3 px-4 py-4 sm:flex-nowrap sm:gap-4">
+        <div className="flex min-w-0 flex-1 items-center gap-3">
           <Sheet open={navOpen} onOpenChange={setNavOpen}>
             <SheetTrigger asChild>
               <Button
@@ -399,9 +518,14 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
           {statusIndicator}
         </div>
 
-        <div className="flex w-full min-w-0 flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap sm:justify-end">
-          {actions}
-        </div>
+        {/* Mobile: title row + toggle, actions wrap below. sm+: actions, then
+            the toggle at the far right. */}
+        <HeaderModeToggle className="order-2 sm:order-3" />
+        {actions ? (
+          <div className="order-3 flex w-full min-w-0 flex-wrap items-center gap-2 sm:order-2 sm:w-auto sm:flex-nowrap sm:justify-end">
+            {actions}
+          </div>
+        ) : null}
       </div>
     </header>
   );

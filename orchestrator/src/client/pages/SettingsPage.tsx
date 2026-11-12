@@ -1,4 +1,5 @@
 import * as api from "@client/api";
+import { AppearanceControls } from "@client/components/appearance/AppearanceControls";
 import { PageHeader } from "@client/components/layout";
 import { EmbeddedPage } from "@client/components/PageFrame";
 import {
@@ -31,6 +32,7 @@ import { ModelSettingsSection } from "@client/pages/settings/components/ModelSet
 import { PromptTemplatesSection } from "@client/pages/settings/components/PromptTemplatesSection";
 import { ReactiveResumeSection } from "@client/pages/settings/components/ReactiveResumeSection";
 import { ScoringSettingsSection } from "@client/pages/settings/components/ScoringSettingsSection";
+import { SettingsSectionFrame } from "@client/pages/settings/components/SettingsSectionFrame";
 import { TracerLinksSettingsSection } from "@client/pages/settings/components/TracerLinksSettingsSection";
 import { WebhooksSection } from "@client/pages/settings/components/WebhooksSection";
 import {
@@ -150,6 +152,7 @@ type SettingsSectionId =
   | "webhooks"
   | "tracer-links"
   | "environment"
+  | "appearance"
   | "display"
   | "backup"
   | "about"
@@ -321,10 +324,24 @@ const SETTINGS_NAV_GROUPS: SettingsNavGroup[] = [
     label: "Display",
     items: [
       {
+        id: "appearance",
+        label: "Appearance",
+        description: "Mode, theme and colours.",
+        searchTerms: [
+          "appearance",
+          "theme",
+          "dark",
+          "light",
+          "colour",
+          "color",
+          "mode",
+        ],
+      },
+      {
         id: "display",
         label: "Display Preferences",
         description: "Sponsor badges and markdown rendering behavior.",
-        searchTerms: ["markdown", "sponsor", "rendering", "appearance"],
+        searchTerms: ["markdown", "sponsor", "rendering"],
       },
     ],
   },
@@ -370,6 +387,7 @@ const UNSAVED_EMBEDDED_MESSAGE =
   "You have unsaved filter rule changes. Leave without saving?";
 
 const EMBEDDED_SECTION_IDS = new Set<SettingsSectionId>([
+  "appearance",
   "spend",
   "sources",
   "prefilter",
@@ -432,6 +450,7 @@ const SECTION_FIELD_MAP: Record<
     "adzunaAppId",
     "adzunaAppKey",
   ],
+  appearance: [],
   display: [
     "showSponsorInfo",
     "renderMarkdownInJobDescriptions",
@@ -1743,6 +1762,7 @@ export const SettingsPage: React.FC = () => {
         return updateAvailable
           ? { label: "Update available", variant: "outline" as const }
           : null;
+      case "appearance":
       case "spend":
       case "sources":
       case "prefilter":
@@ -1900,6 +1920,17 @@ export const SettingsPage: React.FC = () => {
           isSaving={isSaving}
           layoutMode="panel"
         />
+      );
+      break;
+    case "appearance":
+      activeSectionContent = (
+        <SettingsSectionFrame
+          mode="panel"
+          title="Appearance"
+          value="appearance"
+        >
+          <AppearanceControls size="large" />
+        </SettingsSectionFrame>
       );
       break;
     case "display":

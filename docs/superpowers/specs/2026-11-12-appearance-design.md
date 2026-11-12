@@ -32,7 +32,7 @@
    - It writes to localStorage and the `<html>` attributes.
    - It listens to `prefers-color-scheme` changes live when mode is System.
    - It persists per browser. Server-side per-user storage is out of scope for now.
-6. **Fonts.** Load Instrument Serif, Inter, JetBrains Mono, IBM Plex Sans, IBM Plex Mono and DM Sans from Google Fonts in `index.html`, where `preconnect` already exists. Each theme sets `--font-sans`, `--font-mono`, `--heading-font` and `--heading-weight`.
+6. **Fonts.** Load Newsreader (Editorial headings; replaces the reference Instrument Serif at the user's request), Inter, JetBrains Mono, IBM Plex Sans, IBM Plex Mono and DM Sans from Google Fonts in `index.html`, where `preconnect` already exists. Each theme sets `--font-sans`, `--font-mono`, `--heading-font` and `--heading-weight`.
 
 ## Variable mapping (`buildTokens` output → CSS variable)
 

@@ -67,6 +67,8 @@ export interface ThemeDefinition {
   /** Heading font stack and weight. */
   hf: string;
   hw: number;
+  /** Heading letter-spacing (CSS length, e.g. "-0.01em"). Not in the reference. */
+  ht: string;
   /** Section heading size. */
   hs: number;
   /** Body font stack. */

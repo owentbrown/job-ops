@@ -32,6 +32,7 @@
   --label-transform: none;
   --label-tracking: 0em;
   --heading-size: 24px;
+  --heading-tracking: -0.025em;
   --bar-height: 16px;
   --bar-gap: 2px;
   --bar-radius: 999px;

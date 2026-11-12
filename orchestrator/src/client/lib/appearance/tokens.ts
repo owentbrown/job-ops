@@ -6,6 +6,9 @@
  * into src/styles/appearance.generated.css.
  *
  * Any deviation from the reference is marked "ADJUSTED" with the reason.
+ *
+ * `ht` (heading tracking) is not in the reference; Ledger and Soft keep the
+ * previous Tailwind `tracking-tight` value (-0.025em).
  */
 
 import { contrastRatio } from "./contrast";
@@ -44,9 +47,15 @@ export function mix(a: string, b: string, k: number): string {
 export const THEMES: Record<ThemeId, ThemeDefinition> = {
   editorial: {
     name: "Editorial",
-    hf: "'Instrument Serif', Georgia, serif",
-    hw: 400,
-    hs: 32,
+    // ADJUSTED (user preference): the reference uses Instrument Serif, which
+    // read as too condensed. Editorial uses Newsreader (variable, opsz axis)
+    // at 500 with light tracking. Newsreader is a normal-width face, so the
+    // section heading (32 -> 28) and page title (42 -> 36) sizes are reduced
+    // to keep a visual weight similar to Ledger and Soft.
+    hf: "Newsreader, Georgia, serif",
+    hw: 500,
+    ht: "-0.01em",
+    hs: 28,
     bf: "Inter, sans-serif",
     mf: "'JetBrains Mono', monospace",
     r: 14,
@@ -69,7 +78,7 @@ export const THEMES: Record<ThemeId, ThemeDefinition> = {
     barR: 6,
     bgK: [0.04, 0.07],
     labelCase: true,
-    h1s: 42,
+    h1s: 36,
     L: {
       bg: "#F5F3EE",
       surf: "#FFFFFF",
@@ -91,6 +100,7 @@ export const THEMES: Record<ThemeId, ThemeDefinition> = {
     name: "Ledger",
     hf: "'IBM Plex Sans', sans-serif",
     hw: 600,
+    ht: "-0.025em",
     hs: 24,
     bf: "'IBM Plex Sans', sans-serif",
     mf: "'IBM Plex Mono', monospace",
@@ -136,6 +146,7 @@ export const THEMES: Record<ThemeId, ThemeDefinition> = {
     name: "Soft",
     hf: "'DM Sans', sans-serif",
     hw: 700,
+    ht: "-0.025em",
     hs: 28,
     bf: "'DM Sans', sans-serif",
     mf: "'DM Sans', sans-serif",
@@ -514,6 +525,7 @@ export function buildTokens(
     // Type
     "--heading-font": th.hf,
     "--heading-weight": String(th.hw),
+    "--heading-tracking": th.ht,
     "--heading-size": px(th.hs),
     "--page-title-size": px(th.h1s),
     "--font-sans": th.bf,

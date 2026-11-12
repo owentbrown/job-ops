@@ -504,7 +504,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
           <div className="min-w-0 leading-tight">
             <div
               data-page-title=""
-              className="font-heading text-lg font-(weight:--heading-weight) tracking-tight"
+              className="font-heading text-lg font-(weight:--heading-weight) tracking-(--heading-tracking)"
             >
               {title}
             </div>

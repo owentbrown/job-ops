@@ -35,8 +35,9 @@ describe("buildTokens", () => {
     expect(t["--primary"]).toBe("#C2531F");
     expect(t["--primary-foreground"]).toBe("#FFFFFF");
     expect(t["--bucket-offer"]).toBe("#0E5E54");
-    expect(t["--heading-font"]).toBe("'Instrument Serif', Georgia, serif");
-    expect(t["--heading-weight"]).toBe("400");
+    expect(t["--heading-font"]).toBe("Newsreader, Georgia, serif");
+    expect(t["--heading-weight"]).toBe("500");
+    expect(t["--heading-tracking"]).toBe("-0.01em");
     expect(t["--radius"]).toBe("14px");
   });
 

@@ -62,7 +62,7 @@ export const ActionTiles: React.FC<{
             <AlertTriangle className="h-3.5 w-3.5" aria-hidden />
             Blocking your search
           </p>
-          <p className="font-heading text-[length:calc(var(--heading-size)-2px)] font-(weight:--heading-weight) leading-tight tracking-tight">
+          <p className="font-heading text-[length:calc(var(--heading-size)-2px)] font-(weight:--heading-weight) leading-tight tracking-(--heading-tracking)">
             Solve browser check
             <span className="mt-1 block font-sans text-base font-normal tracking-normal text-(--warning-fg)">
               {challenge.extractorName}

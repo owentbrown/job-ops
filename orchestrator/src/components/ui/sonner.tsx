@@ -1,13 +1,14 @@
 import { Toaster as Sonner } from "sonner";
+import { useAppearance } from "@/client/lib/appearance/AppearanceProvider";
 
 type ToasterProps = React.ComponentProps<typeof Sonner>;
 
 const Toaster = ({ ...props }: ToasterProps) => {
+  // Follow the live appearance mode (System resolves against the OS).
+  const { resolvedMode } = useAppearance();
   return (
     <Sonner
-      theme={
-        document.documentElement.classList.contains("dark") ? "dark" : "light"
-      }
+      theme={resolvedMode}
       className="toaster group"
       toastOptions={{
         classNames: {

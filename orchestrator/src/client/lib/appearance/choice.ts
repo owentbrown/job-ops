@@ -54,7 +54,10 @@ export function systemPrefersDark(): boolean {
   return window.matchMedia(DARK_QUERY).matches;
 }
 
-/** Set the three data attributes and keep `.dark` in step with the mode. */
+/**
+ * Set the three data attributes, keep `.dark` in step with the mode and set
+ * `color-scheme` so native scrollbars and form controls follow it.
+ */
 export function applyAppearance(
   choice: AppearanceChoice,
   resolvedMode: ResolvedMode,
@@ -64,4 +67,5 @@ export function applyAppearance(
   root.setAttribute("data-theme", choice.theme);
   root.setAttribute("data-colours", choice.colours);
   root.classList.toggle("dark", resolvedMode === "dark");
+  root.style.colorScheme = resolvedMode;
 }

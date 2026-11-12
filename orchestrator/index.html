@@ -41,6 +41,7 @@
           html.setAttribute("data-theme", choice.theme);
           html.setAttribute("data-colours", choice.colours);
           html.classList.toggle("dark", mode === "dark");
+          html.style.colorScheme = mode;
         } catch {}
       })();
     </script>

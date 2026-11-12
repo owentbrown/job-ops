@@ -45,6 +45,7 @@ beforeEach(() => {
   html().removeAttribute("data-theme");
   html().removeAttribute("data-colours");
   html().classList.remove("dark");
+  html().style.colorScheme = "";
 });
 
 afterEach(() => {
@@ -65,6 +66,9 @@ describe("useAppearance", () => {
     expect(html().getAttribute("data-theme")).toBe("editorial");
     expect(html().getAttribute("data-colours")).toBe("evergreen");
     expect(html().classList.contains("dark")).toBe(true);
+    expect(html().style.colorScheme).toBe("dark");
+    // Nothing is persisted until the user changes something.
+    expect(localStorage.getItem(APPEARANCE_STORAGE_KEY)).toBeNull();
   });
 
   it("reads and validates the stored choice", () => {
@@ -93,6 +97,7 @@ describe("useAppearance", () => {
     expect(html().getAttribute("data-colours")).toBe("orchid");
     expect(html().getAttribute("data-mode")).toBe("dark");
     expect(html().classList.contains("dark")).toBe(true);
+    expect(html().style.colorScheme).toBe("dark");
     expect(
       JSON.parse(localStorage.getItem(APPEARANCE_STORAGE_KEY) ?? "null"),
     ).toEqual({ mode: "dark", theme: "soft", colours: "orchid" });
@@ -113,6 +118,7 @@ describe("useAppearance", () => {
     act(() => os.setDark(true));
     expect(result.current.resolvedMode).toBe("light");
     expect(html().classList.contains("dark")).toBe(false);
+    expect(html().style.colorScheme).toBe("light");
   });
 
   it("toggleLightDark flips the resolved mode and leaves System", () => {

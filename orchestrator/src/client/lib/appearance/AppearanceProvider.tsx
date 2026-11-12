@@ -5,6 +5,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import {
@@ -63,12 +64,20 @@ export const AppearanceProvider: React.FC<{ children: React.ReactNode }> = ({
     applyAppearance(choice, resolvedMode);
   }, [choice, resolvedMode]);
 
+  // Persist outside the state updater (updaters must stay pure; StrictMode
+  // calls them twice). Skip the first run: the initial choice came from
+  // storage (or the defaults) and needs no write.
+  const isFirstPersist = useRef(true);
+  useEffect(() => {
+    if (isFirstPersist.current) {
+      isFirstPersist.current = false;
+      return;
+    }
+    writeStoredAppearance(choice);
+  }, [choice]);
+
   const update = useCallback((patch: Partial<AppearanceChoice>) => {
-    setChoice((prev) => {
-      const next = { ...prev, ...patch };
-      writeStoredAppearance(next);
-      return next;
-    });
+    setChoice((prev) => ({ ...prev, ...patch }));
   }, []);
 
   const value = useMemo<AppearanceContextValue>(

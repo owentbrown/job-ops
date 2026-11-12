@@ -1,4 +1,5 @@
 import type { ApplicationStage, JobOutcome } from "./types/jobs";
+import { LEGACY_STAGE_MAP } from "./types/jobs";
 
 /** Display buckets for an application, in pipeline order. */
 export const PIPELINE_BUCKETS = [
@@ -28,7 +29,10 @@ export function bucketFor(
   stage: ApplicationStage,
   outcome: JobOutcome | null,
 ): PipelineBucket | null {
-  switch (stage) {
+  const current = Object.hasOwn(LEGACY_STAGE_MAP, stage)
+    ? LEGACY_STAGE_MAP[stage]
+    : stage;
+  switch (current) {
     case "applied":
       return "awaiting";
     case "screening":
@@ -44,6 +48,8 @@ export function bucketFor(
         return "offer";
       }
       return "rejected";
+    default:
+      return "awaiting";
   }
 }
 

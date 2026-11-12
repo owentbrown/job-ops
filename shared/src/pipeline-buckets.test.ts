@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { ApplicationStage } from "./types/jobs";
 import {
   bucketFor,
   PIPELINE_BUCKET_LABELS,
@@ -82,5 +83,18 @@ describe("transitionForBucket", () => {
     ["rejected", { toStage: "closed", outcome: "rejected" }],
   ] as const)("%s", (bucket, expected) => {
     expect(transitionForBucket(bucket)).toEqual(expected);
+  });
+});
+
+describe("bucketFor with legacy and unknown stages", () => {
+  it("maps legacy stages to current buckets", () => {
+    expect(bucketFor("technical_interview" as ApplicationStage, null)).toBe(
+      "interview",
+    );
+  });
+
+  it("falls back to awaiting for unknown stages", () => {
+    expect(bucketFor("bogus" as ApplicationStage, null)).toBe("awaiting");
+    expect(bucketFor("toString" as ApplicationStage, null)).toBe("awaiting");
   });
 });

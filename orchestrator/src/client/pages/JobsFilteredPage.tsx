@@ -1,10 +1,14 @@
 import { EmbeddedPage, PageFrame } from "@client/components/PageFrame";
-import { LayoutDashboard } from "lucide-react";
 import type React from "react";
 import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { FilteredJobsPage } from "./FilteredJobsPage";
 import { tabs } from "./orchestrator/constants";
+
+// Mirrors the Jobs page header (OrchestratorHeader) without its run controls.
+const JobsIcon: React.FC<{ className?: string }> = () => (
+  <img src="/favicon.png" alt="" className="size-8 rounded-lg" />
+);
 
 // Mirrors TabsTrigger so the strip looks like the Jobs page tabs.
 const linkClass = ({ isActive }: { isActive: boolean }) =>
@@ -17,14 +21,10 @@ const linkClass = ({ isActive }: { isActive: boolean }) =>
 
 /** Jobs > Filtered: the same tab strip as the Jobs page, then the filtered list. */
 export const JobsFilteredPage: React.FC = () => (
-  <PageFrame
-    icon={LayoutDashboard}
-    title="Jobs"
-    subtitle="Jobs the pre-score filter removed"
-  >
+  <PageFrame icon={JobsIcon} title="Job Ops" subtitle="Orchestrator">
     <nav
       aria-label="Job lists"
-      className="inline-flex h-auto flex-wrap items-center gap-1 rounded-lg bg-muted p-1 text-muted-foreground"
+      className="inline-flex h-auto w-full flex-wrap items-center justify-start gap-1 rounded-lg bg-muted p-1 text-muted-foreground lg:w-auto"
     >
       {tabs.map((tab) => (
         <NavLink key={tab.id} to={`/jobs/${tab.id}`} className={linkClass}>

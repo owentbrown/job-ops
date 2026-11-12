@@ -48,6 +48,7 @@ export const PipelineCard: React.FC<{
               onMouseLeave={() => setActive(null)}
             >
               {PIPELINE_BUCKETS.filter((b) => buckets[b] > 0).map((b) => (
+                // biome-ignore lint/a11y/noStaticElementInteractions: hover only adds visual emphasis; the bar's aria-label and the legend carry the same data
                 <div
                   key={b}
                   data-segment={b}

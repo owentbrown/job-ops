@@ -31,11 +31,11 @@ Use this when you want explicit, hands-on control for each job.
 curl -X POST "http://localhost:3001/api/jobs/<jobId>/stages" \
   -H "content-type: application/json" \
   -d '{
-    "toStage": "technical_interview",
+    "toStage": "interview",
     "metadata": {
       "actor": "user",
       "eventType": "status_update",
-      "eventLabel": "Moved to Technical Interview"
+      "eventLabel": "Moved to Interview"
     }
   }'
 ```

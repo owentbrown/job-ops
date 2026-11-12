@@ -11,18 +11,17 @@ The In Progress Board is a kanban view for jobs that have moved beyond initial a
 
 ![In Progress Board kanban lanes](/img/features/in-progress-board.png)
 
-It groups jobs into lanes:
+It groups jobs into five lanes:
 
-- Applied
-- Recruiter Screen
-- Assessment
-- Team Match
-- Technical Interview
-- Final Round
+- Awaiting reply (applied jobs, including ghosted and no-response ones)
+- Screening
+- Interview
 - Offer
-- Closed
+- Rejected
 
-The **Applied** lane can be collapsed to a thin strip so it doesn't take up horizontal space, letting you focus on jobs that are actively moving through later stages. Your collapsed/expanded preference is remembered across visits.
+Withdrawn jobs are hidden from the board. Dropping a card on **Rejected** closes the job as rejected.
+
+The **Awaiting reply** lane can be collapsed to a thin strip so it doesn't take up horizontal space, letting you focus on jobs that are actively moving through later stages. Your collapsed/expanded preference is remembered across visits.
 
 ## Why it exists
 
@@ -47,7 +46,7 @@ When you successfully move a job listing to the **Offer** stage (either by dragg
 
 ### Moving jobs into post-application
 
-Marking a job **Applied** puts it directly on the board in the Applied lane — there's no separate "move to in progress" step. From there, drag a card (or use the card menu's **Log event**) to record what actually happened: Recruiter Screen, Rejected, Withdrawn, or any other stage/outcome.
+Marking a job **Applied** puts it directly on the board in the Awaiting reply lane — there's no separate "move to in progress" step. From there, drag a card (or use the card menu's **Log event**) to record what actually happened: Screening, Interview, Offer, Rejected, Withdrawn, or any other stage/outcome.
 
 Later stage changes can also happen via:
 
@@ -62,15 +61,15 @@ curl "http://localhost:3001/api/jobs?status=in_progress&view=list"
 ```
 
 ```bash
-# Move a job to technical interview
+# Move a job to interview
 curl -X POST "http://localhost:3001/api/jobs/<jobId>/stage-events" \
   -H "content-type: application/json" \
   -d '{
-    "toStage": "technical_interview",
+    "toStage": "interview",
     "metadata": {
       "actor": "user",
       "eventType": "status_update",
-      "eventLabel": "Moved to Technical Interview"
+      "eventLabel": "Moved to Interview"
     }
   }'
 ```
@@ -80,7 +79,7 @@ curl -X POST "http://localhost:3001/api/jobs/<jobId>/stage-events" \
 ### Board is empty
 
 - Confirm jobs have status `applied` or `in_progress`.
-- Check whether the Applied lane is collapsed — expand it from the chevron in its header.
+- Check whether the Awaiting reply lane is collapsed — expand it from the chevron in its header.
 
 ### A card appears in an unexpected lane
 

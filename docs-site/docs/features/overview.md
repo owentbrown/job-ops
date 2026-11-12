@@ -49,7 +49,7 @@ Use it to quickly answer:
 
 - Default window is `30d`.
 - Only jobs in statuses `applied` and `in_progress` are used as input.
-- Conversion counts any positive response-stage event (for example recruiter screen, assessment, interview stages, or offer).
+- Conversion counts any positive response-stage event (Screening, Interview, or Offer).
 - Moving an application from a later stage back to **Applied** (dragging its card to the Applied lane, logging an Applied event, or a tracking-inbox update that resolves to Applied) retracts the stages and outcomes recorded before that move, so the funnel, conversion, and response-rate figures treat it as a fresh application, matching its lane on the In Progress board. Delete the mistaken event from the job timeline if you also want it gone from the history.
 - Conversion trend chart uses a rolling window up to 7 days.
 - Response rate by source is calculated across all time (not scoped to the duration selector), since response events may arrive well after the application window.
@@ -59,7 +59,7 @@ Use it to quickly answer:
 
 The **Response Rate by Source** chart shows, for each job board (LinkedIn, Indeed, Gradcracker, etc.), what percentage of your applications received a non-rejection response.
 
-**What counts as a response:** the application reached at least one of these stages — recruiter screen, assessment, hiring manager screen, technical interview, onsite, or offer. Ghosted applications (no stage events) and rejected outcomes are both excluded from the numerator.
+**What counts as a response:** the application reached at least one of these stages: Screening, Interview, or Offer (the full stage model is Applied, Screening, Interview, Offer, Closed). Ghosted applications (no stage events) and rejected outcomes are both excluded from the numerator.
 
 Each bar is labelled `X% (n=Y)` where `n` is the number of applications from that source, so you can immediately tell whether a high rate comes from a meaningful sample or a single lucky application. The full breakdown (response rate, responded, applied) is also shown in the tooltip.
 

@@ -49,11 +49,8 @@ export type PostApplicationMessageType =
 export const POST_APPLICATION_ROUTER_STAGE_TARGETS = [
   "no_change",
   "applied",
-  "recruiter_screen",
-  "assessment",
-  "hiring_manager_screen",
-  "technical_interview",
-  "onsite",
+  "screening",
+  "interview",
   "offer",
   "rejected",
   "withdrawn",

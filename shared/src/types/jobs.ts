@@ -19,11 +19,8 @@ export type PrefilterLayer = "rules" | "llm" | "restored";
 
 export const APPLICATION_STAGES = [
   "applied",
-  "recruiter_screen",
-  "assessment",
-  "hiring_manager_screen",
-  "technical_interview",
-  "onsite",
+  "screening",
+  "interview",
   "offer",
   "closed",
 ] as const;
@@ -32,13 +29,19 @@ export type ApplicationStage = (typeof APPLICATION_STAGES)[number];
 
 export const STAGE_LABELS: Record<ApplicationStage, string> = {
   applied: "Applied",
-  recruiter_screen: "Recruiter Screen",
-  assessment: "Assessment",
-  hiring_manager_screen: "Team Match",
-  technical_interview: "Technical Interview",
-  onsite: "Final Round",
+  screening: "Screening",
+  interview: "Interview",
   offer: "Offer",
   closed: "Closed",
+};
+
+/** Stage values from before the five-stage model, mapped to their replacement. */
+export const LEGACY_STAGE_MAP: Readonly<Record<string, ApplicationStage>> = {
+  recruiter_screen: "screening",
+  assessment: "screening",
+  hiring_manager_screen: "screening",
+  technical_interview: "interview",
+  onsite: "interview",
 };
 
 export type StageTransitionTarget = ApplicationStage | "no_change";

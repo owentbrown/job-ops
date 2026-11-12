@@ -30,8 +30,8 @@ describe("getEffectiveStageHistory", () => {
   it("keeps the whole history when the job never moved back to applied", () => {
     const events = [
       systemApplied("applied", 1),
-      userStage("screen", "applied", "recruiter_screen", 2),
-      userStage("interview", "recruiter_screen", "technical_interview", 3),
+      userStage("screen", "applied", "screening", 2),
+      userStage("interview", "screening", "interview", 3),
     ];
 
     expect(ids(getEffectiveStageHistory(events))).toEqual([
@@ -43,9 +43,9 @@ describe("getEffectiveStageHistory", () => {
 
   it("sorts by occurredAt without mutating the input", () => {
     const events = [
-      userStage("interview", "recruiter_screen", "technical_interview", 3),
+      userStage("interview", "screening", "interview", 3),
       systemApplied("applied", 1),
-      userStage("screen", "applied", "recruiter_screen", 2),
+      userStage("screen", "applied", "screening", 2),
     ];
     const snapshot = [...events];
 
@@ -60,8 +60,8 @@ describe("getEffectiveStageHistory", () => {
   it("drops every stage logged before the job moved back to applied", () => {
     const events = [
       systemApplied("applied", 1),
-      userStage("screen", "applied", "recruiter_screen", 2),
-      userStage("back", "recruiter_screen", "applied", 3),
+      userStage("screen", "applied", "screening", 2),
+      userStage("back", "screening", "applied", 3),
     ];
 
     expect(ids(getEffectiveStageHistory(events))).toEqual(["back"]);
@@ -70,9 +70,9 @@ describe("getEffectiveStageHistory", () => {
   it("keeps stages reached after the move back", () => {
     const events = [
       systemApplied("applied", 1),
-      userStage("screen", "applied", "recruiter_screen", 2),
-      userStage("back", "recruiter_screen", "applied", 3),
-      userStage("assessment", "applied", "assessment", 4),
+      userStage("screen", "applied", "screening", 2),
+      userStage("back", "screening", "applied", 3),
+      userStage("assessment", "applied", "screening", 4),
     ];
 
     expect(ids(getEffectiveStageHistory(events))).toEqual([
@@ -84,11 +84,11 @@ describe("getEffectiveStageHistory", () => {
   it("uses only the most recent move back when there are several", () => {
     const events = [
       systemApplied("applied", 1),
-      userStage("screen", "applied", "recruiter_screen", 2),
-      userStage("back-1", "recruiter_screen", "applied", 3),
-      userStage("assessment", "applied", "assessment", 4),
-      userStage("back-2", "assessment", "applied", 5),
-      userStage("onsite", "applied", "onsite", 6),
+      userStage("screen", "applied", "screening", 2),
+      userStage("back-1", "screening", "applied", 3),
+      userStage("assessment", "applied", "screening", 4),
+      userStage("back-2", "screening", "applied", 5),
+      userStage("onsite", "applied", "interview", 6),
     ];
 
     expect(ids(getEffectiveStageHistory(events))).toEqual(["back-2", "onsite"]);
@@ -97,8 +97,8 @@ describe("getEffectiveStageHistory", () => {
   it("treats a system update that moves the job back to applied like a user one", () => {
     const events = [
       systemApplied("applied", 1),
-      userStage("screen", "applied", "recruiter_screen", 2),
-      userStage("email", "recruiter_screen", "applied", 3, {
+      userStage("screen", "applied", "screening", 2),
+      userStage("email", "screening", "applied", 3, {
         actor: "system",
         eventType: "status_update",
         eventLabel: "Email received",
@@ -111,8 +111,8 @@ describe("getEffectiveStageHistory", () => {
 
   it("keeps an applied event with no prior stage even when it sorts last", () => {
     const events = [
-      userStage("screen", "applied", "recruiter_screen", 2),
-      userStage("interview", "recruiter_screen", "technical_interview", 3),
+      userStage("screen", "applied", "screening", 2),
+      userStage("interview", "screening", "interview", 3),
       systemApplied("applied", 9),
     ];
 
@@ -126,7 +126,7 @@ describe("getEffectiveStageHistory", () => {
   it("keeps a stage that was backdated before the system applied event", () => {
     const events = [
       systemApplied("applied", 5),
-      userStage("screen", "applied", "recruiter_screen", 2),
+      userStage("screen", "applied", "screening", 2),
     ];
 
     expect(ids(getEffectiveStageHistory(events))).toEqual([
@@ -138,7 +138,7 @@ describe("getEffectiveStageHistory", () => {
   it("ignores user events that never left applied", () => {
     const events = [
       systemApplied("applied", 1),
-      userStage("screen", "applied", "recruiter_screen", 2),
+      userStage("screen", "applied", "screening", 2),
       userStage("note", "applied", "applied", 3, {
         actor: "user",
         eventType: "note",

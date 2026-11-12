@@ -57,14 +57,7 @@ const chartConfig = {
  * Non-rejection response: the application reached screening, interview, or offer.
  * Ghosted (no events) and rejected (outcome=rejected) are both excluded.
  */
-const RESPONSE_STAGES = new Set([
-  "recruiter_screen",
-  "assessment",
-  "hiring_manager_screen",
-  "technical_interview",
-  "onsite",
-  "offer",
-]);
+const RESPONSE_STAGES = new Set(["screening", "interview", "offer"]);
 
 const BAR_COLORS = [
   "#3b82f6",

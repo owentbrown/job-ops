@@ -46,11 +46,8 @@ const makeJob = (overrides: Partial<JobListItem> = {}): JobListItem => ({
 
 /** Mirrors `getCardLeftAccentClass` in InProgressBoardPage (kept here to avoid touching that file). */
 const cardAccentClass = (stage: ApplicationStage) => {
-  if (stage === "technical_interview") {
+  if (stage === "interview") {
     return "border-l-2 border-l-warning/45";
-  }
-  if (stage === "onsite") {
-    return "border-l-2 border-l-warning/65";
   }
   if (stage === "offer") {
     return "border-2 border-warning/50 shadow-[0_4px_12px_-4px_color-mix(in_oklch,var(--color-warning)_70%,transparent)]";
@@ -98,7 +95,7 @@ const InteractiveBoardCard: React.FC<
 
 const baseCardProps = {
   job: makeJob(),
-  stage: "recruiter_screen" as const,
+  stage: "screening" as const,
   latestEventAt: LATEST_EVENT_AT,
   jobPageLinkState: JOB_PAGE_LINK_STATE,
   isMoving: false,
@@ -122,8 +119,8 @@ export const TechnicalInterview: Story = () => (
   <BoardCardFrame label="Technical interview accent">
     <InteractiveBoardCard
       {...baseCardProps}
-      stage="technical_interview"
-      cardClassName={cardAccentClass("technical_interview")}
+      stage="interview"
+      cardClassName={cardAccentClass("interview")}
     />
   </BoardCardFrame>
 );
@@ -133,8 +130,8 @@ export const FinalRound: Story = () => (
   <BoardCardFrame label="Final round accent">
     <InteractiveBoardCard
       {...baseCardProps}
-      stage="onsite"
-      cardClassName={cardAccentClass("onsite")}
+      stage="interview"
+      cardClassName={cardAccentClass("interview")}
     />
   </BoardCardFrame>
 );
@@ -210,8 +207,8 @@ export const AllStates: Story = () => (
     <BoardCardFrame label="Technical interview">
       <InteractiveBoardCard
         {...baseCardProps}
-        stage="technical_interview"
-        cardClassName={cardAccentClass("technical_interview")}
+        stage="interview"
+        cardClassName={cardAccentClass("interview")}
       />
     </BoardCardFrame>
     <BoardCardFrame label="Offer">

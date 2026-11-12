@@ -9,7 +9,7 @@ vi.mock("../api", () => ({
 }));
 
 const baseValues: LogEventFormValues = {
-  stage: "recruiter_screen",
+  stage: "screening",
   title: "Recruiter Screen",
   date: "2026-05-27T10:00",
   notes: "Follow-up scheduled",
@@ -23,7 +23,7 @@ beforeEach(() => {
     title: "Recruiter Screen",
     groupId: null,
     fromStage: "applied",
-    toStage: "recruiter_screen",
+    toStage: "screening",
     occurredAt: 1_700_000_000,
     metadata: null,
     outcome: null,
@@ -40,7 +40,7 @@ describe("logJobStageEvent", () => {
     });
 
     expect(api.transitionJobStage).toHaveBeenCalledWith("job-1", {
-      toStage: "recruiter_screen",
+      toStage: "screening",
       occurredAt: expect.any(Number),
       metadata: expect.objectContaining({
         actor: "user",
@@ -51,14 +51,14 @@ describe("logJobStageEvent", () => {
       }),
       outcome: null,
     });
-    expect(result.effectiveStage).toBe("recruiter_screen");
+    expect(result.effectiveStage).toBe("screening");
     expect(result.newEvent).toEqual(expect.objectContaining({ id: "evt-new" }));
   });
 
   it("keeps the current stage when no_change is selected", async () => {
     await logJobStageEvent({
       jobId: "job-1",
-      currentStage: "assessment",
+      currentStage: "screening",
       values: {
         ...baseValues,
         stage: "no_change",
@@ -69,7 +69,7 @@ describe("logJobStageEvent", () => {
     expect(api.transitionJobStage).toHaveBeenCalledWith(
       "job-1",
       expect.objectContaining({
-        toStage: "assessment",
+        toStage: "screening",
         metadata: expect.objectContaining({
           eventType: "note",
           reasonCode: undefined,
@@ -81,7 +81,7 @@ describe("logJobStageEvent", () => {
   it("maps rejected to closed with outcome", async () => {
     await logJobStageEvent({
       jobId: "job-1",
-      currentStage: "onsite",
+      currentStage: "interview",
       values: {
         ...baseValues,
         stage: "rejected",
@@ -113,7 +113,7 @@ describe("logJobStageEvent", () => {
       "job-1",
       "evt-1",
       expect.objectContaining({
-        toStage: "recruiter_screen",
+        toStage: "screening",
         metadata: expect.objectContaining({
           reasonCode: "job_page_manual_stage",
         }),

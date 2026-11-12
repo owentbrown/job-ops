@@ -56,7 +56,7 @@ describe("JobTimeline", () => {
     const interviewEvent = makeEvent({
       id: "event-interview",
       title: "Interview",
-      toStage: "technical_interview",
+      toStage: "interview",
       occurredAt: 1735862400,
     });
 

@@ -96,7 +96,7 @@ describe("ResponseRateBySourceChart", () => {
     const jobs = [
       createJob("job-1", [
         stageEvent("job-1", "applied", 1),
-        stageEvent("job-1", "recruiter_screen", 2),
+        stageEvent("job-1", "screening", 2),
       ]),
       createJob("job-2", [stageEvent("job-2", "applied", 1)]),
     ];
@@ -111,15 +111,15 @@ describe("ResponseRateBySourceChart", () => {
     const jobs = [
       createJob("job-1", [
         stageEvent("job-1", "applied", 1),
-        stageEvent("job-1", "recruiter_screen", 2),
+        stageEvent("job-1", "screening", 2),
         stageEvent("job-1", "applied", 3, {
-          fromStage: "recruiter_screen",
+          fromStage: "screening",
           metadata: { actor: "user", eventType: "status_update" },
         }),
       ]),
       createJob("job-2", [
         stageEvent("job-2", "applied", 1),
-        stageEvent("job-2", "assessment", 2),
+        stageEvent("job-2", "screening", 2),
       ]),
     ];
 

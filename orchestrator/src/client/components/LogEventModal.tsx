@@ -48,11 +48,8 @@ interface LogEventModalProps {
 const STAGE_OPTIONS = [
   { label: "No Stage Change (Keep current status)", value: "no_change" },
   { label: STAGE_LABELS.applied, value: "applied" },
-  { label: STAGE_LABELS.recruiter_screen, value: "recruiter_screen" },
-  { label: STAGE_LABELS.assessment, value: "assessment" },
-  { label: STAGE_LABELS.hiring_manager_screen, value: "hiring_manager_screen" },
-  { label: STAGE_LABELS.technical_interview, value: "technical_interview" },
-  { label: STAGE_LABELS.onsite, value: "onsite" },
+  { label: STAGE_LABELS.screening, value: "screening" },
+  { label: STAGE_LABELS.interview, value: "interview" },
   { label: STAGE_LABELS.offer, value: "offer" },
   { label: "Rejected", value: "rejected" },
   { label: "Withdrawn", value: "withdrawn" },

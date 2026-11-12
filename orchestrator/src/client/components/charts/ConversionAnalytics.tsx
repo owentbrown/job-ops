@@ -67,24 +67,13 @@ const FUNNEL_STAGES = [
 ] as const;
 
 // Stages that count as "screening"
-const SCREENING_STAGES = new Set(["recruiter_screen", "assessment"]);
+const SCREENING_STAGES = new Set(["screening"]);
 
 // Stages that count as "interview" (for funnel display)
-const INTERVIEW_STAGES = new Set([
-  "hiring_manager_screen",
-  "technical_interview",
-  "onsite",
-]);
+const INTERVIEW_STAGES = new Set(["interview"]);
 
 // Stages that count as conversion (any positive response from company)
-const CONVERSION_STAGES = new Set([
-  "recruiter_screen",
-  "assessment",
-  "hiring_manager_screen",
-  "technical_interview",
-  "onsite",
-  "offer",
-]);
+const CONVERSION_STAGES = new Set(["screening", "interview", "offer"]);
 
 // Stages that count as "offer"
 const OFFER_STAGES = new Set(["offer"]);

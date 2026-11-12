@@ -8,13 +8,10 @@ import {
   CheckCircle2,
   ClipboardList,
   Edit2,
-  FileText,
   MailCheck,
   PhoneCall,
-  Presentation,
   SearchCheck,
   Trash2,
-  UserRound,
   Video,
 } from "lucide-react";
 import React from "react";
@@ -23,11 +20,8 @@ import { cn, formatTimestamp, formatTimestampWithTime } from "@/lib/utils";
 
 const stageIcons: Record<ApplicationStage, React.ReactNode> = {
   applied: <CheckCircle2 className="h-4 w-4" />,
-  recruiter_screen: <PhoneCall className="h-4 w-4" />,
-  assessment: <FileText className="h-4 w-4" />,
-  hiring_manager_screen: <UserRound className="h-4 w-4" />,
-  technical_interview: <Video className="h-4 w-4" />,
-  onsite: <Presentation className="h-4 w-4" />,
+  screening: <PhoneCall className="h-4 w-4" />,
+  interview: <Video className="h-4 w-4" />,
   offer: <MailCheck className="h-4 w-4" />,
   closed: <ClipboardList className="h-4 w-4" />,
 };

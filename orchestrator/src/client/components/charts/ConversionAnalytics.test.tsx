@@ -125,7 +125,7 @@ describe("ConversionAnalytics - Edge Cases", () => {
       const jobs = [
         createJob("job-1", null, []),
         createJob("job-2", null, [
-          createEvent("recruiter_screen", 1704844800000),
+          createEvent("screening", 1704844800000),
         ]),
       ];
 
@@ -189,10 +189,10 @@ describe("ConversionAnalytics - Edge Cases", () => {
       const today = mockDate.toISOString();
       const jobs = [
         createJob("job-1", today, [
-          createEvent("recruiter_screen", 1704844800000),
+          createEvent("screening", 1704844800000),
         ]),
         createJob("job-2", today, [
-          createEvent("technical_interview", 1704844800000),
+          createEvent("interview", 1704844800000),
         ]),
       ];
 
@@ -213,7 +213,7 @@ describe("ConversionAnalytics - Edge Cases", () => {
       const today = mockDate.toISOString();
       const jobs = [
         createJob("job-1", today, [
-          createEvent("recruiter_screen", 1704844800000),
+          createEvent("screening", 1704844800000),
         ]),
         createJob("job-2", today, []),
         createJob("job-3", today, []),
@@ -237,7 +237,7 @@ describe("ConversionAnalytics - Edge Cases", () => {
       const jobs = [
         createJob("job-1", today, [
           createEvent("closed", 1704844800000),
-          createEvent("recruiter_screen", 1704931200000),
+          createEvent("screening", 1704931200000),
         ]),
       ];
 
@@ -270,13 +270,13 @@ describe("ConversionAnalytics - Edge Cases", () => {
       expect(screen.getByTestId("bar-chart")).toBeInTheDocument();
     });
 
-    it("correctly categorizes screening stages (recruiter_screen, assessment)", () => {
+    it("correctly categorizes screening stages ((screening))", () => {
       const today = mockDate.toISOString();
       const jobs = [
         createJob("job-1", today, [
-          createEvent("recruiter_screen", 1704844800000),
+          createEvent("screening", 1704844800000),
         ]),
-        createJob("job-2", today, [createEvent("assessment", 1704844800000)]),
+        createJob("job-2", today, [createEvent("screening", 1704844800000)]),
         createJob("job-3", today, []),
       ];
 
@@ -288,7 +288,7 @@ describe("ConversionAnalytics - Edge Cases", () => {
         />,
       );
 
-      // Both recruiter_screen and assessment count as screening
+      // Both screening count as screening
       expect(screen.getByTestId("bar-chart")).toBeInTheDocument();
     });
 
@@ -296,12 +296,12 @@ describe("ConversionAnalytics - Edge Cases", () => {
       const today = mockDate.toISOString();
       const jobs = [
         createJob("job-1", today, [
-          createEvent("hiring_manager_screen", 1704844800000),
+          createEvent("screening", 1704844800000),
         ]),
         createJob("job-2", today, [
-          createEvent("technical_interview", 1704844800000),
+          createEvent("interview", 1704844800000),
         ]),
-        createJob("job-3", today, [createEvent("onsite", 1704844800000)]),
+        createJob("job-3", today, [createEvent("interview", 1704844800000)]),
       ];
 
       render(
@@ -319,8 +319,8 @@ describe("ConversionAnalytics - Edge Cases", () => {
       const today = mockDate.toISOString();
       const jobs = [
         createJob("job-1", today, [
-          createEvent("recruiter_screen", 1704844800000),
-          createEvent("technical_interview", 1704931200000),
+          createEvent("screening", 1704844800000),
+          createEvent("interview", 1704931200000),
           createEvent("offer", 1705017600000),
         ]),
       ];
@@ -414,13 +414,13 @@ describe("ConversionAnalytics - Edge Cases", () => {
           id: `${id}-screen`,
           applicationId: id,
           fromStage: "applied",
-          toStage: "recruiter_screen",
+          toStage: "screening",
           occurredAt: 1704931200000,
         }),
         createStageEvent({
           id: `${id}-back`,
           applicationId: id,
-          fromStage: "recruiter_screen",
+          fromStage: "screening",
           toStage: "applied",
           occurredAt: 1705017600000,
           metadata: { actor: "user", eventType: "status_update" },
@@ -458,7 +458,7 @@ describe("ConversionAnalytics - Edge Cases", () => {
           id: "job-1-assessment",
           applicationId: "job-1",
           fromStage: "applied",
-          toStage: "assessment",
+          toStage: "screening",
           occurredAt: 1705104000000,
         }),
       );
@@ -509,7 +509,7 @@ describe("ConversionAnalytics - Edge Cases", () => {
       const jobs = [
         createJob("job-1", oldDate, [createEvent("offer", 1704153600000)]),
         createJob("job-2", oldDate, [
-          createEvent("recruiter_screen", 1704153600000),
+          createEvent("screening", 1704153600000),
         ]),
       ];
 
@@ -522,7 +522,7 @@ describe("ConversionAnalytics - Edge Cases", () => {
       );
 
       // Overall conversion counts all jobs with appliedAt (not filtered by date)
-      // Both jobs have conversion events (offer and recruiter_screen)
+      // Both jobs have conversion events (offer and screening)
       expect(screen.getByText("100.0%")).toBeInTheDocument();
       expect(screen.getByText(/2 of 2 applications/)).toBeInTheDocument();
     });
@@ -564,7 +564,7 @@ describe("ConversionAnalytics - Edge Cases", () => {
         createJob("job-3", today, []),
         createJob("job-4", today, []),
         createJob("job-5", today, [
-          createEvent("recruiter_screen", 1704844800000),
+          createEvent("screening", 1704844800000),
         ]),
       ];
 
@@ -585,7 +585,7 @@ describe("ConversionAnalytics - Edge Cases", () => {
       const today = mockDate.toISOString();
       const jobs = [
         createJob("job-1", today, [
-          createEvent("recruiter_screen", 1704844800000),
+          createEvent("screening", 1704844800000),
         ]),
         createJob("job-2", today, []),
         createJob("job-3", today, []),
@@ -613,7 +613,7 @@ describe("ConversionAnalytics - Edge Cases", () => {
       const yesterday = "2025-01-14T00:00:00Z";
       const jobs = [
         createJob("job-1", today, [
-          createEvent("recruiter_screen", 1705276800000),
+          createEvent("screening", 1705276800000),
         ]),
         createJob("job-2", yesterday, []),
       ];
@@ -633,7 +633,7 @@ describe("ConversionAnalytics - Edge Cases", () => {
       const today = mockDate.toISOString();
       const jobs = [
         createJob("job-1", today, [
-          createEvent("recruiter_screen", 1705276800000),
+          createEvent("screening", 1705276800000),
         ]),
       ];
 

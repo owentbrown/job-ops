@@ -92,7 +92,7 @@ describe("job notes API client", () => {
                 relevanceDecision: "relevant",
                 matchedJobId: "job-1",
                 matchConfidence: 95,
-                stageTarget: "technical_interview",
+                stageTarget: "interview",
                 messageType: "interview",
                 stageEventPayload: null,
                 processingStatus: "auto_linked",

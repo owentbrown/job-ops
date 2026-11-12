@@ -22,8 +22,8 @@ describe("getDeleteEventDescription", () => {
   it("returns the default description when deleting a non-latest event", () => {
     const events = [
       makeEvent("a", "applied"),
-      makeEvent("b", "recruiter_screen"),
-      makeEvent("c", "technical_interview"),
+      makeEvent("b", "screening"),
+      makeEvent("c", "interview"),
     ];
     expect(getDeleteEventDescription(events, "a")).toMatch(/cannot be undone/i);
     expect(getDeleteEventDescription(events, "b")).toMatch(/cannot be undone/i);
@@ -32,7 +32,7 @@ describe("getDeleteEventDescription", () => {
   it("warns about rolling back when deleting the latest event", () => {
     const events = [
       makeEvent("a", "applied"),
-      makeEvent("b", "recruiter_screen"),
+      makeEvent("b", "screening"),
     ];
     const description = getDeleteEventDescription(events, "b");
     expect(description.toLowerCase()).toContain("roll");

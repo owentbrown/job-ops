@@ -21,11 +21,11 @@ import { useAnalyticsIdentity } from "./hooks/useAnalyticsIdentity";
 import { useDemoInfo } from "./hooks/useDemoInfo";
 import { setAuthNavigator } from "./lib/auth-navigation";
 import { DesignResumePage } from "./pages/DesignResumePage";
-import { FilteredJobsPage } from "./pages/FilteredJobsPage";
 import { GmailOauthCallbackPage } from "./pages/GmailOauthCallbackPage";
 import { HomePage } from "./pages/HomePage";
 import { InProgressBoardPage } from "./pages/InProgressBoardPage";
 import { JobPage } from "./pages/JobPage";
+import { JobsFilteredPage } from "./pages/JobsFilteredPage";
 import { OfflinePage } from "./pages/OfflinePage";
 import { OnboardingPage } from "./pages/OnboardingPage";
 import { OrchestratorPage } from "./pages/OrchestratorPage";
@@ -40,6 +40,7 @@ const REDIRECTS: Array<{ from: string; to: string }> = [
   { from: "/home", to: "/overview" },
   { from: "/ready", to: "/jobs/ready" },
   { from: "/ready/:jobId", to: "/jobs/ready/:jobId" },
+  { from: "/filtered", to: "/jobs/filtered" },
   { from: "/discovered", to: "/jobs/discovered" },
   { from: "/discovered/:jobId", to: "/jobs/discovered/:jobId" },
   { from: "/applied", to: "/jobs/applied" },
@@ -207,7 +208,7 @@ export const App: React.FC = () => {
                   path="/tracking-inbox"
                   element={<TrackingInboxRoute />}
                 />
-                <Route path="/filtered" element={<FilteredJobsPage />} />
+                <Route path="/jobs/filtered" element={<JobsFilteredPage />} />
                 <Route path="/jobs/:tab" element={<OrchestratorPage />} />
                 <Route
                   path="/jobs/:tab/:jobId"

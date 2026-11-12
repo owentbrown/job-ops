@@ -1,6 +1,7 @@
 import type { JobSource } from "@shared/types.js";
 import { fireEvent, render, screen } from "@testing-library/react";
 import type { ComponentProps } from "react";
+import { MemoryRouter } from "react-router-dom";
 import {
   afterAll,
   beforeAll,
@@ -95,7 +96,11 @@ const renderFilters = (
 
   return {
     props,
-    ...render(<OrchestratorFilters {...props} />),
+    ...render(
+      <MemoryRouter>
+        <OrchestratorFilters {...props} />
+      </MemoryRouter>,
+    ),
   };
 };
 

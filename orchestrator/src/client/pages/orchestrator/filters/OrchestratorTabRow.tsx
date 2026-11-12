@@ -3,6 +3,7 @@ import { Tip } from "@client/components/Tip";
 import { getDisplayKey, SHORTCUTS } from "@client/lib/shortcut-map";
 import { Filter, RotateCcw, Search } from "lucide-react";
 import type React from "react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
@@ -22,41 +23,49 @@ export const OrchestratorTabRow: React.FC<OrchestratorTabRowProps> = ({
 
   return (
     <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-      <TabsList className="h-auto w-full flex-wrap justify-start gap-1 lg:w-auto">
-        {tabs.map((tab, index) => {
-          const description = tabDescriptions[tab.id];
-          const trigger = (
-            <TabsTrigger
-              key={tab.id}
-              value={tab.id}
-              className="flex-1 flex items-center lg:flex-none gap-1.5"
-            >
-              <KbdHint shortcut={String(index + 1)} className="mr-0.5" />
-              <span>{tab.label}</span>
-              {counts[tab.id] > 0 && (
-                <span className="text-[10px] mt-[2px] tabular-nums opacity-60">
-                  {counts[tab.id]}
-                </span>
-              )}
-            </TabsTrigger>
-          );
+      <div className="flex flex-wrap items-center gap-1">
+        <TabsList className="h-auto w-full flex-wrap justify-start gap-1 lg:w-auto">
+          {tabs.map((tab, index) => {
+            const description = tabDescriptions[tab.id];
+            const trigger = (
+              <TabsTrigger
+                key={tab.id}
+                value={tab.id}
+                className="flex-1 flex items-center lg:flex-none gap-1.5"
+              >
+                <KbdHint shortcut={String(index + 1)} className="mr-0.5" />
+                <span>{tab.label}</span>
+                {counts[tab.id] > 0 && (
+                  <span className="text-[10px] mt-[2px] tabular-nums opacity-60">
+                    {counts[tab.id]}
+                  </span>
+                )}
+              </TabsTrigger>
+            );
 
-          if (!description) {
-            return trigger;
-          }
+            if (!description) {
+              return trigger;
+            }
 
-          return (
-            <Tip
-              key={tab.id}
-              asChild
-              content={<p>{description}</p>}
-              contentClassName="max-w-xs text-center"
-            >
-              {trigger}
-            </Tip>
-          );
-        })}
-      </TabsList>
+            return (
+              <Tip
+                key={tab.id}
+                asChild
+                content={<p>{description}</p>}
+                contentClassName="max-w-xs text-center"
+              >
+                {trigger}
+              </Tip>
+            );
+          })}
+        </TabsList>
+        <Link
+          to="/jobs/filtered"
+          className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium text-muted-foreground ring-offset-background transition-all hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        >
+          Filtered
+        </Link>
+      </div>
 
       <div className="flex items-center gap-2 self-start lg:self-auto">
         {isFiltersOpen && activeFilterCount > 0 ? (

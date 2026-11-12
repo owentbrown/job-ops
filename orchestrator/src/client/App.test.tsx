@@ -65,6 +65,10 @@ vi.mock("./pages/SignInPage", () => ({
   SignInPage: () => <div>sign-in</div>,
 }));
 
+vi.mock("./pages/JobsFilteredPage", () => ({
+  JobsFilteredPage: () => <div>jobs-filtered</div>,
+}));
+
 vi.mock("./pages/TrackingInboxPage", () => ({
   TrackingInboxPage: () => null,
 }));
@@ -218,5 +222,27 @@ describe("legacy URLs moved into Settings", () => {
       </MemoryRouter>,
     );
     expect(await screen.findByText(text)).toBeInTheDocument();
+  });
+});
+
+describe("Filtered jobs tab", () => {
+  it.each([
+    "/filtered",
+    "/jobs/filtered",
+  ])("%s shows the Jobs Filtered tab", async (from) => {
+    vi.mocked(useDemoInfo).mockReturnValue({
+      demoMode: false,
+      resetCadenceHours: 6,
+      lastResetAt: null,
+      nextResetAt: null,
+      baselineVersion: null,
+      baselineName: null,
+    });
+    render(
+      <MemoryRouter initialEntries={[from]}>
+        <App />
+      </MemoryRouter>,
+    );
+    expect(await screen.findByText("jobs-filtered")).toBeInTheDocument();
   });
 });

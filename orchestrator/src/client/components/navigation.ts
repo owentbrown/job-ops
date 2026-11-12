@@ -1,7 +1,6 @@
 import {
   Columns3,
   FilePenLine,
-  Filter,
   Home,
   Inbox,
   LayoutDashboard,
@@ -26,6 +25,7 @@ export const NAV_LINKS: NavLink[] = [
       "/jobs/discovered",
       "/jobs/applied",
       "/jobs/all",
+      "/jobs/filtered",
     ],
   },
   {
@@ -41,7 +41,6 @@ export const NAV_LINKS: NavLink[] = [
     activePaths: ["/design-resume"],
   },
   { to: "/tracking-inbox", label: "Tracking Inbox", icon: Inbox },
-  { to: "/filtered", label: "Filtered", icon: Filter },
   { to: "/settings", label: "Settings", icon: Settings },
 ];
 

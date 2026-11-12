@@ -238,12 +238,12 @@ function WatchlistSourceGroup({
         </p>
       ) : sources.length === 0 ? (
         <p className="text-xs text-muted-foreground">
-          No Watchlist sources saved yet. Add company career pages on the{" "}
+          No Watchlist sources saved yet. Add company career pages under{" "}
           <a
             href="/settings#sources"
             className="font-medium text-foreground underline underline-offset-2 hover:text-primary"
           >
-            Watchlist page
+            Sources in Settings
           </a>{" "}
           to include them in pipeline runs.
         </p>

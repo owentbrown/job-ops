@@ -43,4 +43,37 @@ describe("ActionTiles", () => {
       }),
     ).toHaveAttribute("href", "/jobs/ready");
   });
+
+  it("exposes structure hooks for the per-theme tile styles", () => {
+    const { container } = renderTiles({ extractorName: "Hiring Cafe" });
+    const wrap = container.querySelector("[data-action-tiles]");
+    expect(wrap).toHaveClass("overview-tiles");
+    const tiles = container.querySelectorAll("[data-tile]");
+    expect(tiles).toHaveLength(4);
+    for (const tile of tiles) expect(tile).toHaveClass("overview-tile");
+    // The browser check is the warning tone and never takes a Soft tint.
+    expect(tiles[0]).toHaveAttribute("data-tone", "warning");
+    expect(tiles[0]).not.toHaveAttribute("data-tint");
+    // The three action tiles take Soft's tint levels 1-3 in order.
+    expect(
+      Array.from(tiles)
+        .slice(1)
+        .map((t) => t.getAttribute("data-tint")),
+    ).toEqual(["1", "2", "3"]);
+    expect(tiles[1]).not.toHaveAttribute("data-tone");
+  });
+
+  it("sizes tile numbers and labels from the theme variables", () => {
+    const { container } = renderTiles();
+    const number = container.querySelector("[data-tile-number]");
+    expect(number).toHaveClass(
+      "font-mono",
+      "text-(length:--tile-number-size)",
+      "font-(weight:--tile-number-weight)",
+    );
+    expect(screen.getByText("Review")).toHaveClass(
+      "[text-transform:var(--label-transform)]",
+      "[letter-spacing:var(--label-tracking)]",
+    );
+  });
 });

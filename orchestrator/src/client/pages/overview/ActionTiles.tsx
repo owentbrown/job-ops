@@ -3,6 +3,7 @@ import { AlertTriangle } from "lucide-react";
 import type React from "react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { overviewLabelClass } from "./label";
 
 type Tile = {
   label: string;
@@ -11,19 +12,22 @@ type Tile = {
   to: string;
 };
 
+/**
+ * One action tile. The per-theme structure (outlined cards, joined grid,
+ * tinted fills) lives in styles/appearance-structure.css under
+ * `.overview-tiles` / `.overview-tile`; `tint` picks Soft's fill (1-3).
+ */
 const TileShell: React.FC<{
-  className?: string;
+  tone?: "warning";
+  tint?: 1 | 2 | 3;
   children: React.ReactNode;
-}> = ({ className, children }) => (
-  <div
-    className={cn(
-      "flex min-h-[210px] min-w-[260px] flex-1 basis-[280px] flex-col justify-between rounded-[18px] border border-border/60 bg-card p-6",
-      className,
-    )}
-  >
+}> = ({ tone, tint, children }) => (
+  <div data-tile="" data-tone={tone} data-tint={tint} className="overview-tile">
     {children}
   </div>
 );
+
+const labelClass = cn(overviewLabelClass, "text-(--tile-label-fg)");
 
 export const ActionTiles: React.FC<{
   actions: OverviewResponse["actions"];
@@ -51,37 +55,36 @@ export const ActionTiles: React.FC<{
   ];
 
   return (
-    <div className="flex flex-wrap gap-4">
+    <div data-action-tiles="" className="overview-tiles">
       {challenge ? (
-        <TileShell className="border-warning/50 bg-warning/10">
-          <p className="flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-warning">
+        <TileShell tone="warning">
+          <p className={cn("flex items-center gap-2", labelClass)}>
             <AlertTriangle className="h-3.5 w-3.5" aria-hidden />
             Blocking your search
           </p>
-          <p className="font-heading text-2xl font-semibold leading-tight tracking-tight">
+          <p className="font-heading text-[length:calc(var(--heading-size)-2px)] font-(weight:--heading-weight) leading-tight tracking-tight">
             Solve browser check
-            <span className="mt-1 block text-base text-muted-foreground">
+            <span className="mt-1 block font-sans text-base font-normal tracking-normal text-(--warning-fg)">
               {challenge.extractorName}
             </span>
           </p>
           <Link
             to="/jobs/ready"
             aria-label={`Solve browser check for ${challenge.extractorName}`}
-            className="self-start rounded-[10px] bg-warning px-4 py-2 text-sm font-medium text-warning-foreground"
+            className="self-start rounded-(--radius-button) bg-(--warning-fg) px-4 py-2 text-sm font-medium text-(--warning-bg)"
           >
             Solve
           </Link>
         </TileShell>
       ) : null}
 
-      {tiles.map((t) => (
-        <TileShell key={t.to}>
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            {t.label}
-          </p>
+      {tiles.map((t, i) => (
+        <TileShell key={t.to} tint={(i + 1) as 1 | 2 | 3}>
+          <p className={labelClass}>{t.label}</p>
           <p
+            data-tile-number=""
             className={cn(
-              "font-mono text-6xl leading-none tabular-nums",
+              "font-mono text-(length:--tile-number-size) font-(weight:--tile-number-weight) leading-none tabular-nums",
               t.count === 0 && "text-muted-foreground",
             )}
           >
@@ -90,7 +93,7 @@ export const ActionTiles: React.FC<{
           <Link
             to={t.to}
             aria-label={`${t.count} ${t.noun}`}
-            className="self-start text-sm font-medium text-primary underline-offset-4 hover:underline"
+            className="self-start text-sm font-medium text-(--tile-link-fg) underline-offset-4 hover:underline"
           >
             {t.noun} →
           </Link>

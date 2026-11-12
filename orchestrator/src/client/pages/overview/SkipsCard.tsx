@@ -8,6 +8,8 @@ import { showErrorToast } from "@/client/lib/error-toast";
 import { queryKeys } from "@/client/lib/queryKeys";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import { overviewLabelClass } from "./label";
 
 export const SkipsCard: React.FC<{
   highScoreSkipped: OverviewSkippedJob[];
@@ -24,13 +26,13 @@ export const SkipsCard: React.FC<{
   });
 
   return (
-    <Card className="border-border/60 shadow-none">
-      <CardContent className="space-y-4 p-6">
-        <h3 className="font-heading text-sm font-semibold">Why you skip</h3>
+    <Card>
+      <CardContent className="space-y-4 pt-(--density-pad)">
+        <h3 className="text-[15px] font-semibold">Why you skip</h3>
         <p className="text-sm text-muted-foreground">
           Skip reasons appear once you start picking them when you skip a job.
         </p>
-        <h4 className="text-xs font-semibold text-muted-foreground">
+        <h4 className={cn(overviewLabelClass, "text-muted-foreground")}>
           Skipped but scored 80+
         </h4>
         {highScoreSkipped.length === 0 ? (

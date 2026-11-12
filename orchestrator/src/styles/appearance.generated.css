@@ -22,6 +22,9 @@ html[data-theme="editorial"][data-colours="evergreen"][data-mode="light"] {
   --tint: #e7efee;
   --tint-2: #f3f7f6;
   --nav: #0e5e54;
+  --tile-tint-1: #d8e5e4;
+  --tile-tint-2: #e9f1f0;
+  --tile-tint-3: #f8fafa;
   --primary: #c2531f;
   --primary-foreground: #ffffff;
   --ring: #c2531f;
@@ -63,6 +66,7 @@ html[data-theme="editorial"][data-colours="evergreen"][data-mode="light"] {
   --font-sans: Inter, sans-serif;
   --font-mono: "JetBrains Mono", monospace;
   --label-transform: uppercase;
+  --label-tracking: 0.1em;
   --radius: 14px;
   --radius-tile: 18px;
   --radius-button: 10px;
@@ -99,6 +103,9 @@ html[data-theme="editorial"][data-colours="evergreen"][data-mode="dark"] {
   --tint: #283933;
   --tint-2: #242c28;
   --nav: #5fd3bc;
+  --tile-tint-1: #2f4c43;
+  --tile-tint-2: #283933;
+  --tile-tint-3: #232b26;
   --primary: #f59a6b;
   --primary-foreground: #0b0c14;
   --ring: #f59a6b;
@@ -140,6 +147,7 @@ html[data-theme="editorial"][data-colours="evergreen"][data-mode="dark"] {
   --font-sans: Inter, sans-serif;
   --font-mono: "JetBrains Mono", monospace;
   --label-transform: uppercase;
+  --label-tracking: 0.1em;
   --radius: 14px;
   --radius-tile: 18px;
   --radius-button: 10px;
@@ -176,6 +184,9 @@ html[data-theme="editorial"][data-colours="harbour"][data-mode="light"] {
   --tint: #e7eaef;
   --tint-2: #f3f5f7;
   --nav: #12305c;
+  --tile-tint-1: #d9dee5;
+  --tile-tint-2: #eaecf0;
+  --tile-tint-3: #f8f9fa;
   --primary: #0f766e;
   --primary-foreground: #ffffff;
   --ring: #0f766e;
@@ -217,6 +228,7 @@ html[data-theme="editorial"][data-colours="harbour"][data-mode="light"] {
   --font-sans: Inter, sans-serif;
   --font-mono: "JetBrains Mono", monospace;
   --label-transform: uppercase;
+  --label-tracking: 0.1em;
   --radius: 14px;
   --radius-tile: 18px;
   --radius-button: 10px;
@@ -253,6 +265,9 @@ html[data-theme="editorial"][data-colours="harbour"][data-mode="dark"] {
   --tint: #30343b;
   --tint-2: #282a2c;
   --nav: #8db4f0;
+  --tile-tint-1: #3b4451;
+  --tile-tint-2: #30343b;
+  --tile-tint-3: #27282a;
   --primary: #5fd3bc;
   --primary-foreground: #0b0c14;
   --ring: #5fd3bc;
@@ -294,6 +309,7 @@ html[data-theme="editorial"][data-colours="harbour"][data-mode="dark"] {
   --font-sans: Inter, sans-serif;
   --font-mono: "JetBrains Mono", monospace;
   --label-transform: uppercase;
+  --label-tracking: 0.1em;
   --radius: 14px;
   --radius-tile: 18px;
   --radius-button: 10px;
@@ -330,6 +346,9 @@ html[data-theme="editorial"][data-colours="twilight"][data-mode="light"] {
   --tint: #ebeaf4;
   --tint-2: #f5f5f9;
   --nav: #3b2f8f;
+  --tile-tint-1: #e0deed;
+  --tile-tint-2: #edecf5;
+  --tile-tint-3: #f9f9fc;
   --primary: #be1e5a;
   --primary-foreground: #ffffff;
   --ring: #be1e5a;
@@ -371,6 +390,7 @@ html[data-theme="editorial"][data-colours="twilight"][data-mode="light"] {
   --font-sans: Inter, sans-serif;
   --font-mono: "JetBrains Mono", monospace;
   --label-transform: uppercase;
+  --label-tracking: 0.1em;
   --radius: 14px;
   --radius-tile: 18px;
   --radius-button: 10px;
@@ -407,6 +427,9 @@ html[data-theme="editorial"][data-colours="twilight"][data-mode="dark"] {
   --tint: #34313e;
   --tint-2: #2a282e;
   --nav: #a5a0ff;
+  --tile-tint-1: #413e55;
+  --tile-tint-2: #34313e;
+  --tile-tint-3: #29272b;
   --primary: #ff8fb5;
   --primary-foreground: #0b0c14;
   --ring: #ff8fb5;
@@ -448,6 +471,7 @@ html[data-theme="editorial"][data-colours="twilight"][data-mode="dark"] {
   --font-sans: Inter, sans-serif;
   --font-mono: "JetBrains Mono", monospace;
   --label-transform: uppercase;
+  --label-tracking: 0.1em;
   --radius: 14px;
   --radius-tile: 18px;
   --radius-button: 10px;
@@ -484,6 +508,9 @@ html[data-theme="editorial"][data-colours="clay"][data-mode="light"] {
   --tint: #f3ebe7;
   --tint-2: #f9f5f3;
   --nav: #8a3a12;
+  --tile-tint-1: #ecdfd9;
+  --tile-tint-2: #f4edea;
+  --tile-tint-3: #fbf9f8;
   --primary: #0f6e7a;
   --primary-foreground: #ffffff;
   --ring: #0f6e7a;
@@ -525,6 +552,7 @@ html[data-theme="editorial"][data-colours="clay"][data-mode="light"] {
   --font-sans: Inter, sans-serif;
   --font-mono: "JetBrains Mono", monospace;
   --label-transform: uppercase;
+  --label-tracking: 0.1em;
   --radius: 14px;
   --radius-tile: 18px;
   --radius-button: 10px;
@@ -561,6 +589,9 @@ html[data-theme="editorial"][data-colours="clay"][data-mode="dark"] {
   --tint: #403026;
   --tint-2: #312720;
   --nav: #f59a6b;
+  --tile-tint-1: #563d2e;
+  --tile-tint-2: #403026;
+  --tile-tint-3: #2f2620;
   --primary: #6fd0dc;
   --primary-foreground: #0b0c14;
   --ring: #6fd0dc;
@@ -602,6 +633,7 @@ html[data-theme="editorial"][data-colours="clay"][data-mode="dark"] {
   --font-sans: Inter, sans-serif;
   --font-mono: "JetBrains Mono", monospace;
   --label-transform: uppercase;
+  --label-tracking: 0.1em;
   --radius: 14px;
   --radius-tile: 18px;
   --radius-button: 10px;
@@ -638,6 +670,9 @@ html[data-theme="editorial"][data-colours="orchid"][data-mode="light"] {
   --tint: #efebf9;
   --tint-2: #f7f5fc;
   --nav: #5b3bc4;
+  --tile-tint-1: #e5e0f6;
+  --tile-tint-2: #f0edfa;
+  --tile-tint-3: #faf9fd;
   --primary: #0e7490;
   --primary-foreground: #ffffff;
   --ring: #0e7490;
@@ -679,6 +714,7 @@ html[data-theme="editorial"][data-colours="orchid"][data-mode="light"] {
   --font-sans: Inter, sans-serif;
   --font-mono: "JetBrains Mono", monospace;
   --label-transform: uppercase;
+  --label-tracking: 0.1em;
   --radius: 14px;
   --radius-tile: 18px;
   --radius-button: 10px;
@@ -715,6 +751,9 @@ html[data-theme="editorial"][data-colours="orchid"][data-mode="dark"] {
   --tint: #37323e;
   --tint-2: #2c282e;
   --nav: #b9a6ff;
+  --tile-tint-1: #464055;
+  --tile-tint-2: #37323e;
+  --tile-tint-3: #2a272b;
   --primary: #67e8f9;
   --primary-foreground: #0b0c14;
   --ring: #67e8f9;
@@ -756,6 +795,7 @@ html[data-theme="editorial"][data-colours="orchid"][data-mode="dark"] {
   --font-sans: Inter, sans-serif;
   --font-mono: "JetBrains Mono", monospace;
   --label-transform: uppercase;
+  --label-tracking: 0.1em;
   --radius: 14px;
   --radius-tile: 18px;
   --radius-button: 10px;
@@ -792,6 +832,9 @@ html[data-theme="editorial"][data-colours="slate"][data-mode="light"] {
   --tint: #e9eaec;
   --tint-2: #f4f4f6;
   --nav: #1f2a44;
+  --tile-tint-1: #dbdde1;
+  --tile-tint-2: #ebecee;
+  --tile-tint-3: #f8f9f9;
   --primary: #4f46e5;
   --primary-foreground: #ffffff;
   --ring: #4f46e5;
@@ -833,6 +876,7 @@ html[data-theme="editorial"][data-colours="slate"][data-mode="light"] {
   --font-sans: Inter, sans-serif;
   --font-mono: "JetBrains Mono", monospace;
   --label-transform: uppercase;
+  --label-tracking: 0.1em;
   --radius: 14px;
   --radius-tile: 18px;
   --radius-button: 10px;
@@ -869,6 +913,9 @@ html[data-theme="editorial"][data-colours="slate"][data-mode="dark"] {
   --tint: #323235;
   --tint-2: #292929;
   --nav: #9aa8c7;
+  --tile-tint-1: #3e4046;
+  --tile-tint-2: #323235;
+  --tile-tint-3: #282727;
   --primary: #a5a0ff;
   --primary-foreground: #0b0c14;
   --ring: #a5a0ff;
@@ -910,6 +957,7 @@ html[data-theme="editorial"][data-colours="slate"][data-mode="dark"] {
   --font-sans: Inter, sans-serif;
   --font-mono: "JetBrains Mono", monospace;
   --label-transform: uppercase;
+  --label-tracking: 0.1em;
   --radius: 14px;
   --radius-tile: 18px;
   --radius-button: 10px;
@@ -946,6 +994,9 @@ html[data-theme="ledger"][data-colours="evergreen"][data-mode="light"] {
   --tint: #e7efee;
   --tint-2: #f3f7f6;
   --nav: #0e5e54;
+  --tile-tint-1: #d8e5e4;
+  --tile-tint-2: #e9f1f0;
+  --tile-tint-3: #f8fafa;
   --primary: #c2531f;
   --primary-foreground: #ffffff;
   --ring: #c2531f;
@@ -987,6 +1038,7 @@ html[data-theme="ledger"][data-colours="evergreen"][data-mode="light"] {
   --font-sans: "IBM Plex Sans", sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
   --label-transform: uppercase;
+  --label-tracking: 0.1em;
   --radius: 4px;
   --radius-tile: 4px;
   --radius-button: 4px;
@@ -1023,6 +1075,9 @@ html[data-theme="ledger"][data-colours="evergreen"][data-mode="dark"] {
   --tint: #21383c;
   --tint-2: #1c2c32;
   --nav: #5fd3bc;
+  --tile-tint-1: #284b4c;
+  --tile-tint-2: #21383c;
+  --tile-tint-3: #1b2a30;
   --primary: #f59a6b;
   --primary-foreground: #0b0c14;
   --ring: #f59a6b;
@@ -1064,6 +1119,7 @@ html[data-theme="ledger"][data-colours="evergreen"][data-mode="dark"] {
   --font-sans: "IBM Plex Sans", sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
   --label-transform: uppercase;
+  --label-tracking: 0.1em;
   --radius: 4px;
   --radius-tile: 4px;
   --radius-button: 4px;
@@ -1100,6 +1156,9 @@ html[data-theme="ledger"][data-colours="harbour"][data-mode="light"] {
   --tint: #e7eaef;
   --tint-2: #f3f5f7;
   --nav: #12305c;
+  --tile-tint-1: #d9dee5;
+  --tile-tint-2: #eaecf0;
+  --tile-tint-3: #f8f9fa;
   --primary: #0f766e;
   --primary-foreground: #ffffff;
   --ring: #0f766e;
@@ -1141,6 +1200,7 @@ html[data-theme="ledger"][data-colours="harbour"][data-mode="light"] {
   --font-sans: "IBM Plex Sans", sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
   --label-transform: uppercase;
+  --label-tracking: 0.1em;
   --radius: 4px;
   --radius-tile: 4px;
   --radius-button: 4px;
@@ -1177,6 +1237,9 @@ html[data-theme="ledger"][data-colours="harbour"][data-mode="dark"] {
   --tint: #283345;
   --tint-2: #202936;
   --nav: #8db4f0;
+  --tile-tint-1: #344359;
+  --tile-tint-2: #283345;
+  --tile-tint-3: #1f2734;
   --primary: #5fd3bc;
   --primary-foreground: #0b0c14;
   --ring: #5fd3bc;
@@ -1218,6 +1281,7 @@ html[data-theme="ledger"][data-colours="harbour"][data-mode="dark"] {
   --font-sans: "IBM Plex Sans", sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
   --label-transform: uppercase;
+  --label-tracking: 0.1em;
   --radius: 4px;
   --radius-tile: 4px;
   --radius-button: 4px;
@@ -1254,6 +1318,9 @@ html[data-theme="ledger"][data-colours="twilight"][data-mode="light"] {
   --tint: #ebeaf4;
   --tint-2: #f5f5f9;
   --nav: #3b2f8f;
+  --tile-tint-1: #e0deed;
+  --tile-tint-2: #edecf5;
+  --tile-tint-3: #f9f9fc;
   --primary: #be1e5a;
   --primary-foreground: #ffffff;
   --ring: #be1e5a;
@@ -1295,6 +1362,7 @@ html[data-theme="ledger"][data-colours="twilight"][data-mode="light"] {
   --font-sans: "IBM Plex Sans", sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
   --label-transform: uppercase;
+  --label-tracking: 0.1em;
   --radius: 4px;
   --radius-tile: 4px;
   --radius-button: 4px;
@@ -1331,6 +1399,9 @@ html[data-theme="ledger"][data-colours="twilight"][data-mode="dark"] {
   --tint: #2c3047;
   --tint-2: #222738;
   --nav: #a5a0ff;
+  --tile-tint-1: #3a3e5d;
+  --tile-tint-2: #2c3047;
+  --tile-tint-3: #212636;
   --primary: #ff8fb5;
   --primary-foreground: #0b0c14;
   --ring: #ff8fb5;
@@ -1372,6 +1443,7 @@ html[data-theme="ledger"][data-colours="twilight"][data-mode="dark"] {
   --font-sans: "IBM Plex Sans", sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
   --label-transform: uppercase;
+  --label-tracking: 0.1em;
   --radius: 4px;
   --radius-tile: 4px;
   --radius-button: 4px;
@@ -1408,6 +1480,9 @@ html[data-theme="ledger"][data-colours="clay"][data-mode="light"] {
   --tint: #f3ebe7;
   --tint-2: #f9f5f3;
   --nav: #8a3a12;
+  --tile-tint-1: #ecdfd9;
+  --tile-tint-2: #f4edea;
+  --tile-tint-3: #fbf9f8;
   --primary: #0f6e7a;
   --primary-foreground: #ffffff;
   --ring: #0f6e7a;
@@ -1449,6 +1524,7 @@ html[data-theme="ledger"][data-colours="clay"][data-mode="light"] {
   --font-sans: "IBM Plex Sans", sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
   --label-transform: uppercase;
+  --label-tracking: 0.1em;
   --radius: 4px;
   --radius-tile: 4px;
   --radius-button: 4px;
@@ -1485,6 +1561,9 @@ html[data-theme="ledger"][data-colours="clay"][data-mode="dark"] {
   --tint: #392f2f;
   --tint-2: #29262a;
   --nav: #f59a6b;
+  --tile-tint-1: #4f3c36;
+  --tile-tint-2: #392f2f;
+  --tile-tint-3: #27252a;
   --primary: #6fd0dc;
   --primary-foreground: #0b0c14;
   --ring: #6fd0dc;
@@ -1526,6 +1605,7 @@ html[data-theme="ledger"][data-colours="clay"][data-mode="dark"] {
   --font-sans: "IBM Plex Sans", sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
   --label-transform: uppercase;
+  --label-tracking: 0.1em;
   --radius: 4px;
   --radius-tile: 4px;
   --radius-button: 4px;
@@ -1562,6 +1642,9 @@ html[data-theme="ledger"][data-colours="orchid"][data-mode="light"] {
   --tint: #efebf9;
   --tint-2: #f7f5fc;
   --nav: #5b3bc4;
+  --tile-tint-1: #e5e0f6;
+  --tile-tint-2: #f0edfa;
+  --tile-tint-3: #faf9fd;
   --primary: #0e7490;
   --primary-foreground: #ffffff;
   --ring: #0e7490;
@@ -1603,6 +1686,7 @@ html[data-theme="ledger"][data-colours="orchid"][data-mode="light"] {
   --font-sans: "IBM Plex Sans", sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
   --label-transform: uppercase;
+  --label-tracking: 0.1em;
   --radius: 4px;
   --radius-tile: 4px;
   --radius-button: 4px;
@@ -1639,6 +1723,9 @@ html[data-theme="ledger"][data-colours="orchid"][data-mode="dark"] {
   --tint: #2f3147;
   --tint-2: #242838;
   --nav: #b9a6ff;
+  --tile-tint-1: #403f5d;
+  --tile-tint-2: #2f3147;
+  --tile-tint-3: #222636;
   --primary: #67e8f9;
   --primary-foreground: #0b0c14;
   --ring: #67e8f9;
@@ -1680,6 +1767,7 @@ html[data-theme="ledger"][data-colours="orchid"][data-mode="dark"] {
   --font-sans: "IBM Plex Sans", sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
   --label-transform: uppercase;
+  --label-tracking: 0.1em;
   --radius: 4px;
   --radius-tile: 4px;
   --radius-button: 4px;
@@ -1716,6 +1804,9 @@ html[data-theme="ledger"][data-colours="slate"][data-mode="light"] {
   --tint: #e9eaec;
   --tint-2: #f4f4f6;
   --nav: #1f2a44;
+  --tile-tint-1: #dbdde1;
+  --tile-tint-2: #ebecee;
+  --tile-tint-3: #f8f9f9;
   --primary: #4f46e5;
   --primary-foreground: #ffffff;
   --ring: #4f46e5;
@@ -1757,6 +1848,7 @@ html[data-theme="ledger"][data-colours="slate"][data-mode="light"] {
   --font-sans: "IBM Plex Sans", sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
   --label-transform: uppercase;
+  --label-tracking: 0.1em;
   --radius: 4px;
   --radius-tile: 4px;
   --radius-button: 4px;
@@ -1793,6 +1885,9 @@ html[data-theme="ledger"][data-colours="slate"][data-mode="dark"] {
   --tint: #2a323e;
   --tint-2: #212833;
   --nav: #9aa8c7;
+  --tile-tint-1: #38404e;
+  --tile-tint-2: #2a323e;
+  --tile-tint-3: #202631;
   --primary: #a5a0ff;
   --primary-foreground: #0b0c14;
   --ring: #a5a0ff;
@@ -1834,6 +1929,7 @@ html[data-theme="ledger"][data-colours="slate"][data-mode="dark"] {
   --font-sans: "IBM Plex Sans", sans-serif;
   --font-mono: "IBM Plex Mono", monospace;
   --label-transform: uppercase;
+  --label-tracking: 0.1em;
   --radius: 4px;
   --radius-tile: 4px;
   --radius-button: 4px;
@@ -1870,6 +1966,9 @@ html[data-theme="soft"][data-colours="evergreen"][data-mode="light"] {
   --tint: #e7efee;
   --tint-2: #f3f7f6;
   --nav: #0e5e54;
+  --tile-tint-1: #d8e5e4;
+  --tile-tint-2: #e9f1f0;
+  --tile-tint-3: #f8fafa;
   --primary: #c2531f;
   --primary-foreground: #ffffff;
   --ring: #c2531f;
@@ -1911,6 +2010,7 @@ html[data-theme="soft"][data-colours="evergreen"][data-mode="light"] {
   --font-sans: "DM Sans", sans-serif;
   --font-mono: "DM Sans", sans-serif;
   --label-transform: none;
+  --label-tracking: 0em;
   --radius: 28px;
   --radius-tile: 28px;
   --radius-button: 999px;
@@ -1947,6 +2047,9 @@ html[data-theme="soft"][data-colours="evergreen"][data-mode="dark"] {
   --tint: #263641;
   --tint-2: #212937;
   --nav: #5fd3bc;
+  --tile-tint-1: #2d4950;
+  --tile-tint-2: #263641;
+  --tile-tint-3: #202736;
   --primary: #f59a6b;
   --primary-foreground: #0b0c14;
   --ring: #f59a6b;
@@ -1988,6 +2091,7 @@ html[data-theme="soft"][data-colours="evergreen"][data-mode="dark"] {
   --font-sans: "DM Sans", sans-serif;
   --font-mono: "DM Sans", sans-serif;
   --label-transform: none;
+  --label-tracking: 0em;
   --radius: 28px;
   --radius-tile: 28px;
   --radius-button: 999px;
@@ -2024,6 +2128,9 @@ html[data-theme="soft"][data-colours="harbour"][data-mode="light"] {
   --tint: #e7eaef;
   --tint-2: #f3f5f7;
   --nav: #12305c;
+  --tile-tint-1: #d9dee5;
+  --tile-tint-2: #eaecf0;
+  --tile-tint-3: #f8f9fa;
   --primary: #0f766e;
   --primary-foreground: #ffffff;
   --ring: #0f766e;
@@ -2065,6 +2172,7 @@ html[data-theme="soft"][data-colours="harbour"][data-mode="light"] {
   --font-sans: "DM Sans", sans-serif;
   --font-mono: "DM Sans", sans-serif;
   --label-transform: none;
+  --label-tracking: 0em;
   --radius: 28px;
   --radius-tile: 28px;
   --radius-button: 999px;
@@ -2101,6 +2209,9 @@ html[data-theme="soft"][data-colours="harbour"][data-mode="dark"] {
   --tint: #2d314a;
   --tint-2: #25263c;
   --nav: #8db4f0;
+  --tile-tint-1: #39415d;
+  --tile-tint-2: #2d314a;
+  --tile-tint-3: #24243a;
   --primary: #5fd3bc;
   --primary-foreground: #0b0c14;
   --ring: #5fd3bc;
@@ -2142,6 +2253,7 @@ html[data-theme="soft"][data-colours="harbour"][data-mode="dark"] {
   --font-sans: "DM Sans", sans-serif;
   --font-mono: "DM Sans", sans-serif;
   --label-transform: none;
+  --label-tracking: 0em;
   --radius: 28px;
   --radius-tile: 28px;
   --radius-button: 999px;
@@ -2178,6 +2290,9 @@ html[data-theme="soft"][data-colours="twilight"][data-mode="light"] {
   --tint: #ebeaf4;
   --tint-2: #f5f5f9;
   --nav: #3b2f8f;
+  --tile-tint-1: #e0deed;
+  --tile-tint-2: #edecf5;
+  --tile-tint-3: #f9f9fc;
   --primary: #be1e5a;
   --primary-foreground: #ffffff;
   --ring: #be1e5a;
@@ -2219,6 +2334,7 @@ html[data-theme="soft"][data-colours="twilight"][data-mode="light"] {
   --font-sans: "DM Sans", sans-serif;
   --font-mono: "DM Sans", sans-serif;
   --label-transform: none;
+  --label-tracking: 0em;
   --radius: 28px;
   --radius-tile: 28px;
   --radius-button: 999px;
@@ -2255,6 +2371,9 @@ html[data-theme="soft"][data-colours="twilight"][data-mode="dark"] {
   --tint: #312e4c;
   --tint-2: #27243d;
   --nav: #a5a0ff;
+  --tile-tint-1: #3f3b61;
+  --tile-tint-2: #312e4c;
+  --tile-tint-3: #26233b;
   --primary: #ff8fb5;
   --primary-foreground: #0b0c14;
   --ring: #ff8fb5;
@@ -2296,6 +2415,7 @@ html[data-theme="soft"][data-colours="twilight"][data-mode="dark"] {
   --font-sans: "DM Sans", sans-serif;
   --font-mono: "DM Sans", sans-serif;
   --label-transform: none;
+  --label-tracking: 0em;
   --radius: 28px;
   --radius-tile: 28px;
   --radius-button: 999px;
@@ -2332,6 +2452,9 @@ html[data-theme="soft"][data-colours="clay"][data-mode="light"] {
   --tint: #f3ebe7;
   --tint-2: #f9f5f3;
   --nav: #8a3a12;
+  --tile-tint-1: #ecdfd9;
+  --tile-tint-2: #f4edea;
+  --tile-tint-3: #fbf9f8;
   --primary: #0f6e7a;
   --primary-foreground: #ffffff;
   --ring: #0f6e7a;
@@ -2373,6 +2496,7 @@ html[data-theme="soft"][data-colours="clay"][data-mode="light"] {
   --font-sans: "DM Sans", sans-serif;
   --font-mono: "DM Sans", sans-serif;
   --label-transform: none;
+  --label-tracking: 0em;
   --radius: 28px;
   --radius-tile: 28px;
   --radius-button: 999px;
@@ -2409,6 +2533,9 @@ html[data-theme="soft"][data-colours="clay"][data-mode="dark"] {
   --tint: #3e2d34;
   --tint-2: #2f2430;
   --nav: #f59a6b;
+  --tile-tint-1: #543a3b;
+  --tile-tint-2: #3e2d34;
+  --tile-tint-3: #2c222f;
   --primary: #6fd0dc;
   --primary-foreground: #0b0c14;
   --ring: #6fd0dc;
@@ -2450,6 +2577,7 @@ html[data-theme="soft"][data-colours="clay"][data-mode="dark"] {
   --font-sans: "DM Sans", sans-serif;
   --font-mono: "DM Sans", sans-serif;
   --label-transform: none;
+  --label-tracking: 0em;
   --radius: 28px;
   --radius-tile: 28px;
   --radius-button: 999px;
@@ -2486,6 +2614,9 @@ html[data-theme="soft"][data-colours="orchid"][data-mode="light"] {
   --tint: #efebf9;
   --tint-2: #f7f5fc;
   --nav: #5b3bc4;
+  --tile-tint-1: #e5e0f6;
+  --tile-tint-2: #f0edfa;
+  --tile-tint-3: #faf9fd;
   --primary: #0e7490;
   --primary-foreground: #ffffff;
   --ring: #0e7490;
@@ -2527,6 +2658,7 @@ html[data-theme="soft"][data-colours="orchid"][data-mode="light"] {
   --font-sans: "DM Sans", sans-serif;
   --font-mono: "DM Sans", sans-serif;
   --label-transform: none;
+  --label-tracking: 0em;
   --radius: 28px;
   --radius-tile: 28px;
   --radius-button: 999px;
@@ -2563,6 +2695,9 @@ html[data-theme="soft"][data-colours="orchid"][data-mode="dark"] {
   --tint: #342f4c;
   --tint-2: #29253d;
   --nav: #b9a6ff;
+  --tile-tint-1: #443d61;
+  --tile-tint-2: #342f4c;
+  --tile-tint-3: #28233b;
   --primary: #67e8f9;
   --primary-foreground: #0b0c14;
   --ring: #67e8f9;
@@ -2604,6 +2739,7 @@ html[data-theme="soft"][data-colours="orchid"][data-mode="dark"] {
   --font-sans: "DM Sans", sans-serif;
   --font-mono: "DM Sans", sans-serif;
   --label-transform: none;
+  --label-tracking: 0em;
   --radius: 28px;
   --radius-tile: 28px;
   --radius-button: 999px;
@@ -2640,6 +2776,9 @@ html[data-theme="soft"][data-colours="slate"][data-mode="light"] {
   --tint: #e9eaec;
   --tint-2: #f4f4f6;
   --nav: #1f2a44;
+  --tile-tint-1: #dbdde1;
+  --tile-tint-2: #ebecee;
+  --tile-tint-3: #f8f9f9;
   --primary: #4f46e5;
   --primary-foreground: #ffffff;
   --ring: #4f46e5;
@@ -2681,6 +2820,7 @@ html[data-theme="soft"][data-colours="slate"][data-mode="light"] {
   --font-sans: "DM Sans", sans-serif;
   --font-mono: "DM Sans", sans-serif;
   --label-transform: none;
+  --label-tracking: 0em;
   --radius: 28px;
   --radius-tile: 28px;
   --radius-button: 999px;
@@ -2717,6 +2857,9 @@ html[data-theme="soft"][data-colours="slate"][data-mode="dark"] {
   --tint: #2f2f43;
   --tint-2: #262538;
   --nav: #9aa8c7;
+  --tile-tint-1: #3c3d53;
+  --tile-tint-2: #2f2f43;
+  --tile-tint-3: #252437;
   --primary: #a5a0ff;
   --primary-foreground: #0b0c14;
   --ring: #a5a0ff;
@@ -2758,6 +2901,7 @@ html[data-theme="soft"][data-colours="slate"][data-mode="dark"] {
   --font-sans: "DM Sans", sans-serif;
   --font-mono: "DM Sans", sans-serif;
   --label-transform: none;
+  --label-tracking: 0em;
   --radius: 28px;
   --radius-tile: 28px;
   --radius-button: 999px;

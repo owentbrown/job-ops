@@ -115,6 +115,25 @@ describe("contrast (WCAG AA 4.5:1) for all 36 combinations", () => {
 
   it.each(
     combos,
+  )("Soft tile tints keep tile text readable: $theme · $colours · $mode", ({
+    theme,
+    colours,
+    mode,
+  }) => {
+    const t = resolveTokens(theme, colours, mode);
+    const tokens = buildTokens(theme, colours, mode);
+    for (const n of [1, 2, 3]) {
+      const tint = tokens[`--tile-tint-${n}`];
+      expect(tint).toMatch(/^#[0-9a-f]{6}$/);
+      // Labels and links on filled tiles use ink (4.5:1); a calm muted
+      // zero is large text (3:1).
+      expect(contrastRatio(t.ink, tint)).toBeGreaterThanOrEqual(4.5);
+      expect(contrastRatio(t.mut, tint)).toBeGreaterThanOrEqual(3);
+    }
+  });
+
+  it.each(
+    combos,
   )("sidebar focus ring ≥ 3:1 on the sidebar: $theme · $colours · $mode", ({
     theme,
     colours,

@@ -138,12 +138,10 @@ export const ResponseRateCard: React.FC<{
 }> = ({ scoreBands, sources }) => {
   const [dimension, setDimension] = useState<Dimension>("score");
   return (
-    <Card className="border-border/60 shadow-none">
-      <CardContent className="space-y-4 p-6">
+    <Card>
+      <CardContent className="space-y-4 pt-(--density-pad)">
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <h3 className="font-heading text-sm font-semibold">
-            Response rate by…
-          </h3>
+          <h3 className="text-[15px] font-semibold">Response rate by…</h3>
           <Tabs
             value={dimension}
             onValueChange={(v) => setDimension(v as Dimension)}

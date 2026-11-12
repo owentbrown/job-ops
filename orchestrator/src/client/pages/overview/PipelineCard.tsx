@@ -26,8 +26,8 @@ export const PipelineCard: React.FC<{
   ).join(", ")}`;
 
   return (
-    <Card className="border-border/60 shadow-none">
-      <CardContent className="space-y-5 p-6">
+    <Card>
+      <CardContent className="space-y-5 pt-(--density-pad)">
         <p className="flex items-baseline gap-2">
           <span className="font-mono text-4xl tabular-nums">{total}</span>
           <span className="text-sm text-muted-foreground">
@@ -44,7 +44,8 @@ export const PipelineCard: React.FC<{
             <div
               role="img"
               aria-label={ariaLabel}
-              className="flex h-4 w-full gap-0.5 overflow-hidden rounded-full bg-muted"
+              data-pipeline-bar=""
+              className="flex h-(--bar-height) w-full gap-(--bar-gap)"
               onMouseLeave={() => setActive(null)}
             >
               {PIPELINE_BUCKETS.filter((b) => buckets[b] > 0).map((b) => (
@@ -55,7 +56,7 @@ export const PipelineCard: React.FC<{
                   data-dimmed={dim(b) || undefined}
                   title={`${PIPELINE_BUCKET_LABELS[b]}: ${buckets[b]}`}
                   className={cn(
-                    "h-full min-w-[10px] transition-opacity duration-150",
+                    "h-full min-w-[10px] rounded-(--bar-radius) transition-opacity duration-150",
                     dim(b) && "opacity-25",
                   )}
                   onMouseEnter={() => setActive(b)}
@@ -81,7 +82,7 @@ export const PipelineCard: React.FC<{
                 >
                   <span
                     aria-hidden
-                    className="h-2.5 w-2.5 shrink-0 rounded-full"
+                    className="h-2.5 w-2.5 shrink-0 self-center rounded-(--radius-pill)"
                     style={{ backgroundColor: `var(--bucket-${b})` }}
                   />
                   <span>{PIPELINE_BUCKET_LABELS[b]}</span>

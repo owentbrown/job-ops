@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { PipelineCard } from "./PipelineCard";
 
@@ -43,5 +43,29 @@ describe("PipelineCard", () => {
       />,
     );
     expect(screen.getByText(/no applications yet/i)).toBeInTheDocument();
+  });
+
+  it("draws the bar from the theme's bar variables in fixed status colours", () => {
+    const { container } = render(<PipelineCard pipeline={pipeline} />);
+    const bar = container.querySelector("[data-pipeline-bar]");
+    expect(bar).toHaveClass("h-(--bar-height)", "gap-(--bar-gap)");
+    const segment = container.querySelector('[data-segment="awaiting"]');
+    expect(segment).toHaveClass("rounded-(--bar-radius)");
+    expect(segment).toHaveStyle({ backgroundColor: "var(--bucket-awaiting)" });
+  });
+
+  it("dims the other segments and legend rows on hover", () => {
+    const { container } = render(<PipelineCard pipeline={pipeline} />);
+    const legendRow = container.querySelector('[data-legend="screening"]');
+    if (!legendRow) throw new Error("missing legend row");
+    fireEvent.mouseEnter(legendRow);
+    expect(
+      container.querySelector('[data-segment="screening"]'),
+    ).not.toHaveAttribute("data-dimmed");
+    expect(
+      container.querySelector('[data-segment="awaiting"]'),
+    ).toHaveAttribute("data-dimmed", "true");
+    fireEvent.mouseLeave(legendRow);
+    expect(container.querySelectorAll("[data-dimmed]")).toHaveLength(0);
   });
 });

@@ -13,9 +13,9 @@ const Row: React.FC<{ label: string; value: string }> = ({ label, value }) => (
 export const RepliesCard: React.FC<{
   replies: OverviewResponse["replies"];
 }> = ({ replies }) => (
-  <Card className="border-border/60 shadow-none">
-    <CardContent className="flex flex-col gap-4 p-6">
-      <h3 className="font-heading text-sm font-semibold">Replies</h3>
+  <Card>
+    <CardContent className="flex flex-col gap-4 pt-(--density-pad)">
+      <h3 className="text-[15px] font-semibold">Replies</h3>
       <div>
         <p className="font-mono text-4xl leading-none tabular-nums">
           {replies.responseRate === null

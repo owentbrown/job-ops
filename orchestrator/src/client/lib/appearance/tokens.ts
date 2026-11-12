@@ -410,6 +410,24 @@ function towardContrast(
 
 const px = (n: number) => `${n}px`;
 
+/** Mix factors for the three Soft tile tints (reference tileStyleFor). */
+export const TILE_TINT_K: Record<
+  ResolvedMode,
+  readonly [number, number, number]
+> = {
+  light: [0.16, 0.09, 0.03],
+  dark: [0.26, 0.16, 0.08],
+};
+
+function tileTints(t: ResolvedTokens): Record<string, string> {
+  const [k1, k2, k3] = TILE_TINT_K[t.mode];
+  return {
+    "--tile-tint-1": mix(t.surf, t.nav, k1),
+    "--tile-tint-2": mix(t.surf, t.nav, k2),
+    "--tile-tint-3": mix(t.surf, t.nav, k3),
+  };
+}
+
 /**
  * CSS custom properties for one combination, keyed by variable name.
  * Mapping: "Variable mapping" table in
@@ -449,6 +467,9 @@ export function buildTokens(
     "--tint": t.tint,
     "--tint-2": t.tint2,
     "--nav": t.nav,
+    // Soft action tiles: three nav tints (THEMING.md §6, reference
+    // tileStyleFor). Emitted for every theme; only Soft's tiles use them.
+    ...tileTints(t),
 
     // Action colour
     "--primary": t.acc,
@@ -498,6 +519,8 @@ export function buildTokens(
     "--font-sans": th.bf,
     "--font-mono": th.mf,
     "--label-transform": th.labelCase ? "uppercase" : "none",
+    // Reference labelCss: uppercase labels are tracked 0.1em.
+    "--label-tracking": th.labelCase ? "0.1em" : "0em",
 
     // Shape and density
     "--radius": px(th.r),

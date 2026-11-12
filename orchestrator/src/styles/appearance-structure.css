@@ -4,7 +4,8 @@
  * density all come from styles/appearance.generated.css; this file only adds
  *   1. fallbacks for the structural variables when no data-theme is set, and
  *   2. per-theme shell geometry for the app sidebar (layout.tsx
- *      PersistentSidebar) and the content offset next to it (App.tsx).
+ *      PersistentSidebar) and the content offset next to it (App.tsx), and
+ *   3. per-theme Overview action-tile structure (pages/overview/ActionTiles).
  *
  * Sidebar styles:
  *   editorial  full-height dark column, 236px
@@ -29,6 +30,21 @@
   --card-shadow: var(--shadow);
   --card-border-width: 1px;
   --label-transform: none;
+  --label-tracking: 0em;
+  --heading-size: 24px;
+  --bar-height: 16px;
+  --bar-gap: 2px;
+  --bar-radius: 999px;
+  --tile-min-height: 190px;
+  --tile-number-size: 52px;
+  --tile-number-weight: 500;
+  --tile-tint-1: var(--accent);
+  --tile-tint-2: var(--secondary);
+  --tile-tint-3: var(--card);
+  --warning-bg: color-mix(in srgb, var(--warning) 10%, var(--card));
+  --warning-fg: var(--warning);
+  --warning-border: color-mix(in srgb, var(--warning) 50%, transparent);
+  --warning-dot: var(--warning);
   --page-title-size: 24px;
   --tint: var(--accent);
   --tint-2: var(--secondary);
@@ -72,4 +88,75 @@ html[data-theme="soft"] {
   --app-sidebar-inset: 14px;
   --app-sidebar-radius: 32px;
   --app-sidebar-brand-size: 26px;
+}
+
+/*
+ * Overview action tiles (THEMING.md §6):
+ *   editorial  separate outlined cards (the default below)
+ *   ledger     one joined grid: the container is the line colour and the
+ *              1px gaps between square tiles draw the dividers
+ *   soft       tiles filled with three nav tints, no outline, card shadow
+ * The browser-check tile ([data-tone="warning"]) is amber in every theme.
+ * Text colours inside a tile come from --tile-label-fg / --tile-link-fg so
+ * Soft can switch them to ink on its tinted fills.
+ */
+.overview-tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.overview-tile {
+  --tile-label-fg: var(--muted-foreground);
+  --tile-link-fg: var(--primary);
+  flex: 1 1 220px;
+  box-sizing: border-box;
+  min-height: var(--tile-min-height);
+  padding: calc(var(--density-pad) - 2px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16px;
+  border-radius: var(--radius-tile);
+  background: var(--card);
+  color: var(--card-foreground);
+  border: 1px solid var(--border);
+}
+
+.overview-tile[data-tone="warning"] {
+  --tile-label-fg: var(--warning-fg);
+  background: var(--warning-bg);
+  border-color: var(--warning-border);
+}
+
+html[data-theme="ledger"] .overview-tiles {
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+html[data-theme="ledger"] .overview-tile {
+  border: 0;
+  border-radius: 0;
+}
+
+html[data-theme="soft"] .overview-tile:not([data-tone="warning"]) {
+  --tile-label-fg: var(--foreground);
+  --tile-link-fg: var(--foreground);
+  border-color: transparent;
+  box-shadow: var(--card-shadow);
+}
+
+html[data-theme="soft"] .overview-tile[data-tint="1"] {
+  background: var(--tile-tint-1);
+}
+
+html[data-theme="soft"] .overview-tile[data-tint="2"] {
+  background: var(--tile-tint-2);
+}
+
+html[data-theme="soft"] .overview-tile[data-tint="3"] {
+  background: var(--tile-tint-3);
 }

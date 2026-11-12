@@ -383,10 +383,10 @@ export const InProgressBoardPage: React.FC = () => {
                         borderTopColor: `var(--bucket-${bucket})`,
                       }}
                       className={cn(
-                        "flex items-center rounded-t-xl border-t-[3px] border-b border-border/60 px-3 py-2.5",
+                        "relative flex items-center rounded-t-xl border-t-[3px] border-b border-border/60 px-3 py-2.5",
                         isCollapsedApplied
                           ? "flex-col gap-2"
-                          : "justify-between",
+                          : "justify-center gap-2",
                       )}
                     >
                       {bucket === "awaiting" && (
@@ -394,7 +394,13 @@ export const InProgressBoardPage: React.FC = () => {
                           type="button"
                           variant="ghost"
                           size="icon"
-                          className="h-6 w-6 shrink-0 text-muted-foreground"
+                          className={cn(
+                            "h-6 w-6 shrink-0 text-muted-foreground",
+                            // Pinned to the left edge so the title + count
+                            // stay centred like every other lane header.
+                            !isCollapsedApplied &&
+                              "absolute top-1/2 left-2 -translate-y-1/2",
+                          )}
                           aria-label={
                             isAppliedCollapsed
                               ? "Expand Awaiting reply lane"

@@ -23,7 +23,7 @@ export const PaceCard: React.FC<{ pace: OverviewResponse["pace"] }> = ({
 }) => (
   <Card className="border-border/60 shadow-none">
     <CardContent className="space-y-4 p-6">
-      <h3 className="text-sm font-semibold">Pace</h3>
+      <h3 className="font-heading text-sm font-semibold">Pace</h3>
       <div role="img" aria-label={chartLabel(pace)}>
         <ChartContainer config={config} className="h-40 w-full">
           <BarChart data={pace.perDay}>

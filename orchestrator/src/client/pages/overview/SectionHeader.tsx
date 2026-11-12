@@ -9,7 +9,9 @@ export const SectionHeader: React.FC<{
   <div className="mb-4 flex items-baseline justify-between gap-4">
     <h2 id={id} className="flex items-baseline gap-3">
       <span className="font-mono text-xs text-muted-foreground">{index}</span>
-      <span className="font-serif text-2xl tracking-tight">{title}</span>
+      <span className="font-heading text-lg font-semibold tracking-tight">
+        {title}
+      </span>
     </h2>
     {children}
   </div>

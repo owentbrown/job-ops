@@ -16,11 +16,9 @@ import { EngineStatusStrip } from "./overview/EngineStatusStrip";
 import { PaceCard } from "./overview/PaceCard";
 import { PipelineCard } from "./overview/PipelineCard";
 import { RepliesCard } from "./overview/RepliesCard";
-import { RolesCard } from "./overview/RolesCard";
-import { ScoreBandsCard } from "./overview/ScoreBandsCard";
+import { ResponseRateCard } from "./overview/ResponseRateCard";
 import { SectionHeader } from "./overview/SectionHeader";
 import { SkipsCard } from "./overview/SkipsCard";
-import { SourceYieldTable } from "./overview/SourceYieldTable";
 
 const DEFAULT_RANGE: DurationValue = 30;
 const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -116,11 +114,12 @@ export const OverviewPage: React.FC = () => {
               <div className="grid gap-4 lg:grid-cols-2">
                 <PaceCard pace={data.pace} />
                 <RepliesCard replies={data.replies} />
-                <RolesCard />
+                <ResponseRateCard
+                  scoreBands={data.scoreBands.rows}
+                  sources={data.sources.rows}
+                />
                 <SkipsCard highScoreSkipped={data.skips.highScoreSkipped} />
               </div>
-              <SourceYieldTable rows={data.sources.rows} />
-              <ScoreBandsCard rows={data.scoreBands.rows} />
             </section>
           </>
         )}

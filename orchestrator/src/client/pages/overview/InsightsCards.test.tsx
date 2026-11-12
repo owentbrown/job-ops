@@ -5,10 +5,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as api from "@/client/api";
 import { PaceCard } from "./PaceCard";
 import { RepliesCard } from "./RepliesCard";
-import { RolesCard } from "./RolesCard";
-import { ScoreBandsCard } from "./ScoreBandsCard";
+import { ResponseRateCard } from "./ResponseRateCard";
 import { SkipsCard } from "./SkipsCard";
-import { SourceYieldTable } from "./SourceYieldTable";
 
 vi.mock("@/client/api", async (orig) => ({
   ...(await orig<typeof import("@/client/api")>()),
@@ -36,6 +34,7 @@ describe("RepliesCard", () => {
       />,
     );
     expect(screen.getAllByText("—").length).toBeGreaterThanOrEqual(2);
+    expect(screen.getByText(/0 of 12 applications/i)).toBeInTheDocument();
     expect(screen.getByText(/too early to read/i)).toBeInTheDocument();
   });
 
@@ -84,44 +83,61 @@ describe("PaceCard", () => {
   });
 });
 
-describe("SourceYieldTable", () => {
-  it("shows a reply rate only from three applications", () => {
+describe("ResponseRateCard by source", () => {
+  const showSource = () =>
+    fireEvent.mouseDown(screen.getByRole("tab", { name: "Source" }));
+
+  it("shows a reply rate and bar only from three applications", () => {
     wrap(
-      <SourceYieldTable
-        rows={[
+      <ResponseRateCard
+        scoreBands={[]}
+        sources={[
           { source: "linkedin", results: 40, applied: 5, replied: 2 },
           { source: "indeed", results: 10, applied: 2, replied: 1 },
         ]}
       />,
     );
-    expect(screen.getByText("40%")).toBeInTheDocument();
-    expect(screen.getAllByText("—")).toHaveLength(1);
+    showSource();
+    expect(screen.getByText("2 of 5 · 40%")).toBeInTheDocument();
+    expect(screen.getByText("1 of 2")).toBeInTheDocument();
+    expect(screen.getByText("40 found")).toBeInTheDocument();
   });
-});
 
-describe("SourceYieldTable before the first reply", () => {
-  it("shows no reply rates and a hint", () => {
+  it("shows applied counts and a hint before the first reply", () => {
     wrap(
-      <SourceYieldTable
-        rows={[
+      <ResponseRateCard
+        scoreBands={[]}
+        sources={[
           { source: "linkedin", results: 40, applied: 5, replied: 0 },
           { source: "indeed", results: 10, applied: 3, replied: 0 },
         ]}
       />,
     );
-    expect(screen.queryByText("0%")).not.toBeInTheDocument();
-    expect(screen.getAllByText("—")).toHaveLength(2);
+    showSource();
+    expect(screen.queryByText(/0%/)).not.toBeInTheDocument();
+    expect(screen.getByText("5 applied")).toBeInTheDocument();
     expect(
       screen.getByText("Reply rates appear after your first reply."),
     ).toBeInTheDocument();
   });
 });
 
-describe("ScoreBandsCard", () => {
+describe("ResponseRateCard by role", () => {
+  it("explains that role categories arrive later", () => {
+    wrap(<ResponseRateCard scoreBands={[]} sources={[]} />);
+    fireEvent.mouseDown(screen.getByRole("tab", { name: "Role" }));
+    expect(
+      screen.getByText(/once applications are categorized/i),
+    ).toBeInTheDocument();
+  });
+});
+
+describe("ResponseRateCard by score", () => {
   it("hints instead of drawing bars with too little data", () => {
     wrap(
-      <ScoreBandsCard
-        rows={[
+      <ResponseRateCard
+        sources={[]}
+        scoreBands={[
           { band: "<70", applied: 1, replied: 0 },
           { band: "70-79", applied: 0, replied: 0 },
           { band: "80-89", applied: 2, replied: 0 },
@@ -136,8 +152,9 @@ describe("ScoreBandsCard", () => {
 
   it("hints when nothing has replied even with enough applications", () => {
     wrap(
-      <ScoreBandsCard
-        rows={[
+      <ResponseRateCard
+        sources={[]}
+        scoreBands={[
           { band: "<70", applied: 5, replied: 0 },
           { band: "80-89", applied: 5, replied: 0 },
         ]}
@@ -150,8 +167,9 @@ describe("ScoreBandsCard", () => {
 
   it("says higher scores get more replies", () => {
     wrap(
-      <ScoreBandsCard
-        rows={[
+      <ResponseRateCard
+        sources={[]}
+        scoreBands={[
           { band: "<70", applied: 5, replied: 0 },
           { band: "70-79", applied: 0, replied: 0 },
           { band: "80-89", applied: 5, replied: 3 },
@@ -166,8 +184,9 @@ describe("ScoreBandsCard", () => {
 
   it("doesn't credit higher scores when 90+ is readable and lowest", () => {
     wrap(
-      <ScoreBandsCard
-        rows={[
+      <ResponseRateCard
+        sources={[]}
+        scoreBands={[
           { band: "<70", applied: 5, replied: 2 },
           { band: "70-79", applied: 0, replied: 0 },
           { band: "80-89", applied: 5, replied: 3 },
@@ -183,8 +202,9 @@ describe("ScoreBandsCard", () => {
 
   it("says scores aren't predicting replies when the lowest band leads", () => {
     wrap(
-      <ScoreBandsCard
-        rows={[
+      <ResponseRateCard
+        sources={[]}
+        scoreBands={[
           { band: "<70", applied: 5, replied: 3 },
           { band: "70-79", applied: 0, replied: 0 },
           { band: "80-89", applied: 5, replied: 1 },
@@ -199,8 +219,9 @@ describe("ScoreBandsCard", () => {
 
   it("says there is no clear pattern otherwise", () => {
     wrap(
-      <ScoreBandsCard
-        rows={[
+      <ResponseRateCard
+        sources={[]}
+        scoreBands={[
           { band: "<70", applied: 5, replied: 1 },
           { band: "70-79", applied: 5, replied: 3 },
           { band: "80-89", applied: 5, replied: 1 },
@@ -208,15 +229,6 @@ describe("ScoreBandsCard", () => {
       />,
     );
     expect(screen.getByText("No clear pattern yet.")).toBeInTheDocument();
-  });
-});
-
-describe("RolesCard", () => {
-  it("explains that role categories arrive later", () => {
-    wrap(<RolesCard />);
-    expect(
-      screen.getByText(/once applications are categorized/i),
-    ).toBeInTheDocument();
   });
 });
 

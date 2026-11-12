@@ -17,7 +17,7 @@ describe("PipelineCard", () => {
       "Pipeline: Awaiting reply 6, Screening 2, Interview 0, Offer 1, Rejected 1",
     );
     expect(screen.getByText("Awaiting reply")).toBeInTheDocument();
-    expect(screen.getByText("60%")).toBeInTheDocument();
+    expect(screen.getByText("(60%)")).toBeInTheDocument();
   });
 
   it("hides zero segments and notes withdrawn applications", () => {

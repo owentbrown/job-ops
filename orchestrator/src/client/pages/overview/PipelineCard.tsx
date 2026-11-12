@@ -1,16 +1,26 @@
+import type { PipelineBucket } from "@shared/pipeline-buckets";
 import {
   PIPELINE_BUCKET_LABELS,
   PIPELINE_BUCKETS,
 } from "@shared/pipeline-buckets";
 import type { OverviewResponse } from "@shared/types.js";
 import type React from "react";
+import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { percent } from "./format";
 
 export const PipelineCard: React.FC<{
   pipeline: OverviewResponse["pipeline"];
 }> = ({ pipeline }) => {
   const { total, buckets, withdrawn } = pipeline;
+  // The bucket under the pointer (bar or legend); the others dim.
+  const [active, setActive] = useState<PipelineBucket | null>(null);
+  const dim = (b: PipelineBucket) => active !== null && active !== b;
+  const hoverProps = (b: PipelineBucket) => ({
+    onMouseEnter: () => setActive(b),
+    onMouseLeave: () => setActive(null),
+  });
   const ariaLabel = `Pipeline: ${PIPELINE_BUCKETS.map(
     (b) => `${PIPELINE_BUCKET_LABELS[b]} ${buckets[b]}`,
   ).join(", ")}`;
@@ -35,12 +45,19 @@ export const PipelineCard: React.FC<{
               role="img"
               aria-label={ariaLabel}
               className="flex h-4 w-full gap-0.5 overflow-hidden rounded-full bg-muted"
+              onMouseLeave={() => setActive(null)}
             >
               {PIPELINE_BUCKETS.filter((b) => buckets[b] > 0).map((b) => (
                 <div
                   key={b}
                   data-segment={b}
-                  className="h-full min-w-[10px]"
+                  data-dimmed={dim(b) || undefined}
+                  title={`${PIPELINE_BUCKET_LABELS[b]}: ${buckets[b]}`}
+                  className={cn(
+                    "h-full min-w-[10px] transition-opacity duration-150",
+                    dim(b) && "opacity-25",
+                  )}
+                  onMouseEnter={() => setActive(b)}
                   style={{
                     flexGrow: buckets[b],
                     backgroundColor: `var(--bucket-${b})`,
@@ -48,20 +65,30 @@ export const PipelineCard: React.FC<{
                 />
               ))}
             </div>
-            <ul className="grid grid-cols-2 gap-x-6 gap-y-2 sm:grid-cols-5">
+            <ul className="flex flex-wrap gap-x-8 gap-y-2">
               {PIPELINE_BUCKETS.map((b) => (
-                <li key={b} className="flex items-center gap-2 text-sm">
+                <li
+                  key={b}
+                  data-legend={b}
+                  data-dimmed={dim(b) || undefined}
+                  className={cn(
+                    "flex items-center gap-2 rounded-md text-sm transition-opacity duration-150",
+                    dim(b) && "opacity-40",
+                    active === b && "font-medium",
+                  )}
+                  {...hoverProps(b)}
+                >
                   <span
                     aria-hidden
                     className="h-2.5 w-2.5 shrink-0 rounded-full"
                     style={{ backgroundColor: `var(--bucket-${b})` }}
                   />
                   <span>{PIPELINE_BUCKET_LABELS[b]}</span>
-                  <span className="ml-auto font-mono tabular-nums">
+                  <span className="ml-1 font-mono tabular-nums">
                     {buckets[b]}
                   </span>
-                  <span className="w-10 text-right font-mono text-xs text-muted-foreground tabular-nums">
-                    {percent(buckets[b], total)}%
+                  <span className="font-mono text-xs text-muted-foreground tabular-nums">
+                    ({percent(buckets[b], total)}%)
                   </span>
                 </li>
               ))}

@@ -26,7 +26,7 @@ export const SkipsCard: React.FC<{
   return (
     <Card className="border-border/60 shadow-none">
       <CardContent className="space-y-4 p-6">
-        <h3 className="text-sm font-semibold">Why you skip</h3>
+        <h3 className="font-heading text-sm font-semibold">Why you skip</h3>
         <p className="text-sm text-muted-foreground">
           Skip reasons appear once you start picking them when you skip a job.
         </p>

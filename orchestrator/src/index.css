@@ -65,6 +65,7 @@
   --font-sans: Geist, sans-serif;
   --font-mono: IBM Plex Mono, monospace;
   --font-serif: Lora, serif;
+  --font-heading: var(--heading-font);
   --radius: 0.5rem;
   --tracking-tighter: calc(var(--tracking-normal) - 0.05em);
   --tracking-tight: calc(var(--tracking-normal) - 0.025em);
@@ -120,6 +121,8 @@
   --info: oklch(0.588 0.158 241.966);
   --info-foreground: oklch(1 0 0);
   /* Pipeline buckets (Overview bar, Applications board). */
+  /* Title typeface. Themes override this one value to restyle every heading. */
+  --heading-font: Geist, sans-serif;
   --bucket-awaiting: var(--muted-foreground);
   --bucket-screening: var(--info);
   --bucket-interview: var(--warning);

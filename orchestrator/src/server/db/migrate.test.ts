@@ -622,4 +622,57 @@ describe.sequential("database migrations", () => {
       );
     }
   });
+
+  it("rewrites pre-five-stage values in stage_events", async () => {
+    tempDir = await mkdtemp(join(tmpdir(), "job-ops-migrate-"));
+    const run = (script: string) =>
+      execFileSync(
+        process.execPath,
+        ["--import", "tsx", "--input-type=module", "-e", script],
+        { env: { ...process.env, DATA_DIR: tempDir as string }, stdio: "pipe" },
+      );
+
+    // Boot once to create the schema, then insert legacy rows.
+    run(`
+      import { join } from "node:path";
+      import { pathToFileURL } from "node:url";
+      import Database from "better-sqlite3";
+      await import(pathToFileURL(join(process.cwd(), "src/server/db/migrate.ts")).href);
+      const db = new Database(join(process.env.DATA_DIR, "jobs.db"));
+      db.pragma("foreign_keys = OFF");
+      const insert = db.prepare(
+        "INSERT INTO stage_events (id, application_id, from_stage, to_stage, occurred_at) VALUES (?, 'job-1', ?, ?, 1)",
+      );
+      insert.run("e1", "applied", "recruiter_screen");
+      insert.run("e2", "recruiter_screen", "assessment");
+      insert.run("e3", "assessment", "hiring_manager_screen");
+      insert.run("e4", "hiring_manager_screen", "technical_interview");
+      insert.run("e5", "technical_interview", "onsite");
+      insert.run("e6", "onsite", "offer");
+      db.close();
+    `);
+
+    // Boot again: the conversion runs on every boot and must be harmless to repeat.
+    run(`
+      import { join } from "node:path";
+      import { pathToFileURL } from "node:url";
+      import Database from "better-sqlite3";
+      await import(pathToFileURL(join(process.cwd(), "src/server/db/migrate.ts")).href);
+      const db = new Database(join(process.env.DATA_DIR, "jobs.db"), { readonly: true });
+      const rows = db.prepare("SELECT id, from_stage, to_stage FROM stage_events ORDER BY id").all();
+      const expected = [
+        ["e1", "applied", "screening"],
+        ["e2", "screening", "screening"],
+        ["e3", "screening", "screening"],
+        ["e4", "screening", "interview"],
+        ["e5", "interview", "interview"],
+        ["e6", "interview", "offer"],
+      ];
+      const actual = rows.map((r) => [r.id, r.from_stage, r.to_stage]);
+      if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+        throw new Error("Unexpected stages: " + JSON.stringify(actual));
+      }
+      db.close();
+    `);
+  });
 });

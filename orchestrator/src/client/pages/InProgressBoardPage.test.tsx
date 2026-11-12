@@ -150,12 +150,35 @@ const makeEvent = (overrides: Partial<StageEvent>): StageEvent => ({
   title: "Recruiter Screen",
   groupId: null,
   fromStage: "applied",
-  toStage: "recruiter_screen",
+  toStage: "screening",
   occurredAt: 1_700_000_000,
   metadata: null,
   outcome: null,
   ...overrides,
 });
+
+const renderBoard = () =>
+  render(
+    <MemoryRouter>
+      <InProgressBoardPage />
+    </MemoryRouter>,
+  );
+
+const mockJobs = (jobs: JobListItem[]) =>
+  vi.mocked(api.getJobs).mockResolvedValue({
+    jobs,
+    total: jobs.length,
+    byStatus: {
+      discovered: 0,
+      processing: 0,
+      ready: 0,
+      applied: 0,
+      in_progress: jobs.length,
+      skipped: 0,
+      expired: 0,
+    },
+    revision: "r1",
+  } as Awaited<ReturnType<typeof api.getJobs>>);
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -211,7 +234,80 @@ describe("InProgressBoardPage", () => {
     expect(await screen.findByText("Backend Engineer")).toBeInTheDocument();
   });
 
-  it("keeps an applied job with no stage events in the Applied lane, not Recruiter Screen (#714)", async () => {
+  it("shows the five pipeline bucket lanes", async () => {
+    renderBoard();
+    for (const label of [
+      "Awaiting reply",
+      "Screening",
+      "Interview",
+      "Offer",
+      "Rejected",
+    ]) {
+      expect(
+        await screen.findByRole("region", { name: `${label} lane` }),
+      ).toBeInTheDocument();
+    }
+    expect(
+      screen.queryByRole("region", { name: "Closed lane" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("puts ghosted jobs in Awaiting reply and hides withdrawn ones", async () => {
+    mockJobs([
+      makeJob({
+        id: "job-ghosted",
+        employer: "Ghosted Co",
+        outcome: "ghosted",
+      }),
+      makeJob({
+        id: "job-withdrawn",
+        employer: "Withdrawn Co",
+        outcome: "withdrawn",
+      }),
+    ]);
+    vi.mocked(api.getJobStageEvents).mockImplementation(async (jobId) => [
+      makeEvent({
+        applicationId: jobId,
+        fromStage: "screening",
+        toStage: "closed",
+        outcome: jobId === "job-ghosted" ? "ghosted" : "withdrawn",
+      }),
+    ]);
+
+    renderBoard();
+    const awaiting = await screen.findByRole("region", {
+      name: "Awaiting reply lane",
+    });
+    expect(await within(awaiting).findByText("Ghosted Co")).toBeInTheDocument();
+    expect(screen.queryByText("Withdrawn Co")).not.toBeInTheDocument();
+  });
+
+  it("moves a job to closed/rejected when dropped on the Rejected lane", async () => {
+    renderBoard();
+
+    const card = await screen.findByRole("link", { name: /Backend Engineer/i });
+    const rejectedLane = screen.getByRole("region", { name: "Rejected lane" });
+
+    fireEvent.dragStart(card, { dataTransfer: { effectAllowed: "move" } });
+    fireEvent.dragOver(rejectedLane);
+    fireEvent.drop(rejectedLane);
+
+    await waitFor(() => {
+      expect(api.transitionJobStage).toHaveBeenCalledWith("job-1", {
+        toStage: "closed",
+        outcome: "rejected",
+        metadata: {
+          actor: "user",
+          eventType: "status_update",
+          eventLabel: "Moved to Rejected",
+          reasonCode: "in_progress_board_drag",
+        },
+      });
+    });
+    expect(celebrateOffer).not.toHaveBeenCalled();
+  });
+
+  it("keeps an applied job with no stage events in the Awaiting reply lane, not Screening (#714)", async () => {
     vi.mocked(api.getJobs).mockResolvedValue({
       jobs: [makeJob({ status: "applied" })],
       total: 1,
@@ -235,34 +331,34 @@ describe("InProgressBoardPage", () => {
     );
 
     const appliedLane = await screen.findByRole("region", {
-      name: "Applied lane",
+      name: "Awaiting reply lane",
     });
     expect(
       within(appliedLane).getByText("Backend Engineer"),
     ).toBeInTheDocument();
 
     const recruiterScreenLane = screen.getByRole("region", {
-      name: "Recruiter Screen lane",
+      name: "Screening lane",
     });
     expect(
       within(recruiterScreenLane).queryByText("Backend Engineer"),
     ).not.toBeInTheDocument();
   });
 
-  it("collapses and expands the Applied lane, persisting the preference", async () => {
+  it("collapses and expands the Awaiting reply lane, persisting the preference", async () => {
     const { unmount } = render(
       <MemoryRouter>
         <InProgressBoardPage />
       </MemoryRouter>,
     );
 
-    await screen.findByRole("region", { name: "Applied lane" });
+    await screen.findByRole("region", { name: "Awaiting reply lane" });
     fireEvent.click(
-      screen.getByRole("button", { name: /collapse applied lane/i }),
+      screen.getByRole("button", { name: /collapse awaiting reply lane/i }),
     );
 
     const collapsedAppliedLane = screen.getByRole("region", {
-      name: "Applied lane",
+      name: "Awaiting reply lane",
     });
     expect(
       within(collapsedAppliedLane).queryByText(
@@ -277,9 +373,9 @@ describe("InProgressBoardPage", () => {
       </MemoryRouter>,
     );
 
-    await screen.findByRole("region", { name: "Applied lane" });
+    await screen.findByRole("region", { name: "Awaiting reply lane" });
     expect(
-      screen.getByRole("button", { name: /expand applied lane/i }),
+      screen.getByRole("button", { name: /expand awaiting reply lane/i }),
     ).toBeInTheDocument();
   });
 
@@ -309,6 +405,7 @@ describe("InProgressBoardPage", () => {
     await waitFor(() => {
       expect(api.transitionJobStage).toHaveBeenCalledWith("job-1", {
         toStage: "offer",
+        outcome: null,
         metadata: {
           actor: "user",
           eventType: "status_update",

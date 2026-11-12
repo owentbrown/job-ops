@@ -4,11 +4,16 @@ import {
 } from "@client/components/LogEventModal";
 import { PageFrame, useIsEmbedded } from "@client/components/PageFrame";
 import {
-  APPLICATION_STAGES,
-  type ApplicationStage,
-  type JobListItem,
-  STAGE_LABELS,
-  type StageEvent,
+  bucketFor,
+  PIPELINE_BUCKET_LABELS,
+  PIPELINE_BUCKETS,
+  type PipelineBucket,
+  transitionForBucket,
+} from "@shared/pipeline-buckets";
+import type {
+  ApplicationStage,
+  JobListItem,
+  StageEvent,
 } from "@shared/types.js";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -44,6 +49,7 @@ import { IN_PROGRESS_BOARD_APPLIED_COLLAPSED_STORAGE_KEY } from "./orchestrator/
 type BoardCard = {
   job: JobListItem;
   stage: ApplicationStage;
+  bucket: PipelineBucket;
   latestEventAt: number | null;
 };
 
@@ -62,23 +68,18 @@ const sortByTitle = (a: BoardCard, b: BoardCard) =>
 const sortByCompany = (a: BoardCard, b: BoardCard) =>
   a.job.employer.localeCompare(b.job.employer);
 
-const BOARD_STAGES = APPLICATION_STAGES;
-
 const getAppliedCollapsedStorageKey = () =>
   api.getAuthScopedStorageKey(IN_PROGRESS_BOARD_APPLIED_COLLAPSED_STORAGE_KEY);
 
 const readAppliedCollapsed = () =>
   localStorage.getItem(getAppliedCollapsedStorageKey()) === "1";
 
-const getCardLeftAccentClass = (stage: ApplicationStage) => {
-  if (stage === "technical_interview") {
-    return "border-l-2 border-l-warning/45";
+const getCardLeftAccentClass = (bucket: PipelineBucket) => {
+  if (bucket === "interview") {
+    return "border-l-2 border-l-bucket-interview/60";
   }
-  if (stage === "onsite") {
-    return "border-l-2 border-l-warning/65";
-  }
-  if (stage === "offer") {
-    return "border-2 border-warning/50 shadow-[0_4px_12px_-4px_color-mix(in_oklch,var(--color-warning)_70%,transparent)]";
+  if (bucket === "offer") {
+    return "border-2 border-bucket-offer/50 shadow-[0_4px_12px_-4px_color-mix(in_oklch,var(--color-bucket-offer)_70%,transparent)]";
   }
   return "";
 };
@@ -105,10 +106,10 @@ export const InProgressBoardPage: React.FC = () => {
 
   const [dragging, setDragging] = React.useState<{
     jobId: string;
-    fromStage: ApplicationStage;
+    fromBucket: PipelineBucket;
   } | null>(null);
-  const [dropTargetStage, setDropTargetStage] =
-    React.useState<ApplicationStage | null>(null);
+  const [dropTargetBucket, setDropTargetBucket] =
+    React.useState<PipelineBucket | null>(null);
   const [movingJobId, setMovingJobId] = React.useState<string | null>(null);
   const [sortMode, setSortMode] = React.useState<
     "updated" | "title" | "company"
@@ -140,18 +141,24 @@ export const InProgressBoardPage: React.FC = () => {
         jobs.map((job) => api.getJobStageEvents(job.id)),
       );
 
-      return jobs.map((job, index) => {
+      return jobs.flatMap((job, index) => {
         const result = eventResults[index];
         const events =
           result?.status === "fulfilled"
             ? [...result.value].sort((a, b) => a.occurredAt - b.occurredAt)
             : null;
         const resolved = resolveCurrentStage(events);
-        return {
-          job,
-          stage: resolved.stage,
-          latestEventAt: resolved.latestEventAt,
-        };
+        const outcome = events?.at(-1)?.outcome ?? job.outcome ?? null;
+        const bucket = bucketFor(resolved.stage, outcome);
+        if (bucket === null) return [];
+        return [
+          {
+            job,
+            stage: resolved.stage,
+            bucket,
+            latestEventAt: resolved.latestEventAt,
+          },
+        ];
       });
     },
   });
@@ -159,20 +166,23 @@ export const InProgressBoardPage: React.FC = () => {
   const transitionMutation = useMutation({
     mutationFn: ({
       jobId,
-      toStage,
+      bucket,
     }: {
       jobId: string;
-      toStage: ApplicationStage;
-    }) =>
-      api.transitionJobStage(jobId, {
+      bucket: PipelineBucket;
+    }) => {
+      const { toStage, outcome } = transitionForBucket(bucket);
+      return api.transitionJobStage(jobId, {
         toStage,
+        outcome,
         metadata: {
           actor: "user",
           eventType: "status_update",
-          eventLabel: `Moved to ${STAGE_LABELS[toStage]}`,
+          eventLabel: `Moved to ${PIPELINE_BUCKET_LABELS[bucket]}`,
           reasonCode: "in_progress_board_drag",
         },
-      }),
+      });
+    },
   });
 
   useQueryErrorToast(boardQuery.error, "Failed to load in-progress board");
@@ -188,32 +198,29 @@ export const InProgressBoardPage: React.FC = () => {
           ? sortByCompany
           : sortByRecent;
 
-    const grouped: Record<ApplicationStage, BoardCard[]> = {
-      applied: [],
-      recruiter_screen: [],
-      assessment: [],
-      hiring_manager_screen: [],
-      technical_interview: [],
-      onsite: [],
+    const grouped: Record<PipelineBucket, BoardCard[]> = {
+      awaiting: [],
+      screening: [],
+      interview: [],
       offer: [],
-      closed: [],
+      rejected: [],
     };
 
     for (const card of cards) {
-      grouped[card.stage].push(card);
+      grouped[card.bucket].push(card);
     }
 
-    for (const stage of BOARD_STAGES) {
-      grouped[stage].sort(sortFn);
+    for (const bucket of PIPELINE_BUCKETS) {
+      grouped[bucket].sort(sortFn);
     }
 
     return grouped;
   }, [cards, sortMode]);
 
-  const handleDropToStage = React.useCallback(
-    async (toStage: ApplicationStage) => {
-      if (!dragging || dragging.fromStage === toStage) {
-        setDropTargetStage(null);
+  const handleDropToBucket = React.useCallback(
+    async (toBucket: PipelineBucket) => {
+      if (!dragging || dragging.fromBucket === toBucket) {
+        setDropTargetBucket(null);
         return;
       }
 
@@ -230,18 +237,23 @@ export const InProgressBoardPage: React.FC = () => {
         (current) =>
           (current ?? []).map((card) =>
             card.job.id === jobId
-              ? { ...card, stage: toStage, latestEventAt: nowEpoch }
+              ? {
+                  ...card,
+                  bucket: toBucket,
+                  stage: transitionForBucket(toBucket).toStage,
+                  latestEventAt: nowEpoch,
+                }
               : card,
           ),
       );
 
       try {
-        await transitionMutation.mutateAsync({ jobId, toStage });
-        toast.success(`Moved to ${STAGE_LABELS[toStage]}`);
+        await transitionMutation.mutateAsync({ jobId, bucket: toBucket });
+        toast.success(`Moved to ${PIPELINE_BUCKET_LABELS[toBucket]}`);
         await queryClient.invalidateQueries({
           queryKey: queryKeys.jobs.inProgressBoard(),
         });
-        if (toStage === "offer") {
+        if (toBucket === "offer") {
           celebrateOffer();
         }
       } catch (error) {
@@ -253,7 +265,7 @@ export const InProgressBoardPage: React.FC = () => {
       } finally {
         setMovingJobId(null);
         setDragging(null);
-        setDropTargetStage(null);
+        setDropTargetBucket(null);
       }
     },
     [dragging, queryClient, transitionMutation],
@@ -337,43 +349,47 @@ export const InProgressBoardPage: React.FC = () => {
         ) : (
           <div className="min-h-0 flex-1 overflow-x-auto pb-2">
             <div className="flex h-full min-w-max items-stretch gap-4">
-              {BOARD_STAGES.map((stage) => {
-                const laneCards = lanes[stage];
+              {PIPELINE_BUCKETS.map((bucket) => {
+                const laneCards = lanes[bucket];
                 const isCollapsedApplied =
-                  stage === "applied" && isAppliedCollapsed;
+                  bucket === "awaiting" && isAppliedCollapsed;
                 return (
                   <section
-                    key={stage}
-                    aria-label={`${STAGE_LABELS[stage]} lane`}
+                    key={bucket}
+                    aria-label={`${PIPELINE_BUCKET_LABELS[bucket]} lane`}
                     onDragOver={(event) => {
                       event.preventDefault();
-                      if (!dragging || dragging.fromStage === stage) return;
-                      setDropTargetStage(stage);
+                      if (!dragging || dragging.fromBucket === bucket) return;
+                      setDropTargetBucket(bucket);
                     }}
                     onDrop={(event) => {
                       event.preventDefault();
-                      void handleDropToStage(stage);
+                      void handleDropToBucket(bucket);
                     }}
                     onDragLeave={() => {
-                      if (dropTargetStage === stage) {
-                        setDropTargetStage(null);
+                      if (dropTargetBucket === bucket) {
+                        setDropTargetBucket(null);
                       }
                     }}
                     className={cn(
                       "flex h-full flex-col rounded-xl border border-border/70 bg-muted/30 shadow-[0_10px_24px_-20px_rgba(0,0,0,0.8)] transition-colors",
                       isCollapsedApplied ? "w-11" : "w-[320px]",
-                      dropTargetStage === stage && "border-info/70 bg-info/15",
+                      dropTargetBucket === bucket &&
+                        "border-info/70 bg-info/15",
                     )}
                   >
                     <header
+                      style={{
+                        borderTopColor: `var(--color-bucket-${bucket})`,
+                      }}
                       className={cn(
-                        "flex items-center border-b border-border/60 px-3 py-2.5",
+                        "flex items-center rounded-t-xl border-t-[3px] border-b border-border/60 px-3 py-2.5",
                         isCollapsedApplied
                           ? "flex-col gap-2"
                           : "justify-between",
                       )}
                     >
-                      {stage === "applied" && (
+                      {bucket === "awaiting" && (
                         <Button
                           type="button"
                           variant="ghost"
@@ -381,8 +397,8 @@ export const InProgressBoardPage: React.FC = () => {
                           className="h-6 w-6 shrink-0 text-muted-foreground"
                           aria-label={
                             isAppliedCollapsed
-                              ? "Expand Applied lane"
-                              : "Collapse Applied lane"
+                              ? "Expand Awaiting reply lane"
+                              : "Collapse Awaiting reply lane"
                           }
                           onClick={() =>
                             setIsAppliedCollapsed((collapsed) => !collapsed)
@@ -401,7 +417,7 @@ export const InProgressBoardPage: React.FC = () => {
                           isCollapsedApplied && "[writing-mode:vertical-rl]",
                         )}
                       >
-                        {STAGE_LABELS[stage]}
+                        {PIPELINE_BUCKET_LABELS[bucket]}
                       </h2>
                       <Badge
                         variant="outline"
@@ -431,7 +447,7 @@ export const InProgressBoardPage: React.FC = () => {
                               latestEventAt={latestEventAt}
                               jobPageLinkState={jobPageLinkState}
                               isMoving={movingJobId === job.id}
-                              cardClassName={getCardLeftAccentClass(stage)}
+                              cardClassName={getCardLeftAccentClass(bucket)}
                               onDragStart={(event) => {
                                 if (
                                   (event.target as HTMLElement).closest(
@@ -443,13 +459,13 @@ export const InProgressBoardPage: React.FC = () => {
                                 }
                                 setDragging({
                                   jobId: job.id,
-                                  fromStage: stage,
+                                  fromBucket: bucket,
                                 });
                                 event.dataTransfer.effectAllowed = "move";
                               }}
                               onDragEnd={() => {
                                 setDragging(null);
-                                setDropTargetStage(null);
+                                setDropTargetBucket(null);
                               }}
                               onLogEvent={() =>
                                 setLogEventTarget({ job, stage })

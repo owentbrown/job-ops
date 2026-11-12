@@ -285,7 +285,7 @@ const renderJobPage = (initialEntry: RouterInitialEntry = "/job/job-1/notes") =>
         <Route path="/jobs/applied" element={<div>Applied jobs</div>} />
         <Route path="/jobs/all" element={<div>All jobs</div>} />
         <Route
-          path="/applications/in-progress"
+          path="/applications/board"
           element={<div>In progress board</div>}
         />
       </Routes>
@@ -682,7 +682,7 @@ describe("JobPage back navigation", () => {
 
     await waitFor(() =>
       expect(screen.getByTestId("location-probe")).toHaveTextContent(
-        "/applications/in-progress",
+        "/applications/board",
       ),
     );
     expect(screen.getByText("In progress board")).toBeInTheDocument();

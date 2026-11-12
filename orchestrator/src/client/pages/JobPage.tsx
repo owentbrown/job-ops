@@ -122,7 +122,7 @@ const getFallbackBackTarget = (job: Job | null): string => {
     return "/jobs/applied";
   }
   if (job?.status === "in_progress") {
-    return "/applications/in-progress";
+    return "/applications/board";
   }
   return "/jobs/all";
 };

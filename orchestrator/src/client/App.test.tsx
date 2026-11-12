@@ -31,8 +31,8 @@ vi.mock("./pages/HomePage", () => ({
   HomePage: () => <div>overview</div>,
 }));
 
-vi.mock("./pages/InProgressBoardPage", () => ({
-  InProgressBoardPage: () => null,
+vi.mock("./pages/ApplicationsPage", () => ({
+  ApplicationsPage: () => <div>applications</div>,
 }));
 
 vi.mock("./pages/JobPage", () => ({
@@ -67,10 +67,6 @@ vi.mock("./pages/SignInPage", () => ({
 
 vi.mock("./pages/JobsFilteredPage", () => ({
   JobsFilteredPage: () => <div>jobs-filtered</div>,
-}));
-
-vi.mock("./pages/TrackingInboxPage", () => ({
-  TrackingInboxPage: () => null,
 }));
 
 describe("App demo banner", () => {
@@ -179,7 +175,7 @@ describe("App demo banner", () => {
     expect(screen.getByText("design-resume-page")).toBeInTheDocument();
   });
 
-  it("redirects hosted users away from Tracking Inbox", () => {
+  it("sends hosted users hitting /tracking-inbox to Applications", () => {
     vi.mocked(useDemoInfo).mockReturnValue({
       demoMode: false,
       resetCadenceHours: 6,
@@ -197,7 +193,29 @@ describe("App demo banner", () => {
       </AppModeContext.Provider>,
     );
 
-    expect(screen.getByText("overview")).toBeInTheDocument();
+    expect(screen.getByText("applications")).toBeInTheDocument();
+  });
+
+  it.each([
+    "/tracking-inbox",
+    "/applications/in-progress",
+    "/in-progress",
+    "/applications",
+  ])("%s lands on Applications", async (from) => {
+    vi.mocked(useDemoInfo).mockReturnValue({
+      demoMode: false,
+      resetCadenceHours: 6,
+      lastResetAt: null,
+      nextResetAt: null,
+      baselineVersion: null,
+      baselineName: null,
+    });
+    render(
+      <MemoryRouter initialEntries={[from]}>
+        <App />
+      </MemoryRouter>,
+    );
+    expect(await screen.findByText("applications")).toBeInTheDocument();
   });
 });
 

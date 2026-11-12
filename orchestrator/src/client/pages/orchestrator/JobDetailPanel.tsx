@@ -214,7 +214,7 @@ const getPrimaryAction = (job: Job): string => {
   if (job.status === "processing") return "Processing";
   if (job.status === "ready") return "Mark Applied";
   if (job.status === "discovered") return "Start Tailoring";
-  if (job.status === "applied") return "View in Progress Board";
+  if (job.status === "applied") return "View on Applications board";
   if (job.status === "in_progress") return "In Progress";
   if (job.status === "skipped") return "Skipped";
   if (job.status === "expired") return "Expired";
@@ -489,7 +489,7 @@ export const JobDetailPanel: React.FC<JobDetailPanelProps> = ({
         from_status: selectedJob.status,
         to_status: selectedJob.status,
       });
-      navigate("/applications/in-progress");
+      navigate("/applications/board");
       return;
     }
     setInspectorTab("brief");

@@ -652,12 +652,12 @@ describe("JobDetailPanel", () => {
     });
 
     fireEvent.click(
-      screen.getByRole("button", { name: /view in progress board/i }),
+      screen.getByRole("button", { name: /view on applications board/i }),
     );
 
     await waitFor(() =>
       expect(screen.getByTestId("location")).toHaveTextContent(
-        "/applications/in-progress",
+        "/applications/board",
       ),
     );
     expect(api.updateJob).not.toHaveBeenCalled();

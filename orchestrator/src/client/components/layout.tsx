@@ -115,11 +115,7 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
   const navOpen = controlledNavOpen ?? internalNavOpen;
   const setNavOpen = onNavOpenChange ?? setInternalNavOpen;
   const { version, updateAvailable } = useVersionCheck();
-  const { appMode } = React.useContext(AppModeContext);
-  const navLinks =
-    appMode === "hosted"
-      ? NAV_LINKS.filter(({ to }) => to !== "/tracking-inbox")
-      : NAV_LINKS;
+  const navLinks = NAV_LINKS;
 
   useEffect(() => {
     if (navOpen) {

@@ -591,7 +591,7 @@ describe("OrchestratorPage", () => {
     );
 
     expect(screen.getByTestId("location").textContent).toBe(
-      "/applications/in-progress",
+      "/applications/board",
     );
   });
 

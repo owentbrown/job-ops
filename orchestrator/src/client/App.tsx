@@ -15,15 +15,14 @@ import { CSSTransition, SwitchTransition } from "react-transition-group";
 
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
-import { AppModeContext } from "./components/layout";
 import { OnboardingGate } from "./components/OnboardingGate";
 import { useAnalyticsIdentity } from "./hooks/useAnalyticsIdentity";
 import { useDemoInfo } from "./hooks/useDemoInfo";
 import { setAuthNavigator } from "./lib/auth-navigation";
+import { ApplicationsPage } from "./pages/ApplicationsPage";
 import { DesignResumePage } from "./pages/DesignResumePage";
 import { GmailOauthCallbackPage } from "./pages/GmailOauthCallbackPage";
 import { HomePage } from "./pages/HomePage";
-import { InProgressBoardPage } from "./pages/InProgressBoardPage";
 import { JobPage } from "./pages/JobPage";
 import { JobsFilteredPage } from "./pages/JobsFilteredPage";
 import { OfflinePage } from "./pages/OfflinePage";
@@ -32,7 +31,6 @@ import { OrchestratorPage } from "./pages/OrchestratorPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { SignInPage } from "./pages/SignInPage";
 import { SsoCallbackPage } from "./pages/SsoCallbackPage";
-import { TrackingInboxPage } from "./pages/TrackingInboxPage";
 
 /** Backwards-compatibility redirects: old URL paths -> new URL paths */
 const REDIRECTS: Array<{ from: string; to: string }> = [
@@ -45,10 +43,13 @@ const REDIRECTS: Array<{ from: string; to: string }> = [
   { from: "/discovered/:jobId", to: "/jobs/discovered/:jobId" },
   { from: "/applied", to: "/jobs/applied" },
   { from: "/applied/:jobId", to: "/jobs/applied/:jobId" },
-  { from: "/in-progress", to: "/applications/in-progress" },
-  { from: "/in-progress/:jobId", to: "/applications/in-progress" },
-  { from: "/jobs/in_progress", to: "/applications/in-progress" },
-  { from: "/jobs/in_progress/:jobId", to: "/applications/in-progress" },
+  { from: "/in-progress", to: "/applications/board" },
+  { from: "/in-progress/:jobId", to: "/applications/board" },
+  { from: "/jobs/in_progress", to: "/applications/board" },
+  { from: "/jobs/in_progress/:jobId", to: "/applications/board" },
+  { from: "/applications", to: "/applications/board" },
+  { from: "/applications/in-progress", to: "/applications/board" },
+  { from: "/tracking-inbox", to: "/applications/inbox" },
   { from: "/all", to: "/jobs/all" },
   { from: "/all/:jobId", to: "/jobs/all/:jobId" },
   { from: "/watchlist", to: "/settings#sources" },
@@ -188,8 +189,8 @@ export const App: React.FC = () => {
                 <Route path="/job/:id" element={<JobPage />} />
                 <Route path="/job/:id/:view" element={<JobPage />} />
                 <Route
-                  path="/applications/in-progress"
-                  element={<InProgressBoardPage />}
+                  path="/applications/:tab"
+                  element={<ApplicationsPage />}
                 />
                 <Route path="/design-resume" element={<DesignResumePage />} />
                 <Route
@@ -204,10 +205,6 @@ export const App: React.FC = () => {
                   element={<SsoCallbackPage />}
                 />
                 <Route path="/settings" element={<SettingsPage />} />
-                <Route
-                  path="/tracking-inbox"
-                  element={<TrackingInboxRoute />}
-                />
                 <Route path="/jobs/filtered" element={<JobsFilteredPage />} />
                 <Route path="/jobs/:tab" element={<OrchestratorPage />} />
                 <Route
@@ -224,13 +221,3 @@ export const App: React.FC = () => {
     </>
   );
 };
-
-function TrackingInboxRoute() {
-  const { appMode, isPending } = React.useContext(AppModeContext);
-
-  if (isPending) return null;
-  if (appMode === "hosted") {
-    return <Navigate to="/overview" replace />;
-  }
-  return <TrackingInboxPage />;
-}

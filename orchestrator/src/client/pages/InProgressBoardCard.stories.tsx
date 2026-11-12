@@ -6,7 +6,7 @@ import {
   type InProgressBoardCardProps,
 } from "./InProgressBoardCard";
 
-const JOB_PAGE_LINK_STATE = { jobPageBackTo: "/applications/in-progress" };
+const JOB_PAGE_LINK_STATE = { jobPageBackTo: "/applications/board" };
 
 const LATEST_EVENT_AT = Math.floor(
   Date.parse("2026-05-20T14:30:00.000Z") / 1000,

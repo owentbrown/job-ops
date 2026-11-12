@@ -53,7 +53,7 @@ export function useOrchestratorNavigation({
 
   useEffect(() => {
     if (tab === "in_progress" || tab === "applied") {
-      navigate("/applications/in-progress", { replace: true });
+      navigate("/applications/board", { replace: true });
       return;
     }
     if (tab && !validTabs.includes(tab as FilterTab)) {

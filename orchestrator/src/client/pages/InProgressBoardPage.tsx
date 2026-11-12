@@ -2,7 +2,7 @@ import {
   type LogEventFormValues,
   LogEventModal,
 } from "@client/components/LogEventModal";
-import { PageFrame } from "@client/components/PageFrame";
+import { PageFrame, useIsEmbedded } from "@client/components/PageFrame";
 import {
   APPLICATION_STAGES,
   type ApplicationStage,
@@ -94,6 +94,7 @@ const resolveCurrentStage = (
 };
 
 export const InProgressBoardPage: React.FC = () => {
+  const embedded = useIsEmbedded();
   const queryClient = useQueryClient();
   const location = useLocation();
   const navigate = useNavigate();
@@ -320,7 +321,14 @@ export const InProgressBoardPage: React.FC = () => {
             </Button>
           </div>
         }
-        mainClassName="flex h-[calc(100dvh-5rem)] max-w-[1600px] flex-col"
+        mainClassName={cn(
+          "flex max-w-[1600px] flex-col",
+          // Embedded under the Applications header, tab strip and the
+          // board's own sort/Add row, so reserve that extra chrome.
+          embedded
+            ? "h-[calc(100dvh-17rem)] min-h-[24rem]"
+            : "h-[calc(100dvh-5rem)]",
+        )}
       >
         {isLoading ? (
           <div className="rounded-lg border border-dashed border-border/60 p-6 text-sm text-muted-foreground">

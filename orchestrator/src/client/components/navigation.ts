@@ -2,7 +2,6 @@ import {
   Columns3,
   FilePenLine,
   Home,
-  Inbox,
   LayoutDashboard,
   Settings,
 } from "lucide-react";
@@ -29,10 +28,10 @@ export const NAV_LINKS: NavLink[] = [
     ],
   },
   {
-    to: "/applications/in-progress",
-    label: "In Progress",
+    to: "/applications/board",
+    label: "Applications",
     icon: Columns3,
-    activePaths: ["/applications/in-progress"],
+    activePaths: ["/applications"],
   },
   {
     to: "/design-resume",
@@ -40,7 +39,6 @@ export const NAV_LINKS: NavLink[] = [
     icon: FilePenLine,
     activePaths: ["/design-resume"],
   },
-  { to: "/tracking-inbox", label: "Tracking Inbox", icon: Inbox },
   { to: "/settings", label: "Settings", icon: Settings },
 ];
 

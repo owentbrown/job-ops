@@ -4,47 +4,45 @@ import type {
   PostApplicationMessageType,
   PostApplicationRouterStageTarget,
 } from "@shared/types";
-import { POST_APPLICATION_ROUTER_STAGE_TARGETS } from "@shared/types";
+import {
+  LEGACY_STAGE_MAP,
+  POST_APPLICATION_ROUTER_STAGE_TARGETS,
+} from "@shared/types";
 
 const STAGE_TARGET_VALUES = new Set<PostApplicationRouterStageTarget>(
   POST_APPLICATION_ROUTER_STAGE_TARGETS,
 );
 
+/** Accepts current targets and converts pre-five-stage ones stored in old rows. */
 export function normalizeStageTarget(
   value: unknown,
 ): PostApplicationRouterStageTarget | null {
   if (typeof value !== "string") return null;
-  return STAGE_TARGET_VALUES.has(value as PostApplicationRouterStageTarget)
-    ? (value as PostApplicationRouterStageTarget)
-    : null;
+  if (STAGE_TARGET_VALUES.has(value as PostApplicationRouterStageTarget)) {
+    return value as PostApplicationRouterStageTarget;
+  }
+  return LEGACY_STAGE_MAP[value] ?? null;
 }
 
 export function messageTypeFromStageTarget(
   target: PostApplicationRouterStageTarget,
 ): PostApplicationMessageType {
-  if (
-    target === "assessment" ||
-    target === "hiring_manager_screen" ||
-    target === "technical_interview" ||
-    target === "onsite"
-  ) {
-    return "interview";
-  }
+  if (target === "interview") return "interview";
   if (target === "offer") return "offer";
   if (target === "rejected" || target === "withdrawn" || target === "closed") {
     return "rejection";
   }
-  if (target === "applied" || target === "recruiter_screen") return "update";
+  if (target === "applied" || target === "screening") return "update";
   return "other";
 }
 
 export function stageTargetFromMessageType(
   messageType: PostApplicationMessageType,
 ): PostApplicationRouterStageTarget {
-  if (messageType === "interview") return "technical_interview";
+  if (messageType === "interview") return "interview";
   if (messageType === "offer") return "offer";
   if (messageType === "rejection") return "rejected";
-  if (messageType === "update") return "recruiter_screen";
+  if (messageType === "update") return "screening";
   return "no_change";
 }
 

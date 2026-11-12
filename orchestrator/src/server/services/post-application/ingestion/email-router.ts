@@ -174,6 +174,7 @@ async function classifyWithSmartRouterImpl(args: {
 - Choose bestMatchIndex only from listed job numbers (1-based), or null.
 - confidence is 0..100.
 - stageTarget must be one of: ${POST_APPLICATION_ROUTER_STAGE_TARGETS.join("|")}.
+- screening = recruiter/HR call, assessment or take-home, early screen; interview = interviews with the team or hiring manager, technical or final rounds.
 - isRelevant should be true for recruitment/application lifecycle emails.
 - stageEventPayload should be minimal structured data or null.
 

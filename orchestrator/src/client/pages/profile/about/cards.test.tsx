@@ -227,7 +227,7 @@ describe("SkillMapCard", () => {
     };
   };
 
-  it("plots skills with quadrant labels, explanation and a screen-reader list", () => {
+  it("plots skills as dots with quadrant labels and a screen-reader list", () => {
     const onEdit = vi.fn();
     render(<SkillMapCard {...props("ok")} onEdit={onEdit} />);
     for (const label of [
@@ -239,27 +239,78 @@ describe("SkillMapCard", () => {
       expect(screen.getAllByText(label).length).toBeGreaterThan(0);
     }
     expect(
-      screen.getByText(/31 best-fit jobs that mention it/),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/\(Cross-functional alignment: 81%\)/),
-    ).toBeInTheDocument();
-    expect(
       screen.getByRole("heading", { name: "Skills to prove next" }),
     ).toBeInTheDocument();
-    // Main axis labels stay; the two small axis captions are gone.
+    // Main axis labels stay; the explanation block is gone.
     expect(screen.getByText("Jobs ask for it more →")).toBeInTheDocument();
     expect(screen.getByText("You can back it up better →")).toBeInTheDocument();
-    expect(screen.queryByText("Listed, or used in a role")).toBeNull();
-    expect(screen.queryByText("Backed by a number or a story")).toBeNull();
+    expect(screen.queryByText(/best-fit jobs? that mention it/)).toBeNull();
+    expect(screen.queryByText(/how much proof/)).toBeNull();
     expect(
       screen.getByText("AI/ML: 62% of best-fit jobs, proof 0.5 of 3"),
     ).toBeInTheDocument();
 
-    fireEvent.click(screen.getByRole("button", { name: "Edit skills" }));
+    // Dots only: no always-visible text labels inside the plot.
+    const plot = screen.getByTestId("skill-plot");
+    expect(within(plot).queryByText("AI/ML")).toBeNull();
+    expect(within(plot).queryByRole("tooltip")).toBeNull();
+    // Every dot is a labelled button.
+    const dots = within(plot).getAllByRole("button");
+    expect(dots).toHaveLength(props("ok").skills.length);
+    expect(
+      within(plot).getByRole("button", {
+        name: "AI/ML: 62% of your 31 best-fit jobs, listed on your resume",
+      }),
+    ).toBeInTheDocument();
+  });
+
+  it("shows a tooltip on hover and on keyboard focus", () => {
+    render(<SkillMapCard {...props("ok")} onEdit={vi.fn()} />);
+    const plot = screen.getByTestId("skill-plot");
+    const ai = within(plot).getByRole("button", { name: /^AI\/ML:/ });
+
+    fireEvent.mouseEnter(ai);
+    let tip = screen.getByRole("tooltip");
+    expect(tip).toHaveTextContent("AI/ML");
+    expect(tip).toHaveTextContent("Asked for in 62% of your 31 best-fit jobs");
+    expect(tip).toHaveTextContent("Proof: listed on your resume");
+    expect(ai).toHaveAttribute("aria-describedby", tip.id);
+    expect(ai).toHaveAttribute("data-active");
+    fireEvent.mouseLeave(ai);
+    expect(screen.queryByRole("tooltip")).toBeNull();
+
+    const lead = within(plot).getByRole("button", {
+      name: /^Cross-functional alignment:/,
+    });
+    fireEvent.focus(lead);
+    tip = screen.getByRole("tooltip");
+    expect(tip).toHaveTextContent("Cross-functional alignment");
+    expect(tip).toHaveTextContent("Proof: backed by a story");
+    fireEvent.blur(lead);
+    expect(screen.queryByRole("tooltip")).toBeNull();
+  });
+
+  it("puts Edit skills and Refresh with AI directly below the plot", () => {
+    const onEdit = vi.fn();
+    render(<SkillMapCard {...props("ok")} onEdit={onEdit} />);
+    const plot = screen.getByTestId("skill-plot");
+    const actions = screen.getByTestId("skill-actions");
+    expect(
+      plot.compareDocumentPosition(actions) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    const heading = screen.getByRole("heading", { name: "Skill map" });
+    expect(heading.parentElement?.parentElement).not.toContainElement(
+      within(actions).getByRole("button", { name: "Edit skills" }),
+    );
+
+    fireEvent.click(
+      within(actions).getByRole("button", { name: "Edit skills" }),
+    );
     expect(onEdit).toHaveBeenCalledWith({ kind: "edit-skills" });
     onEdit.mockClear();
-    fireEvent.click(screen.getByRole("button", { name: "Refresh with AI" }));
+    fireEvent.click(
+      within(actions).getByRole("button", { name: "Refresh with AI" }),
+    );
     expect(onEdit).toHaveBeenCalledWith({ kind: "edit-skills" });
   });
 

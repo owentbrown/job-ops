@@ -159,6 +159,7 @@ function buildTailoredPdfContent(job: Job): TailoredPdfContent {
     summary: job.tailoredSummary ?? "",
     headline: job.tailoredHeadline ?? "",
     skills: parseTailoredSkills(job.tailoredSkills),
+    experienceBullets: job.selectedExperienceBullets ?? null,
   };
 }
 

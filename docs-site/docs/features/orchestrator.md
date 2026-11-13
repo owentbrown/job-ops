@@ -174,12 +174,48 @@ PDF generation uses:
 - base resume selected from RxResume
 - job description
 - tailored summary/headline/skills/projects
+- the job's experience bullet selection (see below)
 - the configured PDF renderer (`rxresume` export or local LaTeX via `tectonic`)
 
 Common paths:
 
 - Discovered to finalization: `POST /api/jobs/actions` with `{ "action": "move_to_ready", "jobIds": ["<jobId>"] }`
 - Ready regeneration: `POST /api/jobs/:id/generate-pdf`
+
+### Trimming experience bullets per job
+
+Keep every bullet for every role in your base resume: scoring, fit assessment,
+search terms and Ghostwriter all read the full history. Each job's tailored PDF
+can keep a shorter list.
+
+- Tailoring picks which bullets to keep for each role. Defaults: 3-4 for the two
+  most recent roles, 2 for mid-career roles and 0-1 for the oldest roles.
+- In the Tailor workspace, open **Experience Bullets** to review the picks.
+  Untick a bullet to drop it from this job's PDF, use **Keep all** on a role (or
+  **Keep all bullets**) to undo, or **Pick again with AI**.
+- In the personal LaTeX layout, trailing roles left with at most one bullet are
+  grouped under **Earlier Experience**.
+- Jobs without a selection (for example, tailored before this feature) render
+  every bullet, exactly as before.
+- Only the job description and each role's id, company, position, dates and
+  bullet text are sent to the model for this step.
+
+The selection is stored per job as `selectedExperienceBullets`: a JSON object
+mapping experience item ids to 0-based bullet indices. Send `""` or `null` to
+clear it:
+
+```bash
+curl -X PATCH "http://localhost:3001/api/jobs/<jobId>" \
+  -H "content-type: application/json" \
+  -d '{ "selectedExperienceBullets": "{\"<experienceItemId>\":[0,2,3]}" }'
+```
+
+```bash
+curl -X POST "http://localhost:3001/api/jobs/<jobId>/summarize?force=true&fields=bullets"
+```
+
+If you edit a role's bullets in the base resume later, stored indices still
+point at positions in the list, so review the job's picks before regenerating.
 
 ### Regenerating PDFs after edits (copy-pasteable examples)
 

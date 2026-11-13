@@ -213,6 +213,7 @@ export interface Job {
   tailoredHeadline: string | null; // Generated resume headline
   tailoredSkills: string | null; // Generated resume skills (JSON)
   selectedProjectIds: string | null; // Comma-separated IDs of selected projects
+  selectedExperienceBullets?: string | null; // JSON { experienceItemId: keptBulletIndices[] } for the tailored PDF; null keeps all bullets
   pdfPath: string | null; // Path to generated PDF
   pdfSource: JobPdfSource | null; // Whether PDF was system-generated or user-uploaded
   pdfRegenerating: boolean; // Whether a PDF generation/regeneration is currently in progress for this job
@@ -580,6 +581,7 @@ export interface UpdateJobInput {
   tailoredHeadline?: string;
   tailoredSkills?: string;
   selectedProjectIds?: string;
+  selectedExperienceBullets?: string | null;
   pdfPath?: string;
   pdfSource?: JobPdfSource | null;
   pdfRegenerating?: boolean;

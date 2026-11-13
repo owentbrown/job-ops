@@ -16,6 +16,10 @@ import { setCoverLetter } from "@server/repositories/cover-letter";
 import { generateCoverLetter } from "@server/services/cover-letter/generate";
 import { getPrivateDataScope } from "@server/tenancy/private-scope";
 import { createLocationIntentFromLegacyInputs } from "@shared/location-domain.js";
+import {
+  extractExperienceBulletCatalog,
+  serializeExperienceBulletSelection,
+} from "@shared/resume-experience-bullets";
 import { resolveResumeProjectSelection } from "@shared/resume-projects";
 import type {
   CreateJobInput,
@@ -27,6 +31,7 @@ import { getDataDir } from "../config/dataDir";
 import * as jobsRepo from "../repositories/jobs";
 import * as pipelineRepo from "../repositories/pipeline";
 import * as settingsRepo from "../repositories/settings";
+import { pickExperienceBulletsForJob } from "../services/experienceBulletSelection";
 import {
   refundHostedUsageReservation,
   reserveHostedUsage,
@@ -812,7 +817,7 @@ export async function runPipeline(
 
 export type ProcessJobOptions = {
   force?: boolean;
-  fields?: Array<"summary" | "headline" | "skills" | "projects">;
+  fields?: Array<"summary" | "headline" | "skills" | "projects" | "bullets">;
   requestOrigin?: string | null;
   analyticsOrigin?:
     | "move_to_ready"
@@ -876,6 +881,8 @@ export async function summarizeJob(
         shouldUpdateAllTailoring || requestedFields.includes("skills");
       const shouldUpdateProjects =
         shouldUpdateAllTailoring || requestedFields.includes("projects");
+      const shouldUpdateBullets =
+        shouldUpdateAllTailoring || requestedFields.includes("bullets");
       const shouldGenerateTailoring =
         shouldUpdateSummary || shouldUpdateHeadline || shouldUpdateSkills;
 
@@ -975,7 +982,40 @@ export async function summarizeJob(
         }
       }
 
+      // 3. Select experience bullets for the tailored PDF. The base resume
+      // keeps every bullet; null (no selection / failure) keeps them all.
+      let selectedExperienceBullets = job.selectedExperienceBullets ?? null;
+      let bulletsUpdated = false;
+      if (
+        shouldUpdateBullets &&
+        (options?.force || !selectedExperienceBullets)
+      ) {
+        const bulletCatalog = extractExperienceBulletCatalog(profile);
+        if (bulletCatalog.some((item) => item.bullets.length > 0)) {
+          await reserveTailoringUsage();
+          const picked = await pickExperienceBulletsForJob({
+            jobDescription: job.jobDescription || "",
+            catalog: bulletCatalog,
+            jobId: job.id,
+          });
+          if (picked) {
+            tailoringUsageSucceeded = true;
+            selectedExperienceBullets =
+              serializeExperienceBulletSelection(picked) || null;
+            bulletsUpdated = true;
+            jobLogger.info("Selected experience bullets", {
+              roles: Object.keys(picked).length,
+              keptBullets: Object.values(picked).reduce(
+                (total, indices) => total + indices.length,
+                0,
+              ),
+            });
+          }
+        }
+      }
+
       await jobsRepo.updateJob(job.id, {
+        ...(bulletsUpdated ? { selectedExperienceBullets } : {}),
         ...(shouldUpdateSummary
           ? { tailoredSummary: tailoredSummary ?? undefined }
           : {}),
@@ -1068,6 +1108,7 @@ export async function generateFinalPdf(
           summary: job.tailoredSummary || "",
           headline: job.tailoredHeadline || "",
           skills: job.tailoredSkills ? JSON.parse(job.tailoredSkills) : [],
+          experienceBullets: job.selectedExperienceBullets ?? null,
         },
         job.jobDescription || "",
         undefined, // deprecated baseResumePath parameter

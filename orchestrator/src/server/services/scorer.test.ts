@@ -371,6 +371,48 @@ describe("salary penalty", () => {
   });
 
   describe("profile prompt sanitization", () => {
+    it("scores against every experience bullet even when the job has a bullet selection", async () => {
+      const { scoreJobSuitability } = await import("./scorer");
+      getEffectiveSettingsMock.mockResolvedValue({
+        penalizeMissingSalary: { value: false, default: false, override: null },
+        missingSalaryPenalty: { value: 10, default: 10, override: null },
+        scoringInstructions: { value: "", default: "", override: null },
+        rxresumeBaseResumeId: "base-resume-123",
+      } as any);
+      const bullets = ["Led migration", "Cut costs", "Hired team", "Old work"];
+
+      await scoreJobSuitability(
+        createJob({
+          id: "bullet-selection-score",
+          // The tailored PDF keeps only the first bullet of this role.
+          selectedExperienceBullets: JSON.stringify({ exp1: [0] }),
+        }),
+        {
+          sections: {
+            experience: {
+              items: [
+                {
+                  id: "exp1",
+                  hidden: false,
+                  company: "Acme",
+                  position: "Lead",
+                  period: "2020 - Present",
+                  description: `<ul>${bullets
+                    .map((bullet) => `<li><p>${bullet}</p></li>`)
+                    .join("")}</ul>`,
+                },
+              ],
+            },
+          },
+        },
+      );
+
+      for (const bullet of bullets) {
+        expect(getScoringPrompt()).toContain(bullet);
+      }
+      expect(getScoringPrompt()).not.toContain("selectedExperienceBullets");
+    });
+
     it("omits globally excluded projects from scoring", async () => {
       const { scoreJobSuitability } = await import("./scorer");
       getEffectiveSettingsMock.mockResolvedValue({

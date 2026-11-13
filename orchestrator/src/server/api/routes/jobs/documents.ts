@@ -35,6 +35,7 @@ const tailoringGenerateFields = [
   "summary",
   "headline",
   "skills",
+  "bullets",
   "projects",
 ] as const;
 type TailoringGenerateField = (typeof tailoringGenerateFields)[number];

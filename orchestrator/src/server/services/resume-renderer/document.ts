@@ -1,3 +1,7 @@
+import {
+  extractResumeHtmlBullets,
+  stripResumeHtml,
+} from "@shared/resume-experience-bullets";
 import type { ChatStyleManualLanguage } from "@shared/types";
 import type {
   LatexResumeContactItem,
@@ -145,47 +149,8 @@ function joinNonEmpty(
     .join(separator);
 }
 
-function decodeHtml(value: string): string {
-  return value
-    .replace(/&nbsp;/gi, " ")
-    .replace(/&amp;/gi, "&")
-    .replace(/&lt;/gi, "<")
-    .replace(/&gt;/gi, ">")
-    .replace(/&quot;/gi, '"')
-    .replace(/&#39;/gi, "'");
-}
-
-function stripHtml(value: string): string {
-  return decodeHtml(
-    value
-      .replace(/<br\s*\/?>/gi, "\n")
-      .replace(/<\/p>\s*<p[^>]*>/gi, "\n")
-      .replace(/<\/li>\s*<li[^>]*>/gi, "\n")
-      .replace(
-        /<(?!strong\b|b\b|em\b|i\b|\/strong\b|\/b\b|\/em\b|\/i\b)\/?[a-zA-Z0-9]+(?:\s+[^>]*)?>/gi,
-        " ",
-      ),
-  )
-    .replace(/\s*\n\s*/g, "\n")
-    .replace(/[ \t]+/g, " ")
-    .trim();
-}
-
-function extractBullets(value: unknown): string[] {
-  if (typeof value !== "string" || !value.trim()) return [];
-
-  const listItems = [...value.matchAll(/<li[^>]*>([\s\S]*?)<\/li>/gi)]
-    .map((match) => stripHtml(match[1] ?? ""))
-    .filter(Boolean);
-  if (listItems.length > 0) return listItems;
-
-  const cleaned = stripHtml(value);
-  if (!cleaned) return [];
-  return cleaned
-    .split(/\n+/)
-    .map((line) => line.trim())
-    .filter(Boolean);
-}
+const stripHtml = stripResumeHtml;
+const extractBullets = extractResumeHtmlBullets;
 
 function getSectionRecord(resumeJson: RecordLike, key: string): RecordLike {
   const sections = (asRecord(resumeJson.sections) ?? {}) as RecordLike;

@@ -3,7 +3,7 @@ import {
   useProfileEntries,
   useProfileMutations,
 } from "@client/hooks/useProfileInsights";
-import { STARTER_SKILL_GROUPS } from "@shared/profile/starter-skills";
+import { starterSkillItems as sharedStarterSkillItems } from "@shared/profile/starter-skills";
 import {
   type SkillItem,
   type SkillsEntry,
@@ -29,18 +29,12 @@ import {
 import { type FieldErrors, validate } from "./validation";
 
 /**
- * The list the server uses when nothing is saved: the starter groups. Saved
- * keywords are plain whole-word terms (the server stores starter prefixes the
- * same way on refresh).
+ * The list the server uses when nothing is saved: the starter groups. Prefix
+ * keywords keep their trailing "*" ("prioriti*"), so saving the list keeps
+ * them matching word starts.
  */
 export function starterSkillItems(): SkillItem[] {
-  return STARTER_SKILL_GROUPS.map((g) => ({
-    id: g.id,
-    label: g.label,
-    keywords: g.keywords.map((k) => k.term),
-    hidden: false,
-    source: "starter" as const,
-  }));
+  return sharedStarterSkillItems();
 }
 
 /** Friendly copy for the refresh route's failure codes. */
@@ -135,6 +129,7 @@ const SkillRow: React.FC<{
             items={item.keywords}
             onChange={(keywords) => edit({ keywords })}
             placeholder="A word jobs use, e.g. roadmap"
+            hint="End with * to match word starts, e.g. prioriti*"
             maxLength={80}
             error={keywordError}
           />

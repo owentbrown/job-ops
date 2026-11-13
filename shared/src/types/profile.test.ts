@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { STARTER_SKILL_GROUPS } from "../profile/starter-skills";
+import {
+  parseSavedKeyword,
+  STARTER_SKILL_GROUPS,
+  toSavedKeyword,
+} from "../profile/starter-skills";
 import {
   BrandEntrySchema,
   PitchEntrySchema,
@@ -93,5 +97,43 @@ describe("starter skills", () => {
       expect(g.keywords.length).toBeGreaterThan(0);
       for (const kw of g.keywords) expect(kw.term.trim()).toBe(kw.term);
     }
+  });
+});
+
+describe("saved keyword prefix marker", () => {
+  it("round-trips starter keywords", () => {
+    expect(toSavedKeyword({ term: "prioriti", prefix: true })).toBe(
+      "prioriti*",
+    );
+    expect(toSavedKeyword({ term: "roadmap" })).toBe("roadmap");
+    for (const g of STARTER_SKILL_GROUPS) {
+      for (const k of g.keywords) {
+        expect(parseSavedKeyword(toSavedKeyword(k))).toEqual(k);
+      }
+    }
+  });
+
+  it("parses a trailing * as prefix and ignores a bare *", () => {
+    expect(parseSavedKeyword(" user stor* ")).toEqual({
+      term: "user stor",
+      prefix: true,
+    });
+    expect(parseSavedKeyword("SQL")).toEqual({ term: "SQL" });
+    expect(parseSavedKeyword("*")).toEqual({ term: "", prefix: true });
+  });
+
+  it("saved starter items pass the skills schema", () => {
+    expect(() =>
+      SkillsEntrySchema.parse({
+        items: STARTER_SKILL_GROUPS.map((g) => ({
+          id: g.id,
+          label: g.label,
+          keywords: g.keywords.map(toSavedKeyword),
+          hidden: false,
+          source: "starter",
+        })),
+        refreshedAt: null,
+      }),
+    ).not.toThrow();
   });
 });

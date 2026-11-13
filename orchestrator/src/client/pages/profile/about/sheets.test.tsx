@@ -328,6 +328,34 @@ describe("SkillsSheet", () => {
     expect(data.refreshedAt).toBeNull();
   });
 
+  it("keeps starter prefix keywords as term* when saved", async () => {
+    render(<SkillsSheet open onOpenChange={vi.fn()} />);
+    save();
+    await waitFor(() => expect(m.saveEntry.mutateAsync).toHaveBeenCalled());
+    const { data } = m.saveEntry.mutateAsync.mock.calls[0][0];
+    const roadmap = data.items.find((i: { id: string }) => i.id === "roadmap");
+    expect(roadmap.keywords).toEqual(["roadmap", "prioriti*"]);
+  });
+
+  it("shows prefix keywords and accepts a new one ending in *", async () => {
+    render(<SkillsSheet open onOpenChange={vi.fn()} />);
+    expect(screen.getByText("prioriti*")).toBeInTheDocument();
+    const field = screen.getByLabelText(
+      "Keywords for Roadmap & prioritization",
+    );
+    expect(field).toHaveAccessibleDescription(
+      "End with * to match word starts, e.g. prioriti*",
+    );
+    fireEvent.change(field, { target: { value: "sequenc*" } });
+    fireEvent.keyDown(field, { key: "Enter" });
+    save();
+    await waitFor(() => expect(m.saveEntry.mutateAsync).toHaveBeenCalled());
+    const { data } = m.saveEntry.mutateAsync.mock.calls[0][0];
+    const roadmap = data.items.find((i: { id: string }) => i.id === "roadmap");
+    expect(roadmap.keywords).toEqual(["roadmap", "prioriti*", "sequenc*"]);
+    expect(roadmap.source).toBe("user");
+  });
+
   it("adds a skill", async () => {
     render(<SkillsSheet open onOpenChange={vi.fn()} />);
     const input = screen.getByLabelText("Add a skill");

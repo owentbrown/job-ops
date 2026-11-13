@@ -180,4 +180,49 @@ describe("currentSkillItems", () => {
     expect(items.length).toBe(16);
     expect(items.every((i) => i.source === "starter" && !i.hidden)).toBe(true);
   });
+
+  it("keeps starter prefix keywords as term*", () => {
+    const items = currentSkillItems(null);
+    const kw = (id: string) => items.find((i) => i.id === id)?.keywords;
+    expect(kw("roadmap")).toEqual(["roadmap", "prioriti*"]);
+    expect(kw("pricing")).toEqual(["pricing", "monetiz*"]);
+    expect(kw("kpis")).toEqual(["KPI*", "metrics", "OKR*"]);
+    expect(kw("technical")).toContain("API*");
+    expect(kw("agile")).toContain("user stor*");
+  });
+});
+
+describe("prefix keywords through a refresh", () => {
+  it("sanitize keeps a trailing *", () => {
+    expect(
+      sanitizeAiSkills([
+        { label: "Roadmap", keywords: [" prioriti* ", "roadmap"] },
+      ]),
+    ).toEqual([{ label: "Roadmap", keywords: ["prioriti*", "roadmap"] }]);
+  });
+
+  it("merge preserves * on kept, updated and added items", () => {
+    const current = currentSkillItems(null);
+    const { entry } = mergeRefreshedSkills(
+      [
+        ...current.filter((i) => i.id === "pricing"),
+        item({
+          id: "mine",
+          label: "Mine",
+          keywords: ["monetiz*"],
+          source: "user",
+        }),
+      ],
+      [
+        { label: "Pricing & monetization", keywords: ["pricing", "monetiz*"] },
+        { label: "Delivery", keywords: ["ship*"] },
+      ],
+      NOW,
+    );
+    const kw = (label: string) =>
+      entry.items.find((i) => i.label === label)?.keywords;
+    expect(kw("Pricing & monetization")).toEqual(["pricing", "monetiz*"]);
+    expect(kw("Mine")).toEqual(["monetiz*"]);
+    expect(kw("Delivery")).toEqual(["ship*"]);
+  });
 });

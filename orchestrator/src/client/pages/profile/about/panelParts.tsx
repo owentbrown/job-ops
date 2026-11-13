@@ -99,10 +99,16 @@ export const ChipListEditor: React.FC<{
   items: string[];
   onChange: (items: string[]) => void;
   placeholder?: string;
+  /** Short helper text under the input, linked with aria-describedby. */
+  hint?: string;
   error?: string;
   maxLength?: number;
-}> = ({ label, items, onChange, placeholder, error, maxLength }) => {
+}> = ({ label, items, onChange, placeholder, hint, error, maxLength }) => {
   const id = useId();
+  const describedBy =
+    [hint ? `${id}-hint` : null, error ? `${id}-error` : null]
+      .filter(Boolean)
+      .join(" ") || undefined;
   const [draft, setDraft] = useState("");
   const add = () => {
     const value = draft.trim();
@@ -142,7 +148,7 @@ export const ChipListEditor: React.FC<{
           maxLength={maxLength}
           placeholder={placeholder}
           aria-invalid={error ? true : undefined}
-          aria-describedby={error ? `${id}-error` : undefined}
+          aria-describedby={describedBy}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter") {
@@ -155,6 +161,11 @@ export const ChipListEditor: React.FC<{
           Add<span className="sr-only"> {label}</span>
         </Button>
       </div>
+      {hint ? (
+        <p id={`${id}-hint`} className="text-xs text-muted-foreground">
+          {hint}
+        </p>
+      ) : null}
       <FieldError id={`${id}-error`} message={error} />
     </div>
   );

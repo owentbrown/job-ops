@@ -14,7 +14,7 @@ import {
   upsertSingleton,
 } from "@server/repositories/profile-entries";
 import { getPrivateDataScope } from "@server/tenancy/private-scope";
-import { STARTER_SKILL_GROUPS } from "@shared/profile/starter-skills";
+import { starterSkillItems } from "@shared/profile/starter-skills";
 import {
   type ProfileSkillsRefreshResponse,
   type SkillItem,
@@ -56,7 +56,7 @@ const SKILLS_SCHEMA: JsonSchemaDefinition = {
               type: "array",
               items: { type: "string" },
               description:
-                "Plain words or phrases that show the skill in a job description",
+                "Plain words or phrases that show the skill in a job description. End a word start with * to match every ending, e.g. prioriti*",
             },
           },
           required: ["label", "keywords"],
@@ -72,13 +72,7 @@ const SKILLS_SCHEMA: JsonSchemaDefinition = {
 /** The stored list, or the starter groups when nothing is saved yet. */
 export function currentSkillItems(skills: SkillsEntry | null): SkillItem[] {
   if (skills) return skills.items;
-  return STARTER_SKILL_GROUPS.map((g) => ({
-    id: g.id,
-    label: g.label,
-    keywords: g.keywords.map((k) => k.term),
-    hidden: false,
-    source: "starter" as const,
-  }));
+  return starterSkillItems();
 }
 
 /** Highest-scoring best-fit jobs first, as plain text trimmed to 1,500 chars. */
@@ -207,6 +201,7 @@ function buildPrompt(descriptions: string[], current: SkillItem[]): string {
     `Read the job descriptions below and return up to ${MAX_AI_SKILLS} skill groups that these jobs ask for most often, most common first.`,
     "For each group give a short label and the plain words or phrases (keywords) that show the skill in a job description.",
     "Keywords are matched case-insensitively as whole words, so use terms that literally appear in job text (e.g. 'roadmap', 'stakeholder', 'SQL'), not descriptions. Give 2 to 8 keywords per group.",
+    "To match the start of a word, end the keyword with * (e.g. 'prioriti*' matches 'prioritize' and 'prioritization'). Keep keywords that already end in * when you reuse them.",
     "Reuse a label from the current list, spelled exactly the same, when it is the same skill. Do not return skills marked hiddenByUser.",
     "",
     "## Current skill list",

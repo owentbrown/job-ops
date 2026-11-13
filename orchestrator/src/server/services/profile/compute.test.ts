@@ -319,6 +319,37 @@ describe("best-fit jobs and demand", () => {
     expect(res.skills[0]).toMatchObject({ demandPct: 100, source: "ai" });
     expect(res.skillsRefreshedAt).toBe("2026-11-01T00:00:00.000Z");
   });
+
+  it("treats a saved keyword ending in * as a prefix match", () => {
+    const skills = (keywords: string[]) =>
+      entries({
+        skills: {
+          refreshedAt: null,
+          items: [
+            {
+              id: "p",
+              label: "Prioritization",
+              keywords,
+              hidden: false,
+              source: "user",
+            },
+          ],
+        },
+      });
+    const run = (description: string, keywords: string[]) =>
+      computeProfileInsights(
+        input({
+          jobs: [job({ description: `${LONG} ${description}` })],
+          entries: skills(keywords),
+        }),
+      ).skills[0].demandPct;
+    expect(run("Strong prioritization skills", ["prioriti*"])).toBe(100);
+    expect(run("Prioritise the backlog", ["prioriti*"])).toBe(100);
+    // Still anchored at a word start: no mid-word match.
+    expect(run("We reprioritize often", ["prioriti*"])).toBe(0);
+    // Without the * it stays whole-word.
+    expect(run("Strong prioritization skills", ["prioriti"])).toBe(0);
+  });
 });
 
 describe("role families", () => {

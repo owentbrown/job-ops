@@ -4,6 +4,7 @@
  */
 
 import {
+  parseSavedKeyword,
   STARTER_SKILL_GROUPS,
   type StarterSkillKeyword,
 } from "@shared/profile/starter-skills";
@@ -186,7 +187,8 @@ function keywordRegex(keyword: StarterSkillKeyword): RegExp {
  * (letters and digits on either side break a match, so "rapid" never matches
  * "API"). A simple plural (-s / -es) still counts as the whole word, so
  * "stakeholder" matches "stakeholders". A prefix keyword drops the end
- * boundary.
+ * boundary. Saved keywords mark a prefix with a trailing "*" ("prioriti*");
+ * skillDefs parses that into `prefix: true`.
  */
 export function matchSkill(
   text: string,
@@ -240,7 +242,7 @@ function skillDefs(skills: SkillsEntry | null): SkillDef[] {
     .map((item) => ({
       id: item.id,
       label: item.label,
-      keywords: item.keywords.map((term) => ({ term })),
+      keywords: item.keywords.map(parseSavedKeyword),
       source: item.source,
     }));
 }

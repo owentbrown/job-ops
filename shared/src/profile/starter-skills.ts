@@ -5,6 +5,10 @@
  * With `prefix: true` the end boundary is dropped, so "prioriti" matches
  * "prioritise", "prioritization" and "prioritizing". Terms are plain text
  * (never regex source); the matcher escapes them.
+ *
+ * Saved skill keywords (SkillItem.keywords) are plain strings, so a prefix
+ * keyword is saved with a trailing "*" ("prioriti*"). Use toSavedKeyword /
+ * parseSavedKeyword to convert between the two forms.
  */
 export interface StarterSkillKeyword {
   term: string;
@@ -141,3 +145,43 @@ export const STARTER_SKILL_GROUPS: StarterSkillGroup[] = [
     keywords: [k("financial model"), k("P&L"), k("forecast")],
   },
 ];
+
+/** Marks a saved keyword as a prefix match: "prioriti*". */
+export const PREFIX_MARKER = "*";
+
+/** Starter keyword to its saved string form ("prioriti" + prefix -> "prioriti*"). */
+export function toSavedKeyword(keyword: StarterSkillKeyword): string {
+  const term = keyword.term.trim();
+  return keyword.prefix ? `${term}${PREFIX_MARKER}` : term;
+}
+
+/**
+ * Saved keyword string to a matcher keyword: a trailing "*" (one or more)
+ * makes it a prefix match. "*" on its own gives an empty term, which the
+ * matcher ignores.
+ */
+export function parseSavedKeyword(saved: string): StarterSkillKeyword {
+  const trimmed = saved.trim();
+  const term = trimmed.replace(/\*+$/, "").trim();
+  return term.length < trimmed.length ? { term, prefix: true } : { term };
+}
+
+/**
+ * The starter groups as saved skill items (structurally a SkillItem), with
+ * prefix keywords in their "term*" form so saving them keeps prefix matching.
+ */
+export function starterSkillItems(): {
+  id: string;
+  label: string;
+  keywords: string[];
+  hidden: boolean;
+  source: "starter";
+}[] {
+  return STARTER_SKILL_GROUPS.map((g) => ({
+    id: g.id,
+    label: g.label,
+    keywords: g.keywords.map(toSavedKeyword),
+    hidden: false,
+    source: "starter" as const,
+  }));
+}

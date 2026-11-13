@@ -190,7 +190,7 @@ type ProductEventMap = {
   };
   resume_studio_import_completed: {
     source: "file" | "rxresume";
-    file_type?: "pdf" | "docx" | "unknown";
+    file_type?: "pdf" | "docx" | "json" | "unknown";
     result: "success" | "error";
     was_reimport: boolean;
     section_count_bucket: string;

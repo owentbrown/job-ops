@@ -147,6 +147,23 @@ export function htmlToText(html: string): string {
   return normalizeWhitespace(decodeEntities(stripHtmlTags(html ?? "")));
 }
 
+const SUMMARY_LINE_MAX = 200;
+
+/**
+ * Brand-line fallback from the resume summary: the first sentence as plain
+ * text. A first sentence over 200 characters is cut at the last word
+ * boundary with an ellipsis (200 characters at most).
+ */
+export function summaryLine(html: string): string {
+  const text = htmlToText(html).trim();
+  if (!text) return "";
+  const first = text.match(/^.*?[.!?](?=\s|$)/)?.[0] ?? text;
+  if (first.length <= SUMMARY_LINE_MAX) return first.trim();
+  const cut = first.slice(0, SUMMARY_LINE_MAX - 1);
+  const space = cut.lastIndexOf(" ");
+  return `${(space > 0 ? cut.slice(0, space) : cut).replace(/[\s,;:–—-]+$/, "")}…`;
+}
+
 /**
  * Bullets of an HTML description: the text of each <li>. Without list items,
  * each paragraph / line counts as one bullet, so plain-text descriptions still
@@ -876,17 +893,22 @@ export function computeProfileInsights(
   };
 
   // Brand, pitch, values, stories -------------------------------------------
+  // Without a saved line, describe the person (first summary sentence)
+  // rather than repeat their job title; the headline is the last resort.
   const savedLine = entries.brand?.line.trim() ?? "";
+  const summary = resume ? summaryLine(resume.summary) : "";
   const headline = resume?.basics.headline.trim() ?? "";
-  const brandLine = savedLine || headline || null;
+  const brandLine = savedLine || summary || headline || null;
   const brand = {
     initials: initialsOf(resume?.basics.name ?? ""),
     line: brandLine,
     lineSource: savedLine
       ? ("saved" as const)
-      : headline
-        ? ("headline" as const)
-        : ("none" as const),
+      : summary
+        ? ("summary" as const)
+        : headline
+          ? ("headline" as const)
+          : ("none" as const),
     targetRoles: searchTerms,
     location: resume?.basics.location.trim() || null,
     industries: entries.brand?.industries ?? [],

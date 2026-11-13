@@ -158,9 +158,12 @@ export type RoleTag = "Core fit" | "Step up" | "Adjacent" | "Stretch";
 export interface ProfileBrandInsight {
   /** Up to two letters from the resume name. */
   initials: string;
-  /** Saved brand line, else resume headline, else null. */
+  /**
+   * Saved brand line, else the first sentence of the resume summary (plain
+   * text, at most 200 characters), else the resume headline, else null.
+   */
   line: string | null;
-  lineSource: "saved" | "headline" | "none";
+  lineSource: "saved" | "summary" | "headline" | "none";
   targetRoles: string[];
   location: string | null;
   industries: string[];

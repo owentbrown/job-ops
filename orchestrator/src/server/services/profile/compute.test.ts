@@ -19,6 +19,7 @@ import {
   roleFamilyFor,
   roleTag,
   splitBullets,
+  summaryLine,
 } from "./compute";
 
 const NOW = new Date("2026-11-12T12:00:00Z");
@@ -899,6 +900,51 @@ describe("brand, pitch, values and stories", () => {
       location: "Toronto, ON",
       industries: ["Insurance"],
     });
+  });
+
+  it("falls back to the first summary sentence, not the job title", () => {
+    const res = computeProfileInsights(
+      input({
+        resume: resume({
+          summary:
+            "<p>Operator who turns <strong>strategy</strong> into execution. Ten years in insurance.</p>",
+        }),
+      }),
+    );
+    expect(res.brand).toMatchObject({
+      line: "Operator who turns strategy into execution.",
+      lineSource: "summary",
+    });
+  });
+
+  it("prefers a saved line over the summary", () => {
+    const res = computeProfileInsights(
+      input({
+        resume: resume({ summary: "<p>Operator.</p>" }),
+        entries: entries({ brand: { line: " Saved line ", industries: [] } }),
+      }),
+    );
+    expect(res.brand).toMatchObject({
+      line: "Saved line",
+      lineSource: "saved",
+    });
+  });
+
+  it("summaryLine keeps one sentence of at most 200 characters", () => {
+    expect(summaryLine("")).toBe("");
+    expect(summaryLine("<p>  </p>")).toBe("");
+    expect(summaryLine("No full stop here")).toBe("No full stop here");
+    expect(summaryLine("<p>Builds teams! Ships things.</p>")).toBe(
+      "Builds teams!",
+    );
+    // A dot inside a number is not a sentence end.
+    expect(summaryLine("Grew revenue 2.5x in a year. Then more.")).toBe(
+      "Grew revenue 2.5x in a year.",
+    );
+    const long = `${"word ".repeat(60).trim()}. Second sentence.`;
+    const line = summaryLine(long);
+    expect(line.length).toBeLessThanOrEqual(200);
+    expect(line.endsWith("word…")).toBe(true);
   });
 
   it("counts every theme and ranks top stories", () => {

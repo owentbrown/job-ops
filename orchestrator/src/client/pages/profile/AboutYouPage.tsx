@@ -127,7 +127,7 @@ export const AboutYouPage: React.FC = () => {
                 {...panelProps("edit-brand")}
                 targetRoles={data.brand.targetRoles}
                 fallbackLine={
-                  data.brand.lineSource === "headline" ? data.brand.line : null
+                  data.brand.lineSource === "saved" ? null : data.brand.line
                 }
               />
             ) : null}

@@ -1,9 +1,21 @@
-import { toAppError } from "@infra/errors";
+import { type AppError, badRequest, notFound, toAppError } from "@infra/errors";
 import { fail, ok } from "@infra/http";
+import { logger } from "@infra/logger";
 import { isDemoMode } from "@server/config/demo";
 import { DEMO_PROJECT_CATALOG } from "@server/config/demo-defaults";
+import {
+  createStory,
+  deleteStory,
+  updateStory,
+  upsertSingleton,
+} from "@server/repositories/profile-entries";
 import { getDesignResumeStatus } from "@server/services/design-resume";
 import { clearProfileCache, getProfile } from "@server/services/profile";
+import { computeProfileInsights } from "@server/services/profile/compute";
+import {
+  loadProfileEntries,
+  loadProfileInsightsInput,
+} from "@server/services/profile/load";
 import { extractProjectsFromProfile } from "@server/services/resumeProjects";
 import {
   clearRxResumeResumeCache,
@@ -11,7 +23,12 @@ import {
   RxResumeAuthConfigError,
 } from "@server/services/rxresume";
 import { getConfiguredRxResumeBaseResumeId } from "@server/services/rxresume/baseResumeId";
+import {
+  type ProfileEntriesResponse,
+  ProfileSingletonKindSchema,
+} from "@shared/types";
 import { type Request, type Response, Router } from "express";
+import { z } from "zod";
 
 export const profileRouter = Router();
 
@@ -103,5 +120,119 @@ profileRouter.post("/refresh", async (_req: Request, res: Response) => {
     ok(res, profile);
   } catch (error) {
     fail(res, toAppError(error));
+  }
+});
+
+// ---------------------------------------------------------------------------
+// About you: insights and profile entries
+// ---------------------------------------------------------------------------
+
+/** Name-based, so a ZodError from the shared package's zod copy still counts. */
+function isZodError(error: unknown): error is z.ZodError {
+  return (
+    error instanceof z.ZodError ||
+    (error instanceof Error &&
+      error.name === "ZodError" &&
+      Array.isArray((error as { issues?: unknown }).issues))
+  );
+}
+
+/** Zod failures become a 400 with a readable message; the rest as usual. */
+function profileError(error: unknown, label: string): AppError {
+  const err = isZodError(error)
+    ? badRequest(
+        error.issues
+          .map(
+            (i) => (i.path.length ? `${i.path.join(".")}: ` : "") + i.message,
+          )
+          .join("; "),
+        { issues: error.issues },
+      )
+    : toAppError(error);
+  logger[err.status >= 500 ? "error" : "warn"](label, {
+    status: err.status,
+    code: err.code,
+  });
+  return err;
+}
+
+/**
+ * GET /api/profile/insights - computed About you insights
+ */
+profileRouter.get("/insights", async (_req: Request, res: Response) => {
+  try {
+    ok(res, computeProfileInsights(await loadProfileInsightsInput()));
+  } catch (error) {
+    fail(res, profileError(error, "Profile insights failed"));
+  }
+});
+
+/**
+ * GET /api/profile/entries - every saved profile entry for this user
+ */
+profileRouter.get("/entries", async (_req: Request, res: Response) => {
+  try {
+    const { singletonsUpdatedAt: _ignored, ...entries } =
+      await loadProfileEntries();
+    const body: ProfileEntriesResponse = entries;
+    ok(res, body);
+  } catch (error) {
+    fail(res, profileError(error, "Profile entries read failed"));
+  }
+});
+
+/**
+ * PUT /api/profile/entries/:kind - upsert a singleton (brand, pitch, values,
+ * skills). Stories use the /stories routes.
+ */
+profileRouter.put("/entries/:kind", async (req: Request, res: Response) => {
+  try {
+    const kind = ProfileSingletonKindSchema.safeParse(req.params.kind);
+    if (!kind.success) {
+      throw badRequest(
+        req.params.kind === "story"
+          ? "Stories are saved through /api/profile/stories."
+          : `Unknown profile entry kind: ${req.params.kind}`,
+      );
+    }
+    ok(res, await upsertSingleton(kind.data, req.body));
+  } catch (error) {
+    fail(res, profileError(error, "Profile entry save failed"));
+  }
+});
+
+/**
+ * POST /api/profile/stories - create a story
+ */
+profileRouter.post("/stories", async (req: Request, res: Response) => {
+  try {
+    ok(res, await createStory(req.body), 201);
+  } catch (error) {
+    fail(res, profileError(error, "Profile story create failed"));
+  }
+});
+
+/**
+ * PUT /api/profile/stories/:id - replace a story
+ */
+profileRouter.put("/stories/:id", async (req: Request, res: Response) => {
+  try {
+    const row = await updateStory(req.params.id, req.body);
+    if (!row) throw notFound("Story not found");
+    ok(res, row);
+  } catch (error) {
+    fail(res, profileError(error, "Profile story update failed"));
+  }
+});
+
+/**
+ * DELETE /api/profile/stories/:id - delete a story
+ */
+profileRouter.delete("/stories/:id", async (req: Request, res: Response) => {
+  try {
+    if (!(await deleteStory(req.params.id))) throw notFound("Story not found");
+    ok(res, { deleted: true });
+  } catch (error) {
+    fail(res, profileError(error, "Profile story delete failed"));
   }
 });

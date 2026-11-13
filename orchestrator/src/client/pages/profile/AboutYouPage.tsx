@@ -1,33 +1,75 @@
 import { PageFrame } from "@client/components/PageFrame";
-import { useDesignResume } from "@client/hooks/useDesignResume";
-import { useSettings } from "@client/hooks/useSettings";
-import { COVER_LETTER_STUDIO, RESUME_STUDIO_BASE } from "@client/lib/routes";
+import {
+  useProfileInsights,
+  useProfileMutations,
+} from "@client/hooks/useProfileInsights";
+import { RESUME_STUDIO_BASE } from "@client/lib/routes";
 import { UserRound } from "lucide-react";
 import type React from "react";
-import { Link } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { showErrorToast } from "@/client/lib/error-toast";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { AboutSkeleton } from "./about/AboutSkeleton";
+import { BrandBanner } from "./about/BrandBanner";
+import { DocumentsBanner } from "./about/DocumentsBanner";
+import { LandingCard } from "./about/LandingCard";
+import { PitchCard } from "./about/PitchCard";
+import type { AboutPanel } from "./about/parts";
+import { RolesCard } from "./about/RolesCard";
+import { SkillMapCard } from "./about/SkillMapCard";
+import { StoryBankCard } from "./about/StoryBankCard";
+import { StrengthSheet } from "./about/StrengthSheet";
+import { ValuesCard } from "./about/ValuesCard";
 
-/** Resume summaries are stored as HTML; show them as plain text. */
-const htmlToText = (html: string): string => {
-  if (!html) return "";
-  const doc = new DOMParser().parseFromString(html, "text/html");
-  return (doc.body.textContent ?? "").replace(/\s+/g, " ").trim();
-};
-
-const Chip: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <li className="rounded-full bg-muted px-3 py-1 text-sm">{children}</li>
+const NoResumeCard: React.FC = () => (
+  <Card>
+    <CardContent className="space-y-2 pt-(--density-pad)">
+      <p className="text-sm">Your profile is built from your resume.</p>
+      <Link
+        to={RESUME_STUDIO_BASE}
+        className="inline-block text-sm font-medium text-primary hover:underline"
+      >
+        Import your resume in Document Studio
+      </Link>
+    </CardContent>
+  </Card>
 );
 
 export const AboutYouPage: React.FC = () => {
-  const { document, isLoading } = useDesignResume();
-  const { settings } = useSettings();
-  const json = document?.resumeJson;
-  const basics = json?.basics;
-  const headline = basics?.headline || basics?.name || "Your profile";
-  const summary = htmlToText(json?.summary?.content ?? "");
-  const strengths = (json?.sections?.skills?.items ?? [])
-    .filter((item) => !item.hidden && item.name)
-    .map((item) => item.name);
-  const targets = settings?.searchTerms?.value ?? [];
+  const insights = useProfileInsights();
+  const { refreshSkills } = useProfileMutations();
+  const navigate = useNavigate();
+  const [strengthOpen, setStrengthOpen] = useState(false);
+  // Edit panels arrive in the next step; the page already tracks which one
+  // is asked for.
+  const [openPanel, setOpenPanel] = useState<AboutPanel | null>(null);
+
+  const onEdit = (panel: AboutPanel) => {
+    setStrengthOpen(false);
+    if (panel.kind === "edit-resume") {
+      navigate(RESUME_STUDIO_BASE);
+      return;
+    }
+    setOpenPanel(panel);
+  };
+
+  const onRefreshSkills = () => {
+    refreshSkills.mutate(undefined, {
+      onSuccess: (result) => {
+        toast.success(
+          `Skills refreshed from ${result.jobsUsed} jobs: ${result.added} new, ${result.updated} updated`,
+        );
+      },
+      onError: (error) => {
+        showErrorToast(error, "Skill refresh failed");
+      },
+    });
+  };
+
+  const data = insights.data;
 
   return (
     <PageFrame
@@ -35,93 +77,64 @@ export const AboutYouPage: React.FC = () => {
       title="About you"
       subtitle="Who you are and what you're aiming for"
     >
-      {isLoading ? (
-        <p className="text-sm text-muted-foreground">Loading…</p>
-      ) : !document ? (
-        <section className="rounded-xl border bg-card p-6">
-          <p className="text-sm">Your profile is built from your resume.</p>
-          <Link
-            to={RESUME_STUDIO_BASE}
-            className="mt-2 inline-block text-sm font-medium text-primary hover:underline"
-          >
-            Import your resume in Document Studio
-          </Link>
-        </section>
-      ) : (
-        <>
-          <section className="space-y-3 rounded-xl border bg-card p-6">
-            <h2 className="text-2xl font-semibold tracking-tight">
-              {headline}
-            </h2>
-            {basics?.location ? (
-              <p className="text-sm text-muted-foreground">{basics.location}</p>
-            ) : null}
-            {summary ? (
-              <p className="max-w-3xl text-sm leading-relaxed">{summary}</p>
-            ) : null}
-          </section>
-          <div className="grid gap-4 md:grid-cols-2">
-            <section className="space-y-3 rounded-xl border bg-card p-5">
-              <h3 className="text-base font-semibold">Core strengths</h3>
-              {strengths.length ? (
-                <ul className="flex flex-wrap gap-2">
-                  {strengths.map((s) => (
-                    <Chip key={s}>{s}</Chip>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  Add skills in your resume.
-                </p>
-              )}
-            </section>
-            <section className="space-y-3 rounded-xl border bg-card p-5">
-              <div className="flex items-center justify-between gap-2">
-                <h3 className="text-base font-semibold">Target roles</h3>
-                <Link
-                  to="/jobs/ready"
-                  className="text-sm text-primary hover:underline"
-                >
-                  Edit in Jobs
-                </Link>
-              </div>
-              {targets.length ? (
-                <ul className="flex flex-wrap gap-2">
-                  {targets.map((t) => (
-                    <Chip key={t}>{t}</Chip>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  Set search terms on the Jobs page.
-                </p>
-              )}
-            </section>
-          </div>
-        </>
-      )}
-      <section className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-dashed p-5">
-        <div>
-          <p className="font-medium">Your documents are built from this page</p>
-          <p className="text-sm text-muted-foreground">
-            Change your resume and every tailored copy starts from it.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Link
-            to={RESUME_STUDIO_BASE}
-            className="rounded-md border px-3 py-2 text-sm hover:bg-accent"
-          >
-            Open resume
-          </Link>
-          <Link
-            to={COVER_LETTER_STUDIO}
-            className="rounded-md border px-3 py-2 text-sm hover:bg-accent"
-          >
-            Cover letter voice
-          </Link>
-        </div>
-      </section>
+      <div
+        className="space-y-4"
+        data-open-panel={openPanel ? openPanel.kind : undefined}
+      >
+        {insights.isLoading ? (
+          <AboutSkeleton />
+        ) : !data ? (
+          <Card>
+            <CardContent className="flex flex-wrap items-center justify-between gap-3 pt-(--density-pad)">
+              <p className="text-sm">We couldn't load your profile.</p>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => void insights.refetch()}
+              >
+                Try again
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            {data.dataState === "no-resume" ? (
+              <NoResumeCard />
+            ) : (
+              <BrandBanner
+                brand={data.brand}
+                strength={data.strength}
+                bestFitJobCount={data.bestFitJobCount}
+                onEdit={onEdit}
+                onOpenStrength={() => setStrengthOpen(true)}
+              />
+            )}
+            <PitchCard pitch={data.pitch} onEdit={onEdit} />
+            <SkillMapCard
+              dataState={data.dataState}
+              skills={data.skills}
+              bestFitJobCount={data.bestFitJobCount}
+              refreshedAt={data.skillsRefreshedAt}
+              onEdit={onEdit}
+              onRefresh={onRefreshSkills}
+              refreshing={refreshSkills.isPending}
+            />
+            <RolesCard dataState={data.dataState} roles={data.roles} />
+            <div className="grid gap-4 lg:grid-cols-2">
+              <StoryBankCard stories={data.stories} onEdit={onEdit} />
+              <ValuesCard values={data.values} onEdit={onEdit} />
+            </div>
+            <LandingCard landing={data.landing} />
+            <StrengthSheet
+              open={strengthOpen}
+              onOpenChange={setStrengthOpen}
+              strength={data.strength}
+              onEdit={onEdit}
+            />
+          </>
+        )}
+        <DocumentsBanner />
+      </div>
     </PageFrame>
   );
 };

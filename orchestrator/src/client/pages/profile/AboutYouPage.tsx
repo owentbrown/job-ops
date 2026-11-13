@@ -127,7 +127,10 @@ export const AboutYouPage: React.FC = () => {
               />
             ) : null}
             {openPanel?.kind === "edit-pitch" ? (
-              <PitchSheet {...panelProps("edit-pitch")} />
+              <PitchSheet
+                {...panelProps("edit-pitch")}
+                autoWrite={"autoWrite" in openPanel && openPanel.autoWrite}
+              />
             ) : null}
             {openPanel?.kind === "add-story" ? (
               <StorySheet {...panelProps("add-story")} />

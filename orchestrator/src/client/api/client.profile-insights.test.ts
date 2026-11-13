@@ -74,6 +74,22 @@ describe("profile insights API client", () => {
     ]);
   });
 
+  it("posts an AI writing request and returns the draft", async () => {
+    const fetchSpy = vi
+      .spyOn(global, "fetch")
+      .mockResolvedValueOnce(ok({ line: "Draft line" }));
+    await expect(
+      api.writeProfileDraft({ target: "brand", notes: "B2B" }),
+    ).resolves.toEqual({ line: "Draft line" });
+    const [url, init] = fetchSpy.mock.calls[0];
+    expect(url).toBe("/api/profile/ai/write");
+    expect(init?.method).toBe("POST");
+    expect(JSON.parse(String(init?.body))).toEqual({
+      target: "brand",
+      notes: "B2B",
+    });
+  });
+
   it("posts a skills refresh", async () => {
     const fetchSpy = vi
       .spyOn(global, "fetch")

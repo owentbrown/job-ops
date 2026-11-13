@@ -8,7 +8,9 @@ import { cn } from "@/lib/utils";
  */
 export type AboutPanel =
   | { kind: ProfileActionId | "edit-skills" }
-  | { kind: "edit-story"; storyId: string };
+  | { kind: "edit-story"; storyId: string }
+  /** Opens the pitch panel and starts an AI draft right away. */
+  | { kind: "edit-pitch"; autoWrite: true };
 
 export type OnEdit = (panel: AboutPanel) => void;
 

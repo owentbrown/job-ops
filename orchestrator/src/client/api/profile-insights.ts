@@ -1,6 +1,8 @@
 import type {
   BrandEntry,
   PitchEntry,
+  ProfileAiDraftByTarget,
+  ProfileAiWriteRequest,
   ProfileEntriesResponse,
   ProfileEntryRow,
   ProfileInsightsResponse,
@@ -68,5 +70,18 @@ export async function deleteStory(id: string): Promise<{ deleted: true }> {
 export async function refreshSkills(): Promise<ProfileSkillsRefreshResponse> {
   return fetchApi<ProfileSkillsRefreshResponse>("/profile/skills/refresh", {
     method: "POST",
+  });
+}
+
+/**
+ * AI draft for one About you panel. Nothing is saved; the panel fills its
+ * fields with the draft. 400 on a bad body, 502 when the model fails.
+ */
+export async function writeProfileDraft<R extends ProfileAiWriteRequest>(
+  request: R,
+): Promise<ProfileAiDraftByTarget[R["target"]]> {
+  return fetchApi<ProfileAiDraftByTarget[R["target"]]>("/profile/ai/write", {
+    method: "POST",
+    body: JSON.stringify(request),
   });
 }

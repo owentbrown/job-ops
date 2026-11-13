@@ -27,6 +27,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { AiAssist } from "./AiAssist";
 import {
   EntriesGate,
   FieldError,
@@ -141,6 +142,24 @@ const StoryForm: React.FC<{
 
   return (
     <form onSubmit={submit} className="space-y-5" noValidate>
+      <AiAssist
+        target="story"
+        hasContent={[title, metric, ...Object.values(star)].some(
+          (t) => t.trim() !== "",
+        )}
+        current={() => ({ title, themes, ...star, metric: metric || null })}
+        onDraft={(draft) => {
+          setTitle(draft.title);
+          setThemes(draft.themes);
+          setStar({
+            situation: draft.situation,
+            task: draft.task,
+            action: draft.action,
+            result: draft.result,
+          });
+          setMetric(draft.metric ?? "");
+        }}
+      />
       <div className="space-y-2">
         <Label htmlFor={`${id}-title`}>Title</Label>
         <Input

@@ -154,6 +154,22 @@ describe("PitchCard", () => {
     expect(screen.queryByRole("group", { name: "Pitch length" })).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "Write your pitch" }));
     expect(onEdit).toHaveBeenCalledWith({ kind: "edit-pitch" });
+    fireEvent.click(screen.getByRole("button", { name: "Write with AI" }));
+    expect(onEdit).toHaveBeenLastCalledWith({
+      kind: "edit-pitch",
+      autoWrite: true,
+    });
+  });
+
+  it("offers an AI rewrite once a pitch exists", () => {
+    const onEdit = vi.fn();
+    const { pitch } = makeInsights("ok");
+    render(<PitchCard pitch={pitch} onEdit={onEdit} />);
+    fireEvent.click(screen.getByRole("button", { name: "Rewrite with AI" }));
+    expect(onEdit).toHaveBeenCalledWith({
+      kind: "edit-pitch",
+      autoWrite: true,
+    });
   });
 });
 

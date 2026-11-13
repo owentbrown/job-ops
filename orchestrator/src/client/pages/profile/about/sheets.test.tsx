@@ -67,7 +67,12 @@ const mut = (): Mut => ({
   isPending: false,
 });
 let m: Record<
-  "saveEntry" | "createStory" | "updateStory" | "deleteStory" | "refreshSkills",
+  | "saveEntry"
+  | "createStory"
+  | "updateStory"
+  | "deleteStory"
+  | "refreshSkills"
+  | "aiWrite",
   Mut
 >;
 
@@ -79,6 +84,7 @@ beforeEach(() => {
     updateStory: mut(),
     deleteStory: mut(),
     refreshSkills: mut(),
+    aiWrite: mut(),
   };
   vi.mocked(useProfileMutations).mockImplementation(() => m as never);
   vi.mocked(useProfileEntries).mockReturnValue({
@@ -445,5 +451,154 @@ describe("SkillsSheet", () => {
     render(<SkillsSheet open onOpenChange={vi.fn()} />);
     fireEvent.click(screen.getByRole("button", { name: "Refresh with AI" }));
     expect(await screen.findByRole("alert")).toHaveTextContent(message);
+  });
+});
+
+describe("AI writing", () => {
+  const aiButton = (name: RegExp | string) =>
+    screen.getByRole("button", { name });
+
+  it("drafts the pitch from notes and current text, and saves only on Save", async () => {
+    m.aiWrite.mutateAsync.mockResolvedValue({
+      s15: "AI fifteen",
+      s30: "AI thirty",
+      s60: "AI sixty",
+    });
+    render(<PitchSheet open onOpenChange={vi.fn()} />);
+    fireEvent.change(screen.getByLabelText("Your thoughts (optional)"), {
+      target: { value: "  Stress AI products  " },
+    });
+    // Existing text, so it offers a rewrite.
+    fireEvent.click(aiButton("Rewrite with AI"));
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("15-second pitch")).toHaveValue(
+        "AI fifteen",
+      ),
+    );
+    expect(m.aiWrite.mutateAsync).toHaveBeenCalledWith({
+      target: "pitch",
+      notes: "Stress AI products",
+      current: { s15: "Short pitch", s30: "", s60: "" },
+    });
+    expect(screen.getByLabelText("30-second pitch")).toHaveValue("AI thirty");
+    expect(screen.getByLabelText("60-second pitch")).toHaveValue("AI sixty");
+    expect(m.saveEntry.mutateAsync).not.toHaveBeenCalled();
+
+    save();
+    await waitFor(() =>
+      expect(m.saveEntry.mutateAsync).toHaveBeenCalledWith({
+        kind: "pitch",
+        data: expect.objectContaining({ s15: "AI fifteen", s60: "AI sixty" }),
+      }),
+    );
+  });
+
+  it("starts a pitch draft on open when asked", async () => {
+    m.aiWrite.mutateAsync.mockResolvedValue({ s15: "a", s30: "b", s60: "c" });
+    render(<PitchSheet open onOpenChange={vi.fn()} autoWrite />);
+    await waitFor(() =>
+      expect(screen.getByLabelText("30-second pitch")).toHaveValue("b"),
+    );
+    expect(m.aiWrite.mutateAsync).toHaveBeenCalledTimes(1);
+    expect(m.aiWrite.mutateAsync).toHaveBeenCalledWith(
+      expect.objectContaining({ target: "pitch" }),
+    );
+  });
+
+  it("fills a new story and lists follow-up questions", async () => {
+    m.aiWrite.mutateAsync.mockResolvedValue({
+      title: "Churn fix",
+      themes: ["analytics"],
+      situation: "Churn rising",
+      task: "Find why",
+      action: "Ran interviews",
+      result: "Churn down [X%]",
+      metric: null,
+      followUps: ["By how much did churn drop?"],
+    });
+    render(<StorySheet open onOpenChange={vi.fn()} />);
+    fireEvent.click(aiButton("Write with AI"));
+
+    await waitFor(() =>
+      expect(screen.getByLabelText("Title")).toHaveValue("Churn fix"),
+    );
+    expect(m.aiWrite.mutateAsync).toHaveBeenCalledWith({
+      target: "story",
+      current: {
+        title: "",
+        themes: [],
+        situation: "",
+        task: "",
+        action: "",
+        result: "",
+        metric: null,
+      },
+    });
+    expect(screen.getByLabelText("Result")).toHaveValue("Churn down [X%]");
+    expect(screen.getByRole("button", { name: "Analytics" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(
+      within(
+        screen.getByRole("list", { name: "Follow-up questions" }),
+      ).getByText("By how much did churn drop?"),
+    ).toBeInTheDocument();
+    expect(m.createStory.mutateAsync).not.toHaveBeenCalled();
+  });
+
+  it("fills values and sliders", async () => {
+    m.aiWrite.mutateAsync.mockResolvedValue({
+      items: [{ label: "Autonomy", starred: true }],
+      ideal: { size: 20, management: 70, office: 10 },
+    });
+    render(<ValuesSheet open onOpenChange={vi.fn()} />);
+    fireEvent.click(aiButton("Rewrite with AI"));
+    await waitFor(() =>
+      expect(screen.getByText("Autonomy")).toBeInTheDocument(),
+    );
+    expect(screen.queryByText("Ownership")).toBeNull();
+    expect(screen.getByLabelText("Hands-on to Managing")).toHaveValue("70");
+    expect(m.saveEntry.mutateAsync).not.toHaveBeenCalled();
+  });
+
+  it("fills the brand line", async () => {
+    m.aiWrite.mutateAsync.mockResolvedValue({ line: "AI brand line" });
+    render(
+      <MemoryRouter>
+        <BrandSheet open onOpenChange={vi.fn()} targetRoles={[]} />
+      </MemoryRouter>,
+    );
+    fireEvent.click(aiButton("Rewrite with AI"));
+    await waitFor(() =>
+      expect(screen.getByLabelText("Brand line")).toHaveValue("AI brand line"),
+    );
+    expect(m.aiWrite.mutateAsync).toHaveBeenCalledWith({
+      target: "brand",
+      current: { line: "Ops lead", industries: ["Insurance"] },
+    });
+  });
+
+  it("shows a busy state while writing", () => {
+    m.aiWrite.isPending = true;
+    render(<PitchSheet open onOpenChange={vi.fn()} />);
+    expect(aiButton("Writing…")).toBeDisabled();
+  });
+
+  it("shows an error and keeps the fields when the AI fails", async () => {
+    m.aiWrite.mutateAsync.mockRejectedValue(
+      new ApiClientError("AI writing failed", { status: 502 }),
+    );
+    render(
+      <MemoryRouter>
+        <BrandSheet open onOpenChange={vi.fn()} targetRoles={[]} />
+      </MemoryRouter>,
+    );
+    fireEvent.click(aiButton("Rewrite with AI"));
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "The AI couldn't write a draft just now",
+    );
+    expect(screen.getByLabelText("Brand line")).toHaveValue("Ops lead");
   });
 });

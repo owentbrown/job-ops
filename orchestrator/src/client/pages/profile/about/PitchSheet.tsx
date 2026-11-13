@@ -13,6 +13,7 @@ import { toast } from "sonner";
 import { showErrorToast } from "@/client/lib/error-toast";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { AiAssist } from "./AiAssist";
 import {
   EntriesGate,
   FieldError,
@@ -51,7 +52,8 @@ const toggle = (list: string[], item: string) =>
 const PitchForm: React.FC<{
   entries: ProfileEntriesResponse;
   onDone: () => void;
-}> = ({ entries, onDone }) => {
+  autoWrite?: boolean;
+}> = ({ entries, onDone, autoWrite = false }) => {
   const id = useId();
   const { saveEntry } = useProfileMutations();
   const initial = entries.pitch ?? EMPTY;
@@ -99,6 +101,15 @@ const PitchForm: React.FC<{
 
   return (
     <form onSubmit={submit} className="space-y-5" noValidate>
+      <AiAssist
+        target="pitch"
+        hasContent={Object.values(text).some((t) => t.trim() !== "")}
+        current={() => text}
+        onDraft={(draft) =>
+          setText({ s15: draft.s15, s30: draft.s30, s60: draft.s60 })
+        }
+        autoStart={autoWrite}
+      />
       {PITCH_LENGTHS.map(({ key, label, target }) => (
         <div key={key} className="space-y-2">
           <Label htmlFor={`${id}-${key}`}>{label}</Label>
@@ -166,7 +177,9 @@ const PitchForm: React.FC<{
 export const PitchSheet: React.FC<{
   open: boolean;
   onOpenChange: (open: boolean) => void;
-}> = ({ open, onOpenChange }) => {
+  /** Start an AI draft as soon as the panel opens. */
+  autoWrite?: boolean;
+}> = ({ open, onOpenChange, autoWrite = false }) => {
   const entries = useProfileEntries();
   return (
     <PanelSheet
@@ -177,7 +190,11 @@ export const PitchSheet: React.FC<{
     >
       <EntriesGate query={entries}>
         {(data) => (
-          <PitchForm entries={data} onDone={() => onOpenChange(false)} />
+          <PitchForm
+            entries={data}
+            autoWrite={autoWrite}
+            onDone={() => onOpenChange(false)}
+          />
         )}
       </EntriesGate>
     </PanelSheet>

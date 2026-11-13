@@ -1,6 +1,7 @@
 import * as api from "@client/api";
 import type { ProfileSingletonData } from "@client/api/profile-insights";
 import type {
+  ProfileAiWriteRequest,
   ProfileEntriesResponse,
   ProfileInsightsResponse,
   ProfileSingletonKind,
@@ -79,5 +80,18 @@ export function useProfileMutations() {
     onSuccess,
   });
 
-  return { saveEntry, createStory, updateStory, deleteStory, refreshSkills };
+  // Returns a draft only; nothing is saved, so no cache to refresh.
+  const aiWrite = useMutation({
+    mutationFn: (request: ProfileAiWriteRequest) =>
+      api.writeProfileDraft(request),
+  });
+
+  return {
+    saveEntry,
+    createStory,
+    updateStory,
+    deleteStory,
+    refreshSkills,
+    aiWrite,
+  };
 }

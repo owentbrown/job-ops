@@ -11,8 +11,12 @@ vi.mock("@client/hooks/useProfileInsights", () => ({
 
 // Sheets have their own tests; here we only check which one opens.
 const { stub } = vi.hoisted(() => ({
-  stub: (name: string) => (p: { open: boolean; storyId?: string | null }) =>
-    p.open ? `${name}${p.storyId ? `:${p.storyId}` : ""}` : null,
+  stub:
+    (name: string) =>
+    (p: { open: boolean; storyId?: string | null; autoWrite?: boolean }) =>
+      p.open
+        ? `${name}${p.storyId ? `:${p.storyId}` : ""}${p.autoWrite ? ":ai" : ""}`
+        : null,
 }));
 vi.mock("./about/BrandSheet", () => ({ BrandSheet: stub("brand-sheet") }));
 vi.mock("./about/PitchSheet", () => ({ PitchSheet: stub("pitch-sheet") }));
@@ -139,6 +143,7 @@ describe("AboutYouPage", () => {
   it.each([
     ["Edit brand", "brand-sheet"],
     ["Edit pitch", "pitch-sheet"],
+    ["Rewrite with AI", "pitch-sheet:ai"],
     ["Add story", "story-sheet"],
     ["Edit values", "values-sheet"],
     ["Edit skills", "skills-sheet"],

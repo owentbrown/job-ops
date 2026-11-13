@@ -1,5 +1,5 @@
 import type { ProfilePitchInsight } from "@shared/types";
-import { BookOpen, Heart, Pencil } from "lucide-react";
+import { BookOpen, Heart, Pencil, Sparkles } from "lucide-react";
 import type React from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -30,24 +30,37 @@ export const PitchCard: React.FC<{
   const text = pitch[length].trim();
   const { stories, values } = pitch.builtFrom;
   const edit = () => onEdit({ kind: "edit-pitch" });
+  const writeWithAi = () => onEdit({ kind: "edit-pitch", autoWrite: true });
 
   return (
     <Card aria-labelledby="about-pitch">
       <CardContent className="space-y-4 pt-(--density-pad)">
         <CardHeading id="about-pitch" title="Elevator pitch">
           {pitch.isEmpty ? null : (
-            <Button size="sm" variant="outline" onClick={edit}>
-              <Pencil aria-hidden />
-              Edit<span className="sr-only"> pitch</span>
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button size="sm" variant="ghost" onClick={writeWithAi}>
+                <Sparkles aria-hidden />
+                Rewrite with AI
+              </Button>
+              <Button size="sm" variant="outline" onClick={edit}>
+                <Pencil aria-hidden />
+                Edit<span className="sr-only"> pitch</span>
+              </Button>
+            </div>
           )}
         </CardHeading>
         {pitch.isEmpty ? (
           <EmptyState
             action={
-              <Button size="sm" onClick={edit}>
-                Write your pitch
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button size="sm" onClick={writeWithAi}>
+                  <Sparkles aria-hidden />
+                  Write with AI
+                </Button>
+                <Button size="sm" variant="outline" onClick={edit}>
+                  Write your pitch
+                </Button>
+              </div>
             }
           >
             Say who you are and what you're aiming for in 15, 30 and 60 seconds.

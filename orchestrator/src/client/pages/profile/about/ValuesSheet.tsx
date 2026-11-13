@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { AiAssist } from "./AiAssist";
 import { EntriesGate, FieldError, PanelFooter, PanelSheet } from "./panelParts";
 import { type FieldErrors, validate } from "./validation";
 
@@ -69,6 +70,15 @@ const ValuesForm: React.FC<{ initial: ValuesEntry; onDone: () => void }> = ({
 
   return (
     <form onSubmit={submit} className="space-y-5" noValidate>
+      <AiAssist
+        target="values"
+        hasContent={items.length > 0}
+        current={() => ({ items, ideal })}
+        onDraft={(draft) => {
+          setItems(draft.items);
+          setIdeal(draft.ideal);
+        }}
+      />
       <div className="space-y-2">
         <Label htmlFor={`${id}-value`}>What matters to you</Label>
         {items.length ? (

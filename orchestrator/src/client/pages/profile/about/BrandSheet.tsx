@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { showErrorToast } from "@/client/lib/error-toast";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { AiAssist } from "./AiAssist";
 import {
   ChipListEditor,
   EntriesGate,
@@ -59,6 +60,12 @@ const BrandForm: React.FC<{
 
   return (
     <form onSubmit={submit} className="space-y-5" noValidate>
+      <AiAssist
+        target="brand"
+        hasContent={line.trim() !== ""}
+        current={() => ({ line, industries })}
+        onDraft={(draft) => setLine(draft.line)}
+      />
       <div className="space-y-2">
         <Label htmlFor={`${id}-line`}>Brand line</Label>
         <Textarea

@@ -9,6 +9,7 @@ import {
   bestFitJobs,
   bulletHasNumber,
   computeProfileInsights,
+  htmlToText,
   matchSkill,
   type ProfileInsightsInput,
   type ProfileJobRow,
@@ -151,6 +152,31 @@ describe("matchSkill", () => {
       true,
     );
     expect(matchSkill("a.b", [{ term: "." }])).toBe(false);
+  });
+});
+
+describe("htmlToText", () => {
+  it("decodes entities and leaves out-of-range code points as text", () => {
+    expect(htmlToText("<p>P&amp;L &#8211; R&#x26;D</p>")).toBe(
+      "P&L \u2013 R&D",
+    );
+    expect(htmlToText("bad &#99999999; and &#x110000; here")).toBe(
+      "bad &#99999999; and &#x110000; here",
+    );
+  });
+
+  it("does not break insights when a job description has a bad entity", () => {
+    const jobs = Array.from({ length: 6 }, () =>
+      job({ description: `${LONG} SQL &#99999999;` }),
+    );
+    expect(() =>
+      computeProfileInsights(
+        input({
+          jobs,
+          resume: resume({ summary: "<p>&#x7FFFFFFF;</p>" }),
+        }),
+      ),
+    ).not.toThrow();
   });
 });
 

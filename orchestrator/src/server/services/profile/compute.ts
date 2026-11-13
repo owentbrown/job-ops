@@ -133,7 +133,10 @@ function decodeEntities(value: string): string {
         code[1] === "x" || code[1] === "X"
           ? Number.parseInt(code.slice(2), 16)
           : Number.parseInt(code.slice(1), 10);
-      return Number.isFinite(n) ? String.fromCodePoint(n) : match;
+      // fromCodePoint throws a RangeError past U+10FFFF; leave those as text.
+      return Number.isFinite(n) && n >= 0 && n <= 0x10ffff
+        ? String.fromCodePoint(n)
+        : match;
     }
     return ENTITIES[code.toLowerCase()] ?? match;
   });

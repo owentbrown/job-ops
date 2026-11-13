@@ -6,9 +6,11 @@ import type { OnEdit } from "./parts";
 import { StrengthRing } from "./StrengthRing";
 
 /**
- * Brand home header in the theme's sidebar colours (sidebar / sidebar
- * foreground / sidebar accent are contrast-tested pairs in every theme).
+ * Brand hero tile: its own rounded card with the boldest background on the
+ * page (--hero tokens; hero-foreground ≥ 7:1, hero-muted ≥ 4.5:1 and
+ * hero-accent ≥ 3:1 on --hero in every theme, see tokens.test.ts).
  */
+const HERO_WASH = "bg-hero-foreground/12";
 export const BrandBanner: React.FC<{
   brand: ProfileBrandInsight;
   strength: ProfileStrength;
@@ -25,7 +27,7 @@ export const BrandBanner: React.FC<{
   return (
     <section
       aria-labelledby="about-brand"
-      className="relative isolate overflow-hidden rounded-(--radius) bg-sidebar p-5 text-sidebar-foreground shadow-(--card-shadow) sm:p-7"
+      className="relative isolate overflow-hidden rounded-(--radius) bg-hero p-5 text-hero-foreground shadow-(--card-shadow) sm:p-7"
     >
       {/* Decorative circles: theme tokens at low opacity, behind the content. */}
       <div
@@ -33,7 +35,7 @@ export const BrandBanner: React.FC<{
         className="pointer-events-none absolute -top-24 -right-20 -z-10 size-72 rounded-full sm:size-80"
         style={{
           background:
-            "color-mix(in oklab, var(--sidebar-primary) 20%, transparent)",
+            "color-mix(in oklab, var(--hero-accent) 22%, transparent)",
         }}
       />
       <div
@@ -41,13 +43,16 @@ export const BrandBanner: React.FC<{
         className="pointer-events-none absolute right-24 -bottom-32 -z-10 size-56 rounded-full sm:right-40"
         style={{
           background:
-            "color-mix(in oklab, var(--nav, var(--action, var(--sidebar-primary))) 30%, transparent)",
+            "color-mix(in oklab, var(--nav, var(--hero-accent)) 30%, transparent)",
         }}
       />
       <button
         type="button"
         onClick={() => onEdit({ kind: "edit-brand" })}
-        className="absolute top-3 right-3 flex size-9 items-center justify-center rounded-full bg-sidebar-accent text-sidebar-accent-foreground transition-colors hover:bg-sidebar-primary hover:text-sidebar-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+        className={cn(
+          "absolute top-3 right-3 flex size-9 items-center justify-center rounded-full text-hero-foreground transition-colors hover:bg-hero-foreground hover:text-hero focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hero-accent",
+          HERO_WASH,
+        )}
       >
         <Pencil aria-hidden className="size-4" />
         <span className="sr-only">Edit brand</span>
@@ -57,14 +62,17 @@ export const BrandBanner: React.FC<{
           <span
             aria-hidden
             data-testid="brand-initials"
-            className="flex aspect-square size-22 shrink-0 items-center justify-center rounded-full bg-sidebar-accent font-heading text-3xl leading-none font-bold text-sidebar-accent-foreground tabular-nums sm:size-24 sm:text-[2.125rem]"
+            className={cn(
+              "flex aspect-square size-22 shrink-0 items-center justify-center rounded-full font-heading text-3xl leading-none font-bold text-hero-foreground tabular-nums ring-2 ring-hero-accent ring-offset-2 ring-offset-hero sm:size-24 sm:text-[2.125rem]",
+              HERO_WASH,
+            )}
           >
             {brand.initials || "?"}
           </span>
           <div className="min-w-0 flex-1 space-y-3 pr-10 sm:pr-0">
             <h2
               id="about-brand"
-              className="text-xs font-semibold tracking-[0.08em] uppercase"
+              className="text-xs font-semibold tracking-[0.08em] text-hero-muted uppercase"
             >
               Your brand
             </h2>
@@ -73,7 +81,7 @@ export const BrandBanner: React.FC<{
                 {brand.line}
               </p>
             ) : (
-              <p className="max-w-2xl text-base">
+              <p className="max-w-2xl text-base text-hero-muted">
                 Add a one-line brand: who you are and the result you bring.
               </p>
             )}
@@ -82,7 +90,10 @@ export const BrandBanner: React.FC<{
                 {chips.map((chip) => (
                   <li
                     key={chip}
-                    className="rounded-(--radius-pill) bg-sidebar-accent px-3 py-1 text-sm text-sidebar-accent-foreground"
+                    className={cn(
+                      "rounded-(--radius-pill) px-3 py-1 text-sm text-hero-foreground",
+                      HERO_WASH,
+                    )}
                   >
                     {chip}
                   </li>
@@ -91,11 +102,11 @@ export const BrandBanner: React.FC<{
             ) : null}
           </div>
         </div>
-        <div className="flex items-center gap-4 self-start rounded-(--radius-tile) bg-sidebar-foreground/8 p-4 lg:shrink-0 lg:self-center">
+        <div className="flex items-center gap-4 self-start rounded-(--radius-tile) bg-hero-foreground/8 p-4 lg:shrink-0 lg:self-center">
           <StrengthRing total={strength.total} max={strength.max} />
           <div className="space-y-1">
             <p className="font-semibold">Profile strength</p>
-            <p className="text-sm">
+            <p className="text-sm text-hero-muted">
               {bestFitJobCount > 0
                 ? `Scored against ${bestFitJobCount} best-fit job${bestFitJobCount === 1 ? "" : "s"}`
                 : "Scored against your resume"}
@@ -105,7 +116,7 @@ export const BrandBanner: React.FC<{
               onClick={onOpenStrength}
               className={cn(
                 "text-sm font-medium underline underline-offset-4 hover:no-underline",
-                "rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
+                "rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-hero-accent",
               )}
             >
               See how it's scored

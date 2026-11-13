@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 const RADIUS = 15.9155; // circumference of 100 in a 36×36 viewBox
 
 /**
- * Circular score. `tone="banner"` sits on the sidebar colours (brand banner);
+ * Circular score. `tone="banner"` sits on the hero tile (brand banner);
  * `tone="card"` sits on a card surface. Colours are tokens only.
  */
 export const ScoreRing: React.FC<{
@@ -35,7 +35,7 @@ export const ScoreRing: React.FC<{
           fill="none"
           strokeWidth="3.2"
           className={
-            tone === "banner" ? "stroke-(--sidebar-accent)" : "stroke-muted"
+            tone === "banner" ? "stroke-hero-foreground/18" : "stroke-muted"
           }
         />
         <circle
@@ -47,7 +47,7 @@ export const ScoreRing: React.FC<{
           strokeLinecap="round"
           strokeDasharray={`${pct} ${100 - pct}`}
           className={
-            tone === "banner" ? "stroke-(--sidebar-ring)" : "stroke-primary"
+            tone === "banner" ? "stroke-hero-accent" : "stroke-primary"
           }
         />
       </svg>
@@ -56,7 +56,7 @@ export const ScoreRing: React.FC<{
         className={cn(
           "absolute inset-0 flex items-center justify-center font-mono font-semibold tabular-nums",
           size === "lg" ? "text-xl" : "text-sm",
-          tone === "banner" ? "text-sidebar-foreground" : "text-foreground",
+          tone === "banner" ? "text-hero-foreground" : "text-foreground",
         )}
       >
         {center ?? Math.round(value)}

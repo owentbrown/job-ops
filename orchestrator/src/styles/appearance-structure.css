@@ -57,6 +57,10 @@
   --sidebar-footer-border: var(--sidebar-border);
   --sidebar-footer-foreground: var(--sidebar-foreground);
   --sidebar-footer-muted: var(--sidebar-foreground);
+  --hero: var(--sidebar);
+  --hero-foreground: var(--sidebar-foreground);
+  --hero-muted: var(--sidebar-foreground);
+  --hero-accent: var(--sidebar-ring);
 
   /* Shell geometry (fallback = the pre-appearance 15rem sidebar). */
   --app-sidebar-width: 15rem;

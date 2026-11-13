@@ -71,6 +71,29 @@ describe("BrandBanner", () => {
     expect(onEdit).toHaveBeenCalledWith({ kind: "edit-brand" });
   });
 
+  it("is its own hero tile in the hero tokens, not the sidebar colours", () => {
+    const data = makeInsights("ok");
+    const { container } = render(
+      <BrandBanner
+        brand={data.brand}
+        strength={data.strength}
+        bestFitJobCount={data.bestFitJobCount}
+        onEdit={vi.fn()}
+        onOpenStrength={vi.fn()}
+      />,
+    );
+    const tile = screen.getByRole("region", { name: "Your brand" });
+    expect(tile).toHaveClass(
+      "bg-hero",
+      "text-hero-foreground",
+      "rounded-(--radius)",
+    );
+    expect(screen.getByTestId("brand-initials")).toHaveClass(
+      "ring-hero-accent",
+    );
+    expect(container.innerHTML).not.toMatch(/sidebar/);
+  });
+
   it("asks for a brand line when there is none", () => {
     const data = makeInsights("ok");
     render(

@@ -336,6 +336,29 @@ export const ACTION_INK: Record<ResolvedMode, string> = {
   dark: "#0B0C14",
 };
 
+/**
+ * ADDED: hero tile colours (About you brand banner). Light mode: the nav
+ * colour pushed most of the way to near-black (the Editorial dark sidebar
+ * recipe). Dark mode: near-black with a hint of nav, darker than every page
+ * background. Text is near-white; muted text and the accent move toward
+ * white only if they fall short of 4.5:1 and 3:1.
+ */
+function heroColours(
+  mode: ResolvedMode,
+  nav: string,
+  actionBright: string,
+): Pick<ResolvedTokens, "hero" | "heroInk" | "heroMut" | "heroAcc"> {
+  const hero =
+    mode === "light" ? mix(nav, "#0A0F12", 0.6) : mix("#050505", nav, 0.08);
+  const heroInk = towardContrast(mix("#FFFFFF", nav, 0.04), hero, "#FFFFFF", 7);
+  return {
+    hero,
+    heroInk,
+    heroMut: towardContrast(mix(heroInk, hero, 0.28), hero, "#FFFFFF", 4.5),
+    heroAcc: towardContrast(actionBright, hero, "#FFFFFF", 3),
+  };
+}
+
 /** Port of the reference `tok(theme, mode)` for one colour pair. */
 export function resolveTokens(
   themeId: ThemeId,
@@ -383,6 +406,7 @@ export function resolveTokens(
     dLine: danger.border,
     st: STATUS[mode],
     sem: semanticColours(mode, bg, surf),
+    ...heroColours(mode, nav, a.actionDark),
   };
 
   if (th.sideStyle === "dark") {
@@ -559,6 +583,12 @@ export function buildTokens(
     "--sidebar-footer-border": t.sbBorder,
     "--sidebar-footer-foreground": t.sbInk,
     "--sidebar-footer-muted": t.sbSub,
+
+    // Hero tile (About you brand banner)
+    "--hero": t.hero,
+    "--hero-foreground": t.heroInk,
+    "--hero-muted": t.heroMut,
+    "--hero-accent": t.heroAcc,
 
     // Fixed semantic colours
     "--bucket-awaiting": awaiting,

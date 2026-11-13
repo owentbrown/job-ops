@@ -158,6 +158,40 @@ describe("contrast (WCAG AA 4.5:1) for all 36 combinations", () => {
   });
 });
 
+describe("hero tile tokens for all 36 combinations", () => {
+  const combos = THEME_IDS.flatMap((theme) =>
+    COLOUR_IDS.flatMap((colours) =>
+      RESOLVED_MODES.map((mode) => ({ theme, colours, mode })),
+    ),
+  );
+
+  it.each(combos)("$theme · $colours · $mode", ({ theme, colours, mode }) => {
+    const t = resolveTokens(theme, colours, mode);
+    const tokens = buildTokens(theme, colours, mode);
+    expect(tokens["--hero"]).toBe(t.hero);
+    expect(tokens["--hero-foreground"]).toBe(t.heroInk);
+    expect(tokens["--hero-muted"]).toBe(t.heroMut);
+    expect(tokens["--hero-accent"]).toBe(t.heroAcc);
+    expect(contrastRatio(t.heroInk, t.hero)).toBeGreaterThanOrEqual(7);
+    expect(contrastRatio(t.heroMut, t.hero)).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(t.heroAcc, t.hero)).toBeGreaterThanOrEqual(3);
+    // The boldest surface: darker than the page background and cards.
+    const lum = (c: string) => contrastRatio(c, "#000000");
+    expect(lum(t.hero)).toBeLessThan(lum(t.bg));
+    expect(lum(t.hero)).toBeLessThan(lum(t.surf));
+  });
+
+  it("Editorial · Evergreen hero matches the dark-sidebar recipe", () => {
+    expect(buildTokens("editorial", "evergreen", "light")["--hero"]).toBe(
+      "#0c2f2c",
+    );
+    // mix(#050505, #5FD3BC, 0.08) = 12.2, 21.48, 19.64
+    expect(buildTokens("editorial", "evergreen", "dark")["--hero"]).toBe(
+      "#0c1514",
+    );
+  });
+});
+
 describe("contrastRatio", () => {
   it("is 21 for black on white and composites translucent colours", () => {
     expect(contrastRatio("#000000", "#FFFFFF")).toBeCloseTo(21, 5);

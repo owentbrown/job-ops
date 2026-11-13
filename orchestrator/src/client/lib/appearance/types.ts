@@ -179,4 +179,14 @@ export interface ResolvedTokens {
    * text on both `bg` and `surf`; `ink` is text on a `colour` fill.
    */
   sem: Record<SemanticId, { colour: string; ink: string }>;
+  /**
+   * Hero tile (not in the reference): the boldest surface on a page. Light
+   * mode: a deep colour derived from the nav colour. Dark mode: darker than
+   * the page background. `heroInk` ≥ 7:1, `heroMut` ≥ 4.5:1 and `heroAcc`
+   * (ring arc, avatar ring) ≥ 3:1 on `hero`.
+   */
+  hero: string;
+  heroInk: string;
+  heroMut: string;
+  heroAcc: string;
 }

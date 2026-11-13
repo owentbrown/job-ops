@@ -13,6 +13,7 @@ export const FEATURE_LABELS: Record<string, string> = {
   resume_suggestion: "Resume suggestions",
   email_triage: "Email triage",
   profile_skills: "Profile skill refresh",
+  profile_writing: "Profile writing",
   other: "Other",
 };
 

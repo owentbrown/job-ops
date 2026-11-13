@@ -278,3 +278,110 @@ export interface ProfileInsightsResponse {
   strength: ProfileStrength;
   skillsRefreshedAt: string | null;
 }
+
+// ---------------------------------------------------------------------------
+// AI writing (POST /api/profile/ai/write). Returns a draft; nothing is saved.
+// ---------------------------------------------------------------------------
+
+export const PROFILE_AI_WRITE_TARGETS = [
+  "pitch",
+  "story",
+  "values",
+  "brand",
+] as const;
+export const ProfileAiWriteTargetSchema = z.enum(PROFILE_AI_WRITE_TARGETS);
+export type ProfileAiWriteTarget = z.infer<typeof ProfileAiWriteTargetSchema>;
+
+export const PROFILE_AI_NOTES_MAX = 4000;
+
+const notesField = z.string().max(PROFILE_AI_NOTES_MAX).optional();
+
+/** Request body. `current` is the panel's unsaved draft for that target. */
+export const ProfileAiWriteRequestSchema = z.discriminatedUnion("target", [
+  z.object({
+    target: z.literal("pitch"),
+    notes: notesField,
+    current: z
+      .object({
+        s15: z.string().max(1500).optional(),
+        s30: z.string().max(3000).optional(),
+        s60: z.string().max(6000).optional(),
+      })
+      .optional(),
+  }),
+  z.object({
+    target: z.literal("story"),
+    notes: notesField,
+    current: z
+      .object({
+        title: z.string().max(200).optional(),
+        themes: z.array(ThemeSchema).max(PROFILE_THEMES.length).optional(),
+        situation: z.string().max(4000).optional(),
+        task: z.string().max(4000).optional(),
+        action: z.string().max(4000).optional(),
+        result: z.string().max(4000).optional(),
+        metric: z.string().max(200).nullable().optional(),
+      })
+      .optional(),
+  }),
+  z.object({
+    target: z.literal("values"),
+    notes: notesField,
+    current: z
+      .object({
+        items: z
+          .array(z.object({ label: z.string().max(80), starred: z.boolean() }))
+          .max(30)
+          .optional(),
+        ideal: z
+          .object({ size: slider, management: slider, office: slider })
+          .optional(),
+      })
+      .optional(),
+  }),
+  z.object({
+    target: z.literal("brand"),
+    notes: notesField,
+    current: z
+      .object({
+        line: z.string().max(400).optional(),
+        industries: z.array(z.string().max(80)).max(20).optional(),
+      })
+      .optional(),
+  }),
+]);
+export type ProfileAiWriteRequest = z.infer<typeof ProfileAiWriteRequestSchema>;
+
+export interface ProfilePitchDraft {
+  s15: string;
+  s30: string;
+  s60: string;
+}
+
+export interface ProfileStoryDraft {
+  title: string;
+  themes: Theme[];
+  situation: string;
+  task: string;
+  action: string;
+  result: string;
+  metric: string | null;
+  /** Questions that would fill gaps, e.g. a missing number. */
+  followUps: string[];
+}
+
+export interface ProfileValuesDraft {
+  items: { label: string; starred: boolean }[];
+  ideal: { size: number; management: number; office: number };
+}
+
+export interface ProfileBrandDraft {
+  line: string;
+}
+
+export interface ProfileAiDraftByTarget {
+  pitch: ProfilePitchDraft;
+  story: ProfileStoryDraft;
+  values: ProfileValuesDraft;
+  brand: ProfileBrandDraft;
+}

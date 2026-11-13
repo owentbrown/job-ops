@@ -11,6 +11,7 @@ import {
 } from "@server/repositories/profile-entries";
 import { getDesignResumeStatus } from "@server/services/design-resume";
 import { clearProfileCache, getProfile } from "@server/services/profile";
+import { writeProfileDraft } from "@server/services/profile/ai-write";
 import { computeProfileInsights } from "@server/services/profile/compute";
 import {
   loadProfileEntries,
@@ -25,6 +26,7 @@ import {
 } from "@server/services/rxresume";
 import { getConfiguredRxResumeBaseResumeId } from "@server/services/rxresume/baseResumeId";
 import {
+  ProfileAiWriteRequestSchema,
   type ProfileEntriesResponse,
   ProfileSingletonKindSchema,
 } from "@shared/types";
@@ -248,5 +250,19 @@ profileRouter.post("/skills/refresh", async (_req: Request, res: Response) => {
     ok(res, await refreshProfileSkills());
   } catch (error) {
     fail(res, profileError(error, "Profile skill refresh failed"));
+  }
+});
+
+/**
+ * POST /api/profile/ai/write - AI draft for the pitch, a story, values or the
+ * brand line. Returns the draft only; nothing is saved. 400 on a bad body,
+ * 502 when the model fails.
+ */
+profileRouter.post("/ai/write", async (req: Request, res: Response) => {
+  try {
+    const request = ProfileAiWriteRequestSchema.parse(req.body ?? {});
+    ok(res, await writeProfileDraft(request));
+  } catch (error) {
+    fail(res, profileError(error, "Profile AI writing failed"));
   }
 });

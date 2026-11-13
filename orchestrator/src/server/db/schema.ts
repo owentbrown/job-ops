@@ -817,6 +817,32 @@ export const designResumeDocuments = sqliteTable("design_resume_documents", {
   updatedAt: text("updated_at").notNull().default(sql`(datetime('now'))`),
 });
 
+export const profileEntries = sqliteTable(
+  "profile_entries",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id")
+      .notNull()
+      .default("tenant_default")
+      .references(() => tenants.id, { onDelete: "cascade" }),
+    userId: text("user_id").references(() => users.id, {
+      onDelete: "cascade",
+    }),
+    /** brand | pitch | values | story | skills (validated in the repository). */
+    kind: text("kind").notNull(),
+    data: text("data", { mode: "json" }).notNull(),
+    createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
+    updatedAt: text("updated_at").notNull().default(sql`(datetime('now'))`),
+  },
+  (table) => ({
+    scopeKindIndex: index("idx_profile_entries_tenant_user_kind").on(
+      table.tenantId,
+      table.userId,
+      table.kind,
+    ),
+  }),
+);
+
 export const designResumeAssets = sqliteTable(
   "design_resume_assets",
   {
@@ -1178,6 +1204,8 @@ export type PostApplicationMessageRow =
   typeof postApplicationMessages.$inferSelect;
 export type NewPostApplicationMessageRow =
   typeof postApplicationMessages.$inferInsert;
+export type ProfileEntryDbRow = typeof profileEntries.$inferSelect;
+export type NewProfileEntryDbRow = typeof profileEntries.$inferInsert;
 export type TracerLinkRow = typeof tracerLinks.$inferSelect;
 export type NewTracerLinkRow = typeof tracerLinks.$inferInsert;
 export type TracerClickEventRow = typeof tracerClickEvents.$inferSelect;

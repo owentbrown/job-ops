@@ -589,6 +589,22 @@ const migrations = [
     FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
   )`,
 
+  // About you: profile entries (brand, pitch, values, stories, skills). Additive.
+  `CREATE TABLE IF NOT EXISTS profile_entries (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL DEFAULT 'tenant_default',
+    user_id TEXT,
+    kind TEXT NOT NULL,
+    data TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  )`,
+
+  `CREATE INDEX IF NOT EXISTS idx_profile_entries_tenant_user_kind
+    ON profile_entries(tenant_id, user_id, kind)`,
+
   `CREATE INDEX IF NOT EXISTS idx_job_documents_job_id
     ON job_documents(job_id)`,
 

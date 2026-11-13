@@ -16,6 +16,7 @@ import {
   loadProfileEntries,
   loadProfileInsightsInput,
 } from "@server/services/profile/load";
+import { refreshProfileSkills } from "@server/services/profile/skills-refresh";
 import { extractProjectsFromProfile } from "@server/services/resumeProjects";
 import {
   clearRxResumeResumeCache,
@@ -234,5 +235,18 @@ profileRouter.delete("/stories/:id", async (req: Request, res: Response) => {
     ok(res, { deleted: true });
   } catch (error) {
     fail(res, profileError(error, "Profile story delete failed"));
+  }
+});
+
+/**
+ * POST /api/profile/skills/refresh - AI skill extraction from best-fit jobs.
+ * 409 while one is already running for this user; 502 when the model fails
+ * (stored skills are left unchanged).
+ */
+profileRouter.post("/skills/refresh", async (_req: Request, res: Response) => {
+  try {
+    ok(res, await refreshProfileSkills());
+  } catch (error) {
+    fail(res, profileError(error, "Profile skill refresh failed"));
   }
 });

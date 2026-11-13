@@ -12,6 +12,7 @@ export const FEATURE_LABELS: Record<string, string> = {
   search_terms: "Search term ideas",
   resume_suggestion: "Resume suggestions",
   email_triage: "Email triage",
+  profile_skills: "Profile skill refresh",
   other: "Other",
 };
 

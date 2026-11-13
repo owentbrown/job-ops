@@ -25,6 +25,7 @@ export const LLM_FEATURES = [
   "search_terms",
   "resume_suggestion",
   "email_triage",
+  "profile_skills",
   "other",
 ] as const;
 

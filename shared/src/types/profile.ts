@@ -111,6 +111,17 @@ export interface ProfileEntryRow<TData = unknown> {
   updatedAt: string;
 }
 
+/** POST /api/profile/skills/refresh */
+export interface ProfileSkillsRefreshResponse {
+  skills: SkillsEntry;
+  /** New items added with source "ai". */
+  added: number;
+  /** Existing starter/ai items whose keywords were updated. */
+  updated: number;
+  /** Job descriptions sent to the model. */
+  jobsUsed: number;
+}
+
 export interface ProfileEntriesResponse {
   brand: BrandEntry | null;
   pitch: PitchEntry | null;

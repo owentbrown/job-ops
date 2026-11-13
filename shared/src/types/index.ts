@@ -9,6 +9,7 @@ export * from "./jobs";
 export * from "./overview";
 export * from "./pipeline";
 export * from "./post-application";
+export * from "./profile";
 export * from "./settings";
 export * from "./spend";
 export * from "./usage";

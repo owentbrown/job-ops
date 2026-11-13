@@ -97,14 +97,19 @@ export const AboutYouPage: React.FC = () => {
                 onOpenStrength={() => setStrengthOpen(true)}
               />
             )}
-            <PitchCard pitch={data.pitch} onEdit={onEdit} />
-            <SkillMapCard
-              dataState={data.dataState}
-              skills={data.skills}
-              bestFitJobCount={data.bestFitJobCount}
-              refreshedAt={data.skillsRefreshedAt}
-              onEdit={onEdit}
-            />
+            <div
+              data-testid="pitch-skills-row"
+              className="grid gap-4 lg:grid-cols-2 lg:items-stretch"
+            >
+              <PitchCard pitch={data.pitch} onEdit={onEdit} />
+              <SkillMapCard
+                dataState={data.dataState}
+                skills={data.skills}
+                bestFitJobCount={data.bestFitJobCount}
+                refreshedAt={data.skillsRefreshedAt}
+                onEdit={onEdit}
+              />
+            </div>
             <RolesCard dataState={data.dataState} roles={data.roles} />
             <div className="grid gap-4 lg:grid-cols-2">
               <StoryBankCard stories={data.stories} onEdit={onEdit} />

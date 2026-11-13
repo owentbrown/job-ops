@@ -106,7 +106,7 @@ const SkillPlot: React.FC<{ skills: ProfileSkillInsight[] }> = ({ skills }) => (
     <div className="min-w-0 flex-1 space-y-2">
       <div
         aria-hidden
-        className="relative aspect-4/3 w-full overflow-hidden rounded-(--radius) border sm:aspect-16/9"
+        className="relative aspect-4/3 w-full overflow-hidden rounded-(--radius) border sm:aspect-16/9 lg:aspect-4/3"
       >
         {QUADRANTS.map((q) => (
           <div
@@ -139,10 +139,6 @@ const SkillPlot: React.FC<{ skills: ProfileSkillInsight[] }> = ({ skills }) => (
             </span>
           </div>
         ))}
-      </div>
-      <div className="grid grid-cols-2 gap-2 text-[11px] text-muted-foreground">
-        <span>Listed, or used in a role</span>
-        <span className="text-right">Backed by a number or a story</span>
       </div>
       <p className="text-center text-xs text-muted-foreground">
         You can back it up better →
@@ -198,7 +194,7 @@ export const SkillMapCard: React.FC<{
   const top = skills[0];
   const showPlot = dataState === "ok" && skills.length > 0;
   return (
-    <Card aria-labelledby="about-skills">
+    <Card aria-labelledby="about-skills" className="h-full">
       <CardContent className="space-y-4 pt-(--density-pad)">
         <CardHeading
           id="about-skills"
@@ -234,7 +230,8 @@ export const SkillMapCard: React.FC<{
         ) : (
           <>
             <SkillList skills={skills} />
-            <div className="grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start">
+            {/* Half-width beside the pitch on lg, so plot and notes stack. */}
+            <div className="space-y-3">
               <SkillPlot skills={skills} />
               <div className="space-y-2 text-sm">
                 <p>

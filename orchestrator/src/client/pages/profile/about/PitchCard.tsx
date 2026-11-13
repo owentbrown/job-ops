@@ -33,7 +33,7 @@ export const PitchCard: React.FC<{
   const writeWithAi = () => onEdit({ kind: "edit-pitch", autoWrite: true });
 
   return (
-    <Card aria-labelledby="about-pitch">
+    <Card aria-labelledby="about-pitch" className="h-full">
       <CardContent className="space-y-4 pt-(--density-pad)">
         <CardHeading id="about-pitch" title="Elevator pitch">
           {pitch.isEmpty ? null : (

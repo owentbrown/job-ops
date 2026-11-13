@@ -1,5 +1,5 @@
 import { useProfileInsights } from "@client/hooks/useProfileInsights";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AboutYouPage } from "./AboutYouPage";
@@ -154,6 +154,19 @@ describe("AboutYouPage", () => {
     expect(screen.queryByText(sheet)).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: button }));
     expect(screen.getByText(sheet)).toBeInTheDocument();
+  });
+
+  it("puts the pitch and skill map side by side on large screens", () => {
+    mockInsights({ data: makeInsights("ok") });
+    renderPage();
+    const row = screen.getByTestId("pitch-skills-row");
+    expect(row).toHaveClass("lg:grid-cols-2");
+    expect(
+      within(row).getByRole("heading", { name: "Elevator pitch" }),
+    ).toBeInTheDocument();
+    expect(
+      within(row).getByRole("heading", { name: "Skill map" }),
+    ).toBeInTheDocument();
   });
 
   it("opens a saved story for editing", () => {

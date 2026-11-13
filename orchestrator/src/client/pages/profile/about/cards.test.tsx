@@ -204,6 +204,11 @@ describe("SkillMapCard", () => {
     expect(
       screen.getByRole("heading", { name: "Skills to prove next" }),
     ).toBeInTheDocument();
+    // Main axis labels stay; the two small axis captions are gone.
+    expect(screen.getByText("Jobs ask for it more →")).toBeInTheDocument();
+    expect(screen.getByText("You can back it up better →")).toBeInTheDocument();
+    expect(screen.queryByText("Listed, or used in a role")).toBeNull();
+    expect(screen.queryByText("Backed by a number or a story")).toBeNull();
     expect(
       screen.getByText("AI/ML: 62% of best-fit jobs, proof 0.5 of 3"),
     ).toBeInTheDocument();

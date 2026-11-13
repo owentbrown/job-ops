@@ -230,7 +230,9 @@ export function bucketResumeSectionItemCounts(document: DesignResumeJson): {
   };
 }
 
-export function getImportFileType(file: File): "pdf" | "docx" | "unknown" {
+export function getImportFileType(
+  file: File,
+): "pdf" | "docx" | "json" | "unknown" {
   const mimeType = file.type.toLowerCase();
   if (mimeType === "application/pdf") return "pdf";
   if (
@@ -239,9 +241,13 @@ export function getImportFileType(file: File): "pdf" | "docx" | "unknown" {
   ) {
     return "docx";
   }
+  if (mimeType === "application/json" || mimeType === "text/json") {
+    return "json";
+  }
   const fileName = file.name.toLowerCase();
   if (fileName.endsWith(".pdf")) return "pdf";
   if (fileName.endsWith(".docx")) return "docx";
+  if (fileName.endsWith(".json")) return "json";
   return "unknown";
 }
 

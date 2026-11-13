@@ -11,6 +11,7 @@ export * from "./overview";
 export * from "./pipeline";
 export * from "./post-application";
 export * from "./prefilter";
+export * from "./profile-insights";
 export * from "./settings-profile";
 export * from "./spend";
 export * from "./watchlist";

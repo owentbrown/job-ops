@@ -314,6 +314,19 @@ describe("best-fit jobs and demand", () => {
     expect(tech?.demandPct).toBe(0);
   });
 
+  it("matches HTML descriptions as plain text", () => {
+    const jobs = Array.from({ length: 6 }, () =>
+      job({
+        description: `<div class="sql-widget"><p>${LONG}</p><ul><li>Own the P&amp;L</li></ul></div>`,
+      }),
+    );
+    const res = computeProfileInsights(input({ jobs }));
+    const pick = (id: string) => res.skills.find((s) => s.id === id);
+    expect(pick("financial-modelling")?.demandPct).toBe(100);
+    // "sql" in a class attribute is not a mention.
+    expect(pick("sql-data")?.demandPct).toBe(0);
+  });
+
   it("uses saved skills (minus hidden) instead of starters", () => {
     const res = computeProfileInsights(
       input({

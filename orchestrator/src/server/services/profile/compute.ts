@@ -749,13 +749,24 @@ export function computeProfileInsights(
 
   // Skills ------------------------------------------------------------------
   const bestFit = bestFitJobs(jobs);
+  // Match against plain text, as the AI refresh sees it: descriptions can be
+  // HTML, where "P&L" is "P&amp;L" and tag attributes would add false hits.
+  const textById = new Map<string, string>();
+  const jobText = (job: ProfileJobRow): string => {
+    let text = textById.get(job.id);
+    if (text === undefined) {
+      text = htmlToText(job.description ?? "");
+      textById.set(job.id, text);
+    }
+    return text;
+  };
   const defs = skillDefs(entries.skills);
   const sources = proofSources(resume, entries.stories);
   const proofById = new Map<string, SkillProofLevel>();
   const skills: ProfileSkillInsight[] = defs
     .map((def) => {
       const demandCount = bestFit.filter((job) =>
-        matchSkill(job.description ?? "", def.keywords),
+        matchSkill(jobText(job), def.keywords),
       ).length;
       const demandPct = bestFit.length
         ? round((demandCount / bestFit.length) * 100)
@@ -793,9 +804,8 @@ export function computeProfileInsights(
         .map((def) => ({
           label: def.label,
           proof: proofById.get(def.id) ?? 0,
-          count: withText.filter((j) =>
-            matchSkill(j.description ?? "", def.keywords),
-          ).length,
+          count: withText.filter((j) => matchSkill(jobText(j), def.keywords))
+            .length,
         }))
         .filter((s) => s.count > 0)
         .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label))

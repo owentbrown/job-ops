@@ -19,12 +19,8 @@ const TAG_CLASS: Record<RoleTag, string> = {
   Stretch: "border-transparent bg-warning text-warning-foreground",
 };
 
-/**
- * Jobs feed for a role family. The Jobs page does not filter by family yet;
- * the param is carried so it can.
- */
-export const roleJobsHref = (familyId: string) =>
-  `/jobs/ready?family=${encodeURIComponent(familyId)}`;
+/** The Jobs feed. Jobs has no role-family filter yet, so this is unfiltered. */
+export const ROLE_JOBS_HREF = "/jobs/ready";
 
 const RoleTile: React.FC<{ role: ProfileRoleInsight }> = ({ role }) => (
   <li className="flex flex-col gap-3 rounded-(--radius) border p-4">
@@ -59,10 +55,10 @@ const RoleTile: React.FC<{ role: ProfileRoleInsight }> = ({ role }) => (
       </span>
       {role.openCount > 0 ? (
         <Link
-          to={roleJobsHref(role.familyId)}
+          to={ROLE_JOBS_HREF}
           className="font-medium text-primary underline-offset-4 hover:underline"
         >
-          See jobs<span className="sr-only"> for {role.label}</span>
+          See jobs
         </Link>
       ) : null}
     </div>

@@ -1,28 +1,28 @@
 import { PageFrame } from "@client/components/PageFrame";
-import {
-  useProfileInsights,
-  useProfileMutations,
-} from "@client/hooks/useProfileInsights";
+import { useProfileInsights } from "@client/hooks/useProfileInsights";
 import { RESUME_STUDIO_BASE } from "@client/lib/routes";
 import { UserRound } from "lucide-react";
 import type React from "react";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-import { showErrorToast } from "@/client/lib/error-toast";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { AboutSkeleton } from "./about/AboutSkeleton";
 import { BrandBanner } from "./about/BrandBanner";
+import { BrandSheet } from "./about/BrandSheet";
 import { DocumentsBanner } from "./about/DocumentsBanner";
 import { LandingCard } from "./about/LandingCard";
 import { PitchCard } from "./about/PitchCard";
+import { PitchSheet } from "./about/PitchSheet";
 import type { AboutPanel } from "./about/parts";
 import { RolesCard } from "./about/RolesCard";
 import { SkillMapCard } from "./about/SkillMapCard";
+import { SkillsSheet } from "./about/SkillsSheet";
 import { StoryBankCard } from "./about/StoryBankCard";
+import { StorySheet } from "./about/StorySheet";
 import { StrengthSheet } from "./about/StrengthSheet";
 import { ValuesCard } from "./about/ValuesCard";
+import { ValuesSheet } from "./about/ValuesSheet";
 
 const NoResumeCard: React.FC = () => (
   <Card>
@@ -40,11 +40,8 @@ const NoResumeCard: React.FC = () => (
 
 export const AboutYouPage: React.FC = () => {
   const insights = useProfileInsights();
-  const { refreshSkills } = useProfileMutations();
   const navigate = useNavigate();
   const [strengthOpen, setStrengthOpen] = useState(false);
-  // Edit panels arrive in the next step; the page already tracks which one
-  // is asked for.
   const [openPanel, setOpenPanel] = useState<AboutPanel | null>(null);
 
   const onEdit = (panel: AboutPanel) => {
@@ -56,18 +53,12 @@ export const AboutYouPage: React.FC = () => {
     setOpenPanel(panel);
   };
 
-  const onRefreshSkills = () => {
-    refreshSkills.mutate(undefined, {
-      onSuccess: (result) => {
-        toast.success(
-          `Skills refreshed from ${result.jobsUsed} jobs: ${result.added} new, ${result.updated} updated`,
-        );
-      },
-      onError: (error) => {
-        showErrorToast(error, "Skill refresh failed");
-      },
-    });
-  };
+  const panelProps = (kind: AboutPanel["kind"]) => ({
+    open: openPanel?.kind === kind,
+    onOpenChange: (open: boolean) => {
+      if (!open) setOpenPanel(null);
+    },
+  });
 
   const data = insights.data;
 
@@ -77,10 +68,7 @@ export const AboutYouPage: React.FC = () => {
       title="About you"
       subtitle="Who you are and what you're aiming for"
     >
-      <div
-        className="space-y-4"
-        data-open-panel={openPanel ? openPanel.kind : undefined}
-      >
+      <div className="space-y-4">
         {insights.isLoading ? (
           <AboutSkeleton />
         ) : !data ? (
@@ -116,8 +104,6 @@ export const AboutYouPage: React.FC = () => {
               bestFitJobCount={data.bestFitJobCount}
               refreshedAt={data.skillsRefreshedAt}
               onEdit={onEdit}
-              onRefresh={onRefreshSkills}
-              refreshing={refreshSkills.isPending}
             />
             <RolesCard dataState={data.dataState} roles={data.roles} />
             <div className="grid gap-4 lg:grid-cols-2">
@@ -131,6 +117,33 @@ export const AboutYouPage: React.FC = () => {
               strength={data.strength}
               onEdit={onEdit}
             />
+            {openPanel?.kind === "edit-brand" ? (
+              <BrandSheet
+                {...panelProps("edit-brand")}
+                targetRoles={data.brand.targetRoles}
+                fallbackLine={
+                  data.brand.lineSource === "headline" ? data.brand.line : null
+                }
+              />
+            ) : null}
+            {openPanel?.kind === "edit-pitch" ? (
+              <PitchSheet {...panelProps("edit-pitch")} />
+            ) : null}
+            {openPanel?.kind === "add-story" ? (
+              <StorySheet {...panelProps("add-story")} />
+            ) : null}
+            {openPanel?.kind === "edit-story" ? (
+              <StorySheet
+                {...panelProps("edit-story")}
+                storyId={openPanel.storyId}
+              />
+            ) : null}
+            {openPanel?.kind === "edit-values" ? (
+              <ValuesSheet {...panelProps("edit-values")} />
+            ) : null}
+            {openPanel?.kind === "edit-skills" ? (
+              <SkillsSheet {...panelProps("edit-skills")} />
+            ) : null}
           </>
         )}
         <DocumentsBanner />

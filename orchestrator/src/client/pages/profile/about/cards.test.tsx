@@ -170,10 +170,7 @@ describe("SkillMapCard", () => {
 
   it("plots skills with quadrant labels, explanation and a screen-reader list", () => {
     const onEdit = vi.fn();
-    const onRefresh = vi.fn();
-    render(
-      <SkillMapCard {...props("ok")} onEdit={onEdit} onRefresh={onRefresh} />,
-    );
+    render(<SkillMapCard {...props("ok")} onEdit={onEdit} />);
     for (const label of [
       "Lead with these",
       "Prove these",
@@ -197,8 +194,9 @@ describe("SkillMapCard", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Edit skills" }));
     expect(onEdit).toHaveBeenCalledWith({ kind: "edit-skills" });
+    onEdit.mockClear();
     fireEvent.click(screen.getByRole("button", { name: "Refresh with AI" }));
-    expect(onRefresh).toHaveBeenCalled();
+    expect(onEdit).toHaveBeenCalledWith({ kind: "edit-skills" });
   });
 
   it("says too early with no fake data", () => {
@@ -210,29 +208,11 @@ describe("SkillMapCard", () => {
   });
 
   it("points to the resume when there is none", () => {
-    render(
-      <SkillMapCard
-        {...props("no-resume")}
-        onEdit={vi.fn()}
-        onRefresh={vi.fn()}
-      />,
-    );
+    render(<SkillMapCard {...props("no-resume")} onEdit={vi.fn()} />);
     expect(screen.getByText(/Import your resume/)).toBeInTheDocument();
     expect(
       screen.queryByRole("button", { name: "Refresh with AI" }),
     ).toBeNull();
-  });
-
-  it("shows the busy refresh state", () => {
-    render(
-      <SkillMapCard
-        {...props("ok")}
-        onEdit={vi.fn()}
-        onRefresh={vi.fn()}
-        refreshing
-      />,
-    );
-    expect(screen.getByRole("button", { name: "Refreshing…" })).toBeDisabled();
   });
 });
 
@@ -248,11 +228,11 @@ describe("RolesCard", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("Needs proof for AI/ML.")).toBeInTheDocument();
     expect(screen.getByText("5 open in your feed")).toBeInTheDocument();
-    expect(
-      screen.getByRole("link", {
-        name: "See jobs for Product Manager / Owner",
-      }),
-    ).toHaveAttribute("href", "/jobs/ready?family=product-manager");
+    // Only roles with open jobs get a link; Jobs has no family filter.
+    expect(screen.getByRole("link", { name: "See jobs" })).toHaveAttribute(
+      "href",
+      "/jobs/ready",
+    );
   });
 
   it.each(["too-early", "no-resume"] as const)("is empty when %s", (state) => {

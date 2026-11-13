@@ -194,17 +194,7 @@ export const SkillMapCard: React.FC<{
   bestFitJobCount: number;
   refreshedAt: string | null;
   onEdit: OnEdit;
-  onRefresh?: () => void;
-  refreshing?: boolean;
-}> = ({
-  dataState,
-  skills,
-  bestFitJobCount,
-  refreshedAt,
-  onEdit,
-  onRefresh,
-  refreshing = false,
-}) => {
+}> = ({ dataState, skills, bestFitJobCount, refreshedAt, onEdit }) => {
   const top = skills[0];
   const showPlot = dataState === "ok" && skills.length > 0;
   return (
@@ -223,15 +213,15 @@ export const SkillMapCard: React.FC<{
             <Pencil aria-hidden />
             Edit skills
           </Button>
-          {onRefresh && dataState !== "no-resume" ? (
+          {dataState !== "no-resume" ? (
+            // The refresh itself lives in the skills panel.
             <Button
               size="sm"
               variant="outline"
-              onClick={onRefresh}
-              disabled={refreshing}
+              onClick={() => onEdit({ kind: "edit-skills" })}
             >
               <Sparkles aria-hidden />
-              {refreshing ? "Refreshing…" : "Refresh with AI"}
+              Refresh with AI
             </Button>
           ) : null}
         </CardHeading>

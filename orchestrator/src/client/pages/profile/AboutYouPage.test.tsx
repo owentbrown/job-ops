@@ -1,7 +1,4 @@
-import {
-  useProfileInsights,
-  useProfileMutations,
-} from "@client/hooks/useProfileInsights";
+import { useProfileInsights } from "@client/hooks/useProfileInsights";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -10,16 +7,24 @@ import { makeInsights } from "./about/insightsFixture";
 
 vi.mock("@client/hooks/useProfileInsights", () => ({
   useProfileInsights: vi.fn(),
-  useProfileMutations: vi.fn(),
 }));
+
+// Sheets have their own tests; here we only check which one opens.
+const { stub } = vi.hoisted(() => ({
+  stub: (name: string) => (p: { open: boolean; storyId?: string | null }) =>
+    p.open ? `${name}${p.storyId ? `:${p.storyId}` : ""}` : null,
+}));
+vi.mock("./about/BrandSheet", () => ({ BrandSheet: stub("brand-sheet") }));
+vi.mock("./about/PitchSheet", () => ({ PitchSheet: stub("pitch-sheet") }));
+vi.mock("./about/StorySheet", () => ({ StorySheet: stub("story-sheet") }));
+vi.mock("./about/ValuesSheet", () => ({ ValuesSheet: stub("values-sheet") }));
+vi.mock("./about/SkillsSheet", () => ({ SkillsSheet: stub("skills-sheet") }));
 vi.mock("@client/components/layout", () => ({
   PageHeader: ({ title }: { title: string }) => <header>{title}</header>,
   PageMain: ({ children }: { children: React.ReactNode }) => (
     <main>{children}</main>
   ),
 }));
-
-const refreshMutate = vi.fn();
 
 function mockInsights(value: Partial<ReturnType<typeof useProfileInsights>>) {
   vi.mocked(useProfileInsights).mockReturnValue({
@@ -44,9 +49,6 @@ function renderPage() {
 describe("AboutYouPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(useProfileMutations).mockReturnValue({
-      refreshSkills: { mutate: refreshMutate, isPending: false },
-    } as never);
   });
 
   it("shows skeleton cards while loading", () => {
@@ -103,7 +105,7 @@ describe("AboutYouPage", () => {
 
   it("opens the strength sheet from the ring and routes fixes", () => {
     mockInsights({ data: makeInsights("ok") });
-    const { container } = renderPage();
+    renderPage();
     fireEvent.click(
       screen.getByRole("button", { name: "See how it's scored" }),
     );
@@ -117,9 +119,7 @@ describe("AboutYouPage", () => {
     expect(
       screen.queryByRole("heading", { name: "How your profile is scored" }),
     ).toBeNull();
-    expect(
-      container.querySelector("[data-open-panel='add-story']"),
-    ).not.toBeNull();
+    expect(screen.getByText("story-sheet")).toBeInTheDocument();
   });
 
   it("sends edit-resume to Document Studio", () => {
@@ -136,11 +136,26 @@ describe("AboutYouPage", () => {
     expect(screen.getByText("resume studio")).toBeInTheDocument();
   });
 
-  it("refreshes skills with AI", () => {
+  it.each([
+    ["Edit brand", "brand-sheet"],
+    ["Edit pitch", "pitch-sheet"],
+    ["Add story", "story-sheet"],
+    ["Edit values", "values-sheet"],
+    ["Edit skills", "skills-sheet"],
+    ["Refresh with AI", "skills-sheet"],
+  ])("%s opens %s", (button, sheet) => {
     mockInsights({ data: makeInsights("ok") });
     renderPage();
-    fireEvent.click(screen.getByRole("button", { name: "Refresh with AI" }));
-    expect(refreshMutate).toHaveBeenCalled();
+    expect(screen.queryByText(sheet)).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: button }));
+    expect(screen.getByText(sheet)).toBeInTheDocument();
+  });
+
+  it("opens a saved story for editing", () => {
+    mockInsights({ data: makeInsights("ok") });
+    renderPage();
+    fireEvent.click(screen.getByRole("button", { name: /Funded the roadmap/ }));
+    expect(screen.getByText("story-sheet:st2")).toBeInTheDocument();
   });
 
   it("offers a retry when insights fail", () => {

@@ -294,6 +294,7 @@ export const jobs = sqliteTable(
     filteredAt: text("filtered_at"),
     skipReason: text("skip_reason"),
     coverLetter: text("cover_letter"),
+    selectedExperienceBullets: text("selected_experience_bullets"),
 
     // Timestamps
     discoveredAt: text("discovered_at")

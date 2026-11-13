@@ -1,4 +1,9 @@
 import { createId } from "@paralleldrive/cuid2";
+import {
+  applyBulletSelectionToHtml,
+  type ExperienceBulletSelection,
+  parseExperienceBulletSelection,
+} from "@shared/resume-experience-bullets";
 import type { ResumeProjectCatalogItem } from "@shared/types";
 import { stripHtmlTags } from "@shared/utils/string";
 
@@ -14,6 +19,11 @@ export type TailorChunkInput = {
   headline?: string | null;
   summary?: string | null;
   skills?: TailoredSkillsInput;
+  /**
+   * Per-experience-item bullet indices to keep (JSON string or object).
+   * Null/undefined keeps every bullet.
+   */
+  experienceBullets?: ExperienceBulletSelection | string | null;
 };
 
 export type ResumeProjectSelectionItem = ResumeProjectCatalogItem & {
@@ -249,10 +259,40 @@ export function applyProjectVisibility(args: {
   }
 }
 
+/**
+ * Trims experience bullets in a tailored working copy. Items missing from the
+ * selection keep all bullets; never call this on the base resume itself.
+ */
+export function applyExperienceBulletSelection(
+  resumeData: RecordLike,
+  rawSelection?: ExperienceBulletSelection | string | null,
+): void {
+  const selection = parseExperienceBulletSelection(rawSelection);
+  if (!selection) return;
+
+  const sections = asRecord(resumeData.sections);
+  const experience = asRecord(sections?.experience);
+  const items = asArray(experience?.items);
+  if (!items) return;
+
+  for (const raw of items) {
+    const item = asRecord(raw);
+    if (!item) continue;
+    const id = typeof item.id === "string" ? item.id : "";
+    const keep = id ? selection[id] : undefined;
+    if (!keep || typeof item.description !== "string") continue;
+    item.description = applyBulletSelectionToHtml(item.description, keep);
+  }
+}
+
 export function applyTailoredChunks(args: {
   resumeData: RecordLike;
   tailoredContent: TailorChunkInput;
 }): void {
+  applyExperienceBulletSelection(
+    args.resumeData,
+    args.tailoredContent.experienceBullets,
+  );
   applyTailoredSkills(args.resumeData, args.tailoredContent.skills);
   applyTailoredSummary(args.resumeData, args.tailoredContent.summary);
   applyTailoredHeadline(args.resumeData, args.tailoredContent.headline);

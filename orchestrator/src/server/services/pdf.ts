@@ -54,6 +54,8 @@ export interface TailoredPdfContent {
   summary?: string | null;
   headline?: string | null;
   skills?: Array<{ name: string; keywords: string[] }> | null;
+  /** Job's stored experience bullet selection (JSON); null keeps all bullets. */
+  experienceBullets?: string | null;
 }
 
 export interface GeneratePdfOptions {

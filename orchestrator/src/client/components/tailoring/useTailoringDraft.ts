@@ -1,4 +1,9 @@
 import * as api from "@client/api";
+import {
+  type ExperienceBulletSelection,
+  parseExperienceBulletSelection,
+  serializeExperienceBulletSelection,
+} from "@shared/resume-experience-bullets";
 import type { Job, ResumeProjectCatalogItem } from "@shared/types.js";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -23,12 +28,17 @@ const hasSelectionDiff = (current: Set<string>, saved: Set<string>) => {
   return false;
 };
 
+const parseBulletSelection = (value: string | null | undefined) =>
+  parseExperienceBulletSelection(value ?? null);
+
 export interface TailoringSavePayload {
   tailoredSummary: string;
   tailoredHeadline: string;
   tailoredSkills: string;
   jobDescription: string;
   selectedProjectIds: string;
+  /** Canonical JSON from serializeExperienceBulletSelection; "" keeps all bullets. */
+  selectedExperienceBullets: string;
   tracerLinksEnabled: boolean;
 }
 
@@ -42,6 +52,9 @@ export const getTailoringSavePayloadKey = (
     jobDescription: payload.jobDescription,
     selectedProjectIds: toSelectedIdsCsv(
       parseSelectedIds(payload.selectedProjectIds),
+    ),
+    selectedExperienceBullets: serializeExperienceBulletSelection(
+      parseBulletSelection(payload.selectedExperienceBullets),
     ),
     tracerLinksEnabled: payload.tracerLinksEnabled,
   });
@@ -58,8 +71,12 @@ const parseIncomingDraft = (incomingJob: Job) => {
     fromEditableSkillGroups(skillsDraft),
   );
   const tracerLinksEnabled = Boolean(incomingJob.tracerLinksEnabled);
+  const bulletSelection = parseBulletSelection(
+    incomingJob.selectedExperienceBullets,
+  );
 
   return {
+    bulletSelection,
     summary,
     headline,
     description,
@@ -91,6 +108,15 @@ export function useTailoringDraft({
   );
   const [skillsDraft, setSkillsDraft] = useState<EditableSkillGroup[]>(() =>
     toEditableSkillGroups(parseTailoredSkills(job.tailoredSkills)),
+  );
+  const [bulletSelection, setBulletSelection] =
+    useState<ExperienceBulletSelection | null>(() =>
+      parseBulletSelection(job.selectedExperienceBullets),
+    );
+  const [savedBulletSelectionJson, setSavedBulletSelectionJson] = useState(() =>
+    serializeExperienceBulletSelection(
+      parseBulletSelection(job.selectedExperienceBullets),
+    ),
   );
   const [openSkillGroupId, setOpenSkillGroupId] = useState<string>("");
   const [tracerLinksEnabled, setTracerLinksEnabled] = useState(
@@ -127,12 +153,18 @@ export function useTailoringDraft({
     [selectedIds],
   );
 
+  const bulletSelectionJson = useMemo(
+    () => serializeExperienceBulletSelection(bulletSelection),
+    [bulletSelection],
+  );
+
   const isDirty = useMemo(() => {
     if (summary !== savedSummary) return true;
     if (headline !== savedHeadline) return true;
     if (jobDescription !== savedDescription) return true;
     if (skillsJson !== savedSkillsJson) return true;
     if (tracerLinksEnabled !== savedTracerLinksEnabled) return true;
+    if (bulletSelectionJson !== savedBulletSelectionJson) return true;
     return hasSelectionDiff(selectedIds, savedSelectedIds);
   }, [
     summary,
@@ -145,6 +177,8 @@ export function useTailoringDraft({
     savedSkillsJson,
     tracerLinksEnabled,
     savedTracerLinksEnabled,
+    bulletSelectionJson,
+    savedBulletSelectionJson,
     selectedIds,
     savedSelectedIds,
   ]);
@@ -157,9 +191,11 @@ export function useTailoringDraft({
         tailoredSkills: savedSkillsJson,
         jobDescription: savedDescription,
         selectedProjectIds: toSelectedIdsCsv(savedSelectedIds),
+        selectedExperienceBullets: savedBulletSelectionJson,
         tracerLinksEnabled: savedTracerLinksEnabled,
       }),
     [
+      savedBulletSelectionJson,
       savedSummary,
       savedHeadline,
       savedSkillsJson,
@@ -183,6 +219,10 @@ export function useTailoringDraft({
     setSavedSkillsJson(next.skillsJson);
     setTracerLinksEnabled(next.tracerLinksEnabled);
     setSavedTracerLinksEnabled(next.tracerLinksEnabled);
+    setBulletSelection(next.bulletSelection);
+    setSavedBulletSelectionJson(
+      serializeExperienceBulletSelection(next.bulletSelection),
+    );
   }, []);
 
   const markSavedSnapshot = useCallback((snapshot: TailoringSavePayload) => {
@@ -192,6 +232,11 @@ export function useTailoringDraft({
     setSavedSelectedIds(parseSelectedIds(snapshot.selectedProjectIds));
     setSavedSkillsJson(snapshot.tailoredSkills);
     setSavedTracerLinksEnabled(snapshot.tracerLinksEnabled);
+    setSavedBulletSelectionJson(
+      serializeExperienceBulletSelection(
+        parseBulletSelection(snapshot.selectedExperienceBullets),
+      ),
+    );
   }, []);
 
   const markSavedJob = useCallback((incomingJob: Job) => {
@@ -202,6 +247,9 @@ export function useTailoringDraft({
     setSavedSelectedIds(next.selectedIds);
     setSavedSkillsJson(next.skillsJson);
     setSavedTracerLinksEnabled(next.tracerLinksEnabled);
+    setSavedBulletSelectionJson(
+      serializeExperienceBulletSelection(next.bulletSelection),
+    );
   }, []);
 
   const loadCatalog = useCallback(async (silently = false) => {
@@ -274,6 +322,34 @@ export function useTailoringDraft({
     setSelectedIds(new Set(ids));
   }, []);
 
+  /**
+   * Toggles one bullet of an experience item. An item without a stored
+   * selection keeps every bullet, so the first toggle starts from all of them.
+   */
+  const handleToggleExperienceBullet = useCallback(
+    (itemId: string, index: number, bulletCount: number) => {
+      setBulletSelection((prev) => {
+        const current =
+          prev?.[itemId] ??
+          Array.from({ length: bulletCount }, (_, bullet) => bullet);
+        const next = current.includes(index)
+          ? current.filter((bullet) => bullet !== index)
+          : [...current, index].sort((a, b) => a - b);
+        return { ...(prev ?? {}), [itemId]: next };
+      });
+    },
+    [],
+  );
+
+  /** Keeps every bullet for one item, or for all items when no id is given. */
+  const handleKeepAllExperienceBullets = useCallback((itemId?: string) => {
+    setBulletSelection((prev) => {
+      if (!prev || itemId === undefined) return null;
+      const { [itemId]: _removed, ...rest } = prev;
+      return Object.keys(rest).length > 0 ? rest : null;
+    });
+  }, []);
+
   const handleAddSkillGroup = useCallback(() => {
     const nextId = createTailoredSkillDraftId();
     setSkillsDraft((prev) => [
@@ -309,6 +385,8 @@ export function useTailoringDraft({
     setJobDescription,
     selectedIds,
     selectedIdsCsv,
+    bulletSelection,
+    bulletSelectionJson,
     skillsDraft,
     setSkillsDraft,
     openSkillGroupId,
@@ -323,6 +401,8 @@ export function useTailoringDraft({
     markSavedJob,
     handleToggleProject,
     replaceSelectedProjects,
+    handleToggleExperienceBullet,
+    handleKeepAllExperienceBullets,
     handleAddSkillGroup,
     handleUpdateSkillGroup,
     handleRemoveSkillGroup,

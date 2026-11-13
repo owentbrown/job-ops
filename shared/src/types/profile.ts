@@ -123,7 +123,7 @@ export interface ProfileEntriesResponse {
 // Insights
 // ---------------------------------------------------------------------------
 
-/** ok: enough scored jobs; too-early: resume present but < 10 scored jobs. */
+/** ok: enough scored jobs; too-early: resume present but < 5 scored jobs. */
 export type ProfileDataState = "ok" | "too-early" | "no-resume";
 
 /** 0 listed only, 0.5 core strengths only, 1 in a role/project, 2 with a number, 3 saved story. */

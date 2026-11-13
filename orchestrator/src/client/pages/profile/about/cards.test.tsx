@@ -28,7 +28,27 @@ describe("BrandBanner", () => {
         onOpenStrength={onOpenStrength}
       />,
     );
-    expect(screen.getByText("SP")).toBeInTheDocument();
+    const avatar = screen.getByTestId("brand-initials");
+    expect(avatar).toHaveTextContent("SP");
+    // A perfect circle with the initials centred.
+    expect(avatar).toHaveClass(
+      "aspect-square",
+      "rounded-full",
+      "items-center",
+      "justify-center",
+    );
+    expect(avatar).toHaveAttribute("aria-hidden");
+    const line = screen.getByText(/turns fuzzy problems into funded plans/);
+    expect(line).toHaveClass("font-heading", "font-bold");
+    // The label sits above the line, the chips below it.
+    const label = screen.getByRole("heading", { name: "Your brand" });
+    const chipList = screen.getByRole("list", { name: "Brand details" });
+    expect(
+      label.compareDocumentPosition(line) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      line.compareDocumentPosition(chipList) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
     expect(
       screen.getByText(/turns fuzzy problems into funded plans/),
     ).toBeInTheDocument();

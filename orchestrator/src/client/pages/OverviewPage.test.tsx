@@ -40,7 +40,8 @@ const overview = {
   },
   sources: { rows: [] },
   scoreBands: { rows: [] },
-  skips: { highScoreSkipped: [] },
+  roles: { rows: [], otherShare: null, uncategorizedApplied: 0 },
+  skips: { rows: [], highScoreSkipped: [], uncategorizedWithNote: 0 },
 };
 
 function renderPage() {

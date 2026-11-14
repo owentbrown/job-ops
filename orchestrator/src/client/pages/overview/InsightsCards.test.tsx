@@ -3,6 +3,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as api from "@/client/api";
+import { CatchUpNotice } from "./CatchUpNotice";
 import { PaceCard } from "./PaceCard";
 import { RepliesCard } from "./RepliesCard";
 import { ResponseRateCard } from "./ResponseRateCard";
@@ -11,6 +12,17 @@ import { SkipsCard } from "./SkipsCard";
 vi.mock("@/client/api", async (orig) => ({
   ...(await orig<typeof import("@/client/api")>()),
   updateJob: vi.fn().mockResolvedValue({}),
+  getBackfillEstimate: vi.fn().mockResolvedValue({
+    kind: "roles",
+    count: 0,
+    calls: 0,
+    estimatedCost: null,
+  }),
+  runBackfill: vi.fn().mockResolvedValue({
+    kind: "roles",
+    categorized: 23,
+    failedBatches: 0,
+  }),
 }));
 
 const wrap = (ui: React.ReactNode) =>
@@ -123,12 +135,75 @@ describe("ResponseRateCard by source", () => {
 });
 
 describe("ResponseRateCard by role", () => {
-  it("explains that role categories arrive later", () => {
-    wrap(<ResponseRateCard scoreBands={[]} sources={[]} />);
+  const showRole = () =>
     fireEvent.mouseDown(screen.getByRole("tab", { name: "Role" }));
+
+  it("says roles appear once applications are scored", () => {
+    wrap(<ResponseRateCard scoreBands={[]} sources={[]} />);
+    showRole();
     expect(
-      screen.getByText(/once applications are categorized/i),
+      screen.getByText("Appears once your applications are scored."),
     ).toBeInTheDocument();
+  });
+
+  it("shows role rows and a focus note when many fall outside", () => {
+    wrap(
+      <ResponseRateCard
+        scoreBands={[]}
+        sources={[]}
+        roles={{
+          rows: [
+            { category: "growth manager", applied: 18, replied: 7 },
+            { category: "Other", applied: 2, replied: 1 },
+          ],
+          otherShare: 0.25,
+          uncategorizedApplied: 0,
+        }}
+      />,
+    );
+    showRole();
+    expect(screen.getByText("7 of 18 · 39%")).toBeInTheDocument();
+    expect(screen.getByText("1 of 2")).toBeInTheDocument();
+    expect(
+      screen.getByText(/25% of applications fall outside your search roles/),
+    ).toBeInTheDocument();
+  });
+
+  it("has no focus note when few fall outside", () => {
+    wrap(
+      <ResponseRateCard
+        scoreBands={[]}
+        sources={[]}
+        roles={{
+          rows: [{ category: "growth manager", applied: 9, replied: 1 }],
+          otherShare: 0.1,
+          uncategorizedApplied: 0,
+        }}
+      />,
+    );
+    showRole();
+    expect(screen.queryByText(/fall outside/)).not.toBeInTheDocument();
+  });
+});
+
+describe("CatchUpNotice", () => {
+  beforeEach(() => vi.mocked(api.runBackfill).mockClear());
+
+  it("shows the count and cost and runs only on click", async () => {
+    vi.mocked(api.getBackfillEstimate).mockResolvedValueOnce({
+      kind: "roles",
+      count: 23,
+      calls: 1,
+      estimatedCost: 0.02,
+    });
+    wrap(<CatchUpNotice kind="roles" noun="applications" />);
+    expect(
+      await screen.findByText(/23 applications have no role category/),
+    ).toBeInTheDocument();
+    expect(screen.getByText("est. $0.02")).toBeInTheDocument();
+    expect(api.runBackfill).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Categorize" }));
+    await waitFor(() => expect(api.runBackfill).toHaveBeenCalledWith("roles"));
   });
 });
 
@@ -252,6 +327,27 @@ describe("SkipsCard", () => {
         status: "discovered",
       }),
     );
+  });
+
+  it("draws skip reason bars, all time", () => {
+    wrap(
+      <SkipsCard
+        rows={[
+          { reason: "Salary", count: 4 },
+          { reason: "No reason given", count: 2 },
+        ]}
+        highScoreSkipped={[
+          { jobId: "j1", title: "Growth Lead", employer: "Acme", score: 88 },
+        ]}
+      />,
+    );
+    expect(screen.getByText("Salary")).toBeInTheDocument();
+    expect(screen.getByText("4")).toBeInTheDocument();
+    expect(screen.getByText("No reason given")).toBeInTheDocument();
+    expect(screen.getByText("All time")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: /reconsider growth lead/i }),
+    ).toBeInTheDocument();
   });
 
   it("says so when there is nothing to reconsider", () => {

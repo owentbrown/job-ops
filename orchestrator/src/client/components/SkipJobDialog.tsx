@@ -88,11 +88,8 @@ export const SkipJobDialog: React.FC<{
             submit();
           }}
         >
-          <div
-            role="group"
-            aria-label="Reason"
-            className="flex flex-wrap gap-2 pb-2"
-          >
+          <fieldset className="flex flex-wrap gap-2 pb-2">
+            <legend className="sr-only">Reason</legend>
             {SKIP_CATEGORIES.map((choice) => {
               const selected = category === choice;
               return (
@@ -111,7 +108,7 @@ export const SkipJobDialog: React.FC<{
                 </button>
               );
             })}
-          </div>
+          </fieldset>
           <Label htmlFor="skip-reason">Note (optional)</Label>
           <Textarea
             id="skip-reason"

@@ -12,9 +12,13 @@ import {
   type JobStatus,
   type OverviewRange,
   type OverviewResponse,
+  type OverviewRoleRow,
   type OverviewSourceRow,
+  ROLE_CATEGORY_OTHER,
   SCORE_BANDS,
   type ScoreBand,
+  SKIP_CATEGORY_UNSPECIFIED,
+  SKIP_REASON_NONE_LABEL,
   type StageEvent,
 } from "@shared/types";
 
@@ -45,7 +49,32 @@ export type OverviewJobRow = {
   employer: string;
   discoveredAt: string;
   appliedAt: string | null;
+  roleCategory: string | null;
+  skipCategory: string | null;
+  skipReason: string | null;
+  filterLayer: string | null;
 };
+
+/**
+ * A skip from before the reason chips that the user wrote a note for. System
+ * skips (pre-score filter, language auto-fail notes) are excluded.
+ */
+export function isLegacyUserSkipNote(
+  job: Pick<
+    OverviewJobRow,
+    "status" | "skipCategory" | "filterLayer" | "skipReason"
+  >,
+): boolean {
+  const note = job.skipReason?.trim() ?? "";
+  return (
+    job.status === "skipped" &&
+    job.skipCategory === null &&
+    job.filterLayer !== "rules" &&
+    job.filterLayer !== "llm" &&
+    note.length > 0 &&
+    !/^Needs /.test(note)
+  );
+}
 
 export type OverviewMessageRow = {
   matchedJobId: string | null;
@@ -259,6 +288,58 @@ export function computeOverview(input: OverviewInput): OverviewResponse {
     if (a.replyMs !== null) row.replied += 1;
   }
 
+  // Roles (in-range applications)
+  const roleRows = new Map<string, OverviewRoleRow>();
+  let uncategorizedApplied = 0;
+  for (const a of inRange) {
+    const category = a.job.roleCategory;
+    if (!category) {
+      uncategorizedApplied += 1;
+      continue;
+    }
+    let row = roleRows.get(category);
+    if (!row) {
+      row = { category, applied: 0, replied: 0 };
+      roleRows.set(category, row);
+    }
+    row.applied += 1;
+    if (a.replyMs !== null) row.replied += 1;
+  }
+  const categorizedApplied = inRange.length - uncategorizedApplied;
+  const otherApplied = roleRows.get(ROLE_CATEGORY_OTHER)?.applied ?? 0;
+  const sortedRoles = [...roleRows.values()].sort(
+    (a, b) =>
+      Number(a.category === ROLE_CATEGORY_OTHER) -
+        Number(b.category === ROLE_CATEGORY_OTHER) ||
+      b.applied - a.applied ||
+      a.category.localeCompare(b.category),
+  );
+
+  // Skip reasons (the user's own skips, all time)
+  const skipCounts = new Map<string, number>();
+  let uncategorizedWithNote = 0;
+  for (const job of input.jobs) {
+    if (job.status !== "skipped") continue;
+    if (job.skipCategory === null) {
+      if (isLegacyUserSkipNote(job)) uncategorizedWithNote += 1;
+      continue;
+    }
+    const reason =
+      job.skipCategory === SKIP_CATEGORY_UNSPECIFIED
+        ? SKIP_REASON_NONE_LABEL
+        : job.skipCategory;
+    skipCounts.set(reason, (skipCounts.get(reason) ?? 0) + 1);
+  }
+  const skipRows = [...skipCounts.entries()]
+    .map(([reason, count]) => ({ reason, count }))
+    .sort(
+      (a, b) =>
+        Number(a.reason === SKIP_REASON_NONE_LABEL) -
+          Number(b.reason === SKIP_REASON_NONE_LABEL) ||
+        b.count - a.count ||
+        a.reason.localeCompare(b.reason),
+    );
+
   const stats = input.jobStats;
   return {
     rangeDays: input.rangeDays,
@@ -296,7 +377,15 @@ export function computeOverview(input: OverviewInput): OverviewResponse {
       ),
     },
     scoreBands: { rows: bandRows },
+    roles: {
+      rows: sortedRoles,
+      otherShare:
+        categorizedApplied > 0 ? otherApplied / categorizedApplied : null,
+      uncategorizedApplied,
+    },
     skips: {
+      rows: skipRows,
+      uncategorizedWithNote,
       highScoreSkipped: input.jobs
         .filter(
           (j) =>

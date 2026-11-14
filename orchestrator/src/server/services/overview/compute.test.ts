@@ -43,6 +43,10 @@ const job = (
   employer: "Acme",
   discoveredAt: iso(20),
   appliedAt: iso(10),
+  roleCategory: null,
+  skipCategory: null,
+  skipReason: null,
+  filterLayer: null,
   ...over,
 });
 
@@ -409,5 +413,66 @@ describe("skips", () => {
       employer: "Acme",
       score: 91,
     });
+  });
+});
+
+describe("roles", () => {
+  it("groups in-range applications by role category, Other last", () => {
+    const result = computeOverview(
+      input({
+        jobs: [
+          job({ id: "1", roleCategory: "growth manager" }),
+          job({ id: "2", roleCategory: "growth manager" }),
+          job({ id: "3", roleCategory: "Other" }),
+          job({ id: "5", roleCategory: "Other" }),
+          job({ id: "6", roleCategory: "Other" }),
+          job({ id: "4", roleCategory: null }),
+        ],
+        stageEvents: [event("1", "screening", 2)],
+      }),
+    );
+    expect(result.roles.rows).toEqual([
+      { category: "growth manager", applied: 2, replied: 1 },
+      { category: "Other", applied: 3, replied: 0 },
+    ]);
+    expect(result.roles.otherShare).toBeCloseTo(3 / 5, 5);
+    expect(result.roles.uncategorizedApplied).toBe(1);
+  });
+
+  it("has no Other share when nothing is categorized", () => {
+    const result = computeOverview(input({ jobs: [job({ id: "1" })] }));
+    expect(result.roles.rows).toEqual([]);
+    expect(result.roles.otherShare).toBeNull();
+    expect(result.roles.uncategorizedApplied).toBe(1);
+  });
+});
+
+describe("skip reasons", () => {
+  it("counts only the user's own skips, all time", () => {
+    const skip = (over: Partial<OverviewJobRow> & { id: string }) =>
+      job({
+        status: "skipped",
+        appliedAt: null,
+        discoveredAt: iso(300),
+        ...over,
+      });
+    const result = computeOverview(
+      input({
+        jobs: [
+          skip({ id: "a", skipCategory: "Salary" }),
+          skip({ id: "b", skipCategory: "Salary" }),
+          skip({ id: "c", skipCategory: "unspecified" }),
+          skip({ id: "d", skipReason: "3 days in office" }), // legacy note
+          skip({ id: "e", skipReason: "Needs French (required)" }), // system
+          skip({ id: "f", filterLayer: "rules", skipReason: "x" }), // filtered
+          skip({ id: "g" }), // auto-skip
+        ],
+      }),
+    );
+    expect(result.skips.rows).toEqual([
+      { reason: "Salary", count: 2 },
+      { reason: "No reason given", count: 1 },
+    ]);
+    expect(result.skips.uncategorizedWithNote).toBe(1);
   });
 });

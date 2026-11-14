@@ -324,6 +324,56 @@ describe("salary penalty", () => {
     return JSON.parse(match?.groups?.profile ?? "{}");
   }
 
+  it("offers the search terms plus Other as role categories and saves the pick", async () => {
+    const { scoreJobSuitability } = await import("./scorer");
+    getEffectiveSettingsMock.mockResolvedValue({
+      penalizeMissingSalary: { value: false, default: false, override: null },
+      missingSalaryPenalty: { value: 0, default: 0, override: null },
+      scoringInstructions: { value: "", default: "", override: null },
+      scoringPromptTemplate: { value: "", default: "", override: null },
+      searchTerms: {
+        value: ["growth manager", "product marketing"],
+        default: [],
+        override: null,
+      },
+    } as any);
+    callJsonMock.mockResolvedValue({
+      success: true,
+      data: { score: 70, reason: "ok", roleCategory: "growth manager" },
+    });
+
+    const result = await scoreJobSuitability(createJob({ id: "j1" }), {});
+
+    const call = callJsonMock.mock.calls.at(-1)?.[0];
+    expect(call.jsonSchema.schema.properties.roleCategory.enum).toEqual([
+      "growth manager",
+      "product marketing",
+      "Other",
+    ]);
+    expect(call.jsonSchema.schema.required).toContain("roleCategory");
+    expect(getScoringPrompt()).toContain(
+      "Role options: growth manager | product marketing | Other",
+    );
+    expect(result.jobUpdates?.roleCategory).toBe("growth manager");
+  });
+
+  it("stores Other when the model returns a role outside the list", async () => {
+    const { scoreJobSuitability } = await import("./scorer");
+    getEffectiveSettingsMock.mockResolvedValue({
+      penalizeMissingSalary: { value: false, default: false, override: null },
+      missingSalaryPenalty: { value: 0, default: 0, override: null },
+      scoringInstructions: { value: "", default: "", override: null },
+      scoringPromptTemplate: { value: "", default: "", override: null },
+      searchTerms: { value: ["growth manager"], default: [], override: null },
+    } as any);
+    callJsonMock.mockResolvedValue({
+      success: true,
+      data: { score: 70, reason: "ok", roleCategory: "astronaut" },
+    });
+    const result = await scoreJobSuitability(createJob({ id: "j2" }), {});
+    expect(result.jobUpdates?.roleCategory).toBe("Other");
+  });
+
   it("sends minified source job JSON with nulls and no generated state", async () => {
     const { scoreJobSuitability } = await import("./scorer");
     getEffectiveSettingsMock.mockResolvedValue({
@@ -637,6 +687,7 @@ describe("salary penalty", () => {
       expect(result.jobUpdates).toEqual({
         salaryMinAmount: 45_000,
         salarySource: "ai_job_fact_review",
+        roleCategory: "Other",
       });
     });
 
@@ -907,6 +958,7 @@ describe("salary penalty", () => {
                 "jobPatches",
                 "jobWarnings",
                 "requiredLanguage",
+                "roleCategory",
               ],
             }),
           }),

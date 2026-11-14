@@ -933,6 +933,8 @@ function mapRowToJob(row: typeof jobs.$inferSelect): Job {
     filterLayer: (row.filterLayer as Job["filterLayer"]) ?? null,
     filteredAt: row.filteredAt ?? null,
     skipReason: row.skipReason ?? null,
+    roleCategory: row.roleCategory ?? null,
+    skipCategory: row.skipCategory ?? null,
     coverLetter: row.coverLetter ?? null,
     jobType: row.jobType ?? null,
     salarySource: row.salarySource ?? null,

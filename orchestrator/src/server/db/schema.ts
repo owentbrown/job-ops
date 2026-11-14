@@ -293,6 +293,8 @@ export const jobs = sqliteTable(
     filterLayer: text("filter_layer", { enum: ["rules", "llm", "restored"] }),
     filteredAt: text("filtered_at"),
     skipReason: text("skip_reason"),
+    roleCategory: text("role_category"),
+    skipCategory: text("skip_category"),
     coverLetter: text("cover_letter"),
 
     // Timestamps

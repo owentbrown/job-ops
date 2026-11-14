@@ -4,7 +4,13 @@
 
 import { logger } from "@infra/logger";
 import { getDefaultPromptTemplate } from "@shared/prompt-template-definitions.js";
-import type { Job, JobBrief, UpdateJobInput } from "@shared/types";
+import {
+  type Job,
+  type JobBrief,
+  ROLE_CATEGORY_OTHER,
+  roleCategoryOptions,
+  type UpdateJobInput,
+} from "@shared/types";
 import { stripHtmlTags } from "@shared/utils/string";
 import { withHostedUsageReservation } from "./hosted-usage";
 import {
@@ -102,7 +108,7 @@ type ScoringPreferences = {
 type ProfileRecord = Record<string, unknown>;
 
 /** JSON schema for suitability scoring response */
-const SCORING_SCHEMA: JsonSchemaDefinition = {
+const BASE_SCORING_SCHEMA: JsonSchemaDefinition = {
   name: "job_suitability_score",
   schema: {
     type: "object",
@@ -212,12 +218,36 @@ const SCORING_SCHEMA: JsonSchemaDefinition = {
   },
 };
 
+function buildScoringSchema(roleOptions: string[]): JsonSchemaDefinition {
+  const base = BASE_SCORING_SCHEMA.schema as {
+    properties: Record<string, unknown>;
+    required: string[];
+  };
+  return {
+    ...BASE_SCORING_SCHEMA,
+    schema: {
+      ...BASE_SCORING_SCHEMA.schema,
+      properties: {
+        ...base.properties,
+        roleCategory: {
+          type: "string",
+          enum: roleOptions,
+          description:
+            "Which of the candidate's search roles this job is, judged by the actual work, not only the title. Other if none fit.",
+        },
+      },
+      required: [...base.required, "roleCategory"],
+    },
+  };
+}
+
 const SCORING_OUTPUT_INSTRUCTIONS = `
 Perform these tasks in one response:
 1. JOB FACT REVIEW (candidate-independent): compare JOB DATA with the original listing. Use only those sources, never the candidate profile. Propose a patch only for a missing or clearly incorrect whitelisted field with an exact supporting listing excerpt. Do not guess, infer from general knowledge, estimate, annualise compensation, or paraphrase/invent evidence. Use high confidence for clear corrections; medium may only fill missing values; omit ambiguous corrections. Candidate evaluation must use the proposed corrected facts.
 2. JOB BRIEF: use only stated job information, remain neutral, remove employer fluff, never judge candidate fit, and use "Not stated" for missing practical details. Write specifics (Highlights) as concise phrases of at most 4 words each. Preserve negations, numbers, and essential qualifiers; omit a highlight if it cannot be shortened accurately.
 3. CANDIDATE EVALUATION: score the candidate against the listing, corrected facts, and scoring instructions.
 4. LANGUAGE CHECK: set requiredLanguage to the name of any language other than English that the listing makes mandatory (for example "bilingual French/English required", "must be fluent in Spanish", or a listing written in French). Use "" when other languages are only an asset, nice to have or preferred, or are not mentioned.
+5. ROLE CATEGORY: set roleCategory to the one listed search role this job is, judged by the work described (a "Client Engagement Director" doing growth work counts as that growth role). Use "Other" when none fit.
 
 Patchable fields: ${PATCHABLE_JOB_FIELDS.join(", ")}.
 Value conventions: salaryInterval is hourly|daily|weekly|monthly|yearly; salary amounts and vacancyCount are numbers without annualisation; salaryCurrency is a 3-letter code; isRemote is boolean; workFromHomeType is remote|hybrid|onsite; all other patch values are strings. Return only changed fields. Put unsupported distinctions or explicit contradictions that cannot be represented safely in jobWarnings.
@@ -237,7 +267,8 @@ Respond with ONLY valid JSON in this exact shape:
   },
   "jobPatches": [{"field":"<whitelisted field>","value":<string|number|boolean>,"confidence":"high|medium|low","evidence":"<exact listing excerpt>"}],
   "jobWarnings": ["<unrepresentable or contradictory stated fact>"],
-  "requiredLanguage": "<mandatory non-English language, or empty string>"
+  "requiredLanguage": "<mandatory non-English language, or empty string>",
+  "roleCategory": "<one of the listed roles, or Other>"
 }
 No markdown, code fences, or text outside the JSON.`.trim();
 
@@ -264,6 +295,9 @@ const NON_SOURCE_JOB_FIELDS = new Set<keyof Job>([
   "sponsorMatchScore",
   "sponsorMatchNames",
   "appliedDuplicateMatch",
+  "skipReason",
+  "roleCategory",
+  "skipCategory",
   "discoveredAt",
   "processedAt",
   "readyAt",
@@ -345,12 +379,17 @@ export async function scoreJobSuitability(
     ? (options.scoringInstructions ?? "")
     : (settings.scoringInstructions?.value ?? "");
 
-  const prompt = buildScoringPrompt(job, sanitizeProfileForPrompt(aiProfile), {
-    instructions: scoringInstructions,
-    promptTemplate:
-      settings.scoringPromptTemplate?.value ??
-      getDefaultPromptTemplate("scoringPromptTemplate"),
-  });
+  const roleOptions = roleCategoryOptions(settings.searchTerms?.value ?? []);
+  const prompt = `${buildScoringPrompt(
+    job,
+    sanitizeProfileForPrompt(aiProfile),
+    {
+      instructions: scoringInstructions,
+      promptTemplate:
+        settings.scoringPromptTemplate?.value ??
+        getDefaultPromptTemplate("scoringPromptTemplate"),
+    },
+  )}\nRole options: ${roleOptions.join(" | ")}`;
 
   const llm = await createConfiguredLlmService("scoring");
   const result = await llm.callJson<{
@@ -360,11 +399,12 @@ export async function scoreJobSuitability(
     jobPatches?: JobFactPatch[];
     jobWarnings?: string[];
     requiredLanguage?: string;
+    roleCategory?: string;
   }>({
     feature: "scoring",
     model,
     messages: [{ role: "user", content: prompt }],
-    jsonSchema: SCORING_SCHEMA,
+    jsonSchema: buildScoringSchema(roleOptions),
     maxRetries: 2,
     jobId: job.id,
   });
@@ -441,6 +481,12 @@ export async function scoreJobSuitability(
     });
   }
 
+  const pickedRole =
+    typeof result.data.roleCategory === "string" &&
+    roleOptions.includes(result.data.roleCategory)
+      ? result.data.roleCategory
+      : ROLE_CATEGORY_OTHER;
+
   return {
     score: languageBlock
       ? Math.min(penaltyResult.score, LANGUAGE_FAIL_SCORE)
@@ -453,7 +499,7 @@ export async function scoreJobSuitability(
       job.jobDescription?.trim() && result.data.jobBrief
         ? JSON.stringify(result.data.jobBrief)
         : null,
-    jobUpdates: patchResult.updates,
+    jobUpdates: { ...patchResult.updates, roleCategory: pickedRole },
   };
 }
 

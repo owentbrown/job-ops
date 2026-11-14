@@ -190,6 +190,8 @@ const jobsCarriedColumns = [
   "filtered_at",
   "skip_reason",
   "cover_letter",
+  "role_category",
+  "skip_category",
 ].filter((column) => tableHasColumn("jobs", column));
 const jobsCarriedColumnDefs = jobsCarriedColumns
   .map((column) => `,\n    ${column} TEXT`)
@@ -1286,6 +1288,8 @@ const migrations = [
   `ALTER TABLE jobs ADD COLUMN filtered_at TEXT`,
   `ALTER TABLE jobs ADD COLUMN skip_reason TEXT`,
   `ALTER TABLE jobs ADD COLUMN cover_letter TEXT`,
+  `ALTER TABLE jobs ADD COLUMN role_category TEXT`,
+  `ALTER TABLE jobs ADD COLUMN skip_category TEXT`,
 
   // AI spend tracking (fork: spend). No FKs on job/run so spend outlives them.
   `CREATE TABLE IF NOT EXISTS llm_usage (

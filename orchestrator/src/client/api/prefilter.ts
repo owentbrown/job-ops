@@ -142,9 +142,18 @@ export async function recheckScoredJobs(
 export async function saveSkipReason(
   id: string,
   reason: string | null,
-): Promise<{ id: string; skipReason: string | null }> {
-  return fetchApi<{ id: string; skipReason: string | null }>(
-    `/prefilter/jobs/${encodeURIComponent(id)}/skip-reason`,
-    { method: "PUT", body: JSON.stringify({ reason }) },
-  );
+  category?: string | null,
+): Promise<{
+  id: string;
+  skipReason: string | null;
+  skipCategory?: string | null;
+}> {
+  return fetchApi<{
+    id: string;
+    skipReason: string | null;
+    skipCategory?: string | null;
+  }>(`/prefilter/jobs/${encodeURIComponent(id)}/skip-reason`, {
+    method: "PUT",
+    body: JSON.stringify({ reason, category: category ?? null }),
+  });
 }

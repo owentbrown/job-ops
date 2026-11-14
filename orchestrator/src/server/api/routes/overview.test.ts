@@ -52,6 +52,32 @@ describe.sequential("Overview API route", () => {
     expect(data.replies.replied).toBe(1);
   });
 
+  it("estimates a catch-up pass and rejects a bad kind", async () => {
+    const res = await fetch(`${baseUrl}/api/overview/backfill?kind=roles`);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.data).toMatchObject({ kind: "roles", count: 0, calls: 0 });
+
+    const bad = await fetch(`${baseUrl}/api/overview/backfill?kind=jobs`);
+    expect(bad.status).toBe(400);
+  });
+
+  it("refuses to run a catch-up pass in demo mode", async () => {
+    const previous = process.env.DEMO_MODE;
+    process.env.DEMO_MODE = "true";
+    try {
+      const res = await fetch(`${baseUrl}/api/overview/backfill`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ kind: "roles" }),
+      });
+      expect(res.status).toBe(403);
+    } finally {
+      if (previous === undefined) delete process.env.DEMO_MODE;
+      else process.env.DEMO_MODE = previous;
+    }
+  });
+
   it("rejects an unsupported range", async () => {
     const res = await fetch(`${baseUrl}/api/overview?range=5`);
     expect(res.status).toBe(400);

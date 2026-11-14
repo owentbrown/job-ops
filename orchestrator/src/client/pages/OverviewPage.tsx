@@ -117,8 +117,12 @@ export const OverviewPage: React.FC = () => {
                 <ResponseRateCard
                   scoreBands={data.scoreBands.rows}
                   sources={data.sources.rows}
+                  roles={data.roles}
                 />
-                <SkipsCard highScoreSkipped={data.skips.highScoreSkipped} />
+                <SkipsCard
+                  rows={data.skips.rows}
+                  highScoreSkipped={data.skips.highScoreSkipped}
+                />
               </div>
             </section>
           </>

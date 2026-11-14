@@ -1,3 +1,4 @@
+import { SKIP_CATEGORIES, type SkipCategoryChoice } from "@shared/types";
 import type React from "react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -31,19 +32,26 @@ export function releaseStuckPointerLock(): void {
 
 const RELEASE_DELAY_MS = 350;
 
-/** Asks for an optional reason before skipping. Empty is fine. */
+export interface SkipJobConfirmInput {
+  note: string;
+  category: SkipCategoryChoice | null;
+}
+
+/** Asks for an optional reason chip and note before skipping. Both optional. */
 export const SkipJobDialog: React.FC<{
   open: boolean;
   jobTitle?: string;
   isPending?: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirm: (reason: string) => void;
+  onConfirm: (input: SkipJobConfirmInput) => void;
 }> = ({ open, jobTitle, isPending = false, onOpenChange, onConfirm }) => {
   const [reason, setReason] = useState("");
+  const [category, setCategory] = useState<SkipCategoryChoice | null>(null);
 
   useEffect(() => {
     if (open) {
       setReason("");
+      setCategory(null);
       return;
     }
     // Runs after the close animation.
@@ -60,7 +68,7 @@ export const SkipJobDialog: React.FC<{
   );
 
   const submit = () => {
-    if (!isPending) onConfirm(reason.trim());
+    if (!isPending) onConfirm({ note: reason.trim(), category });
   };
 
   return (
@@ -69,8 +77,8 @@ export const SkipJobDialog: React.FC<{
         <DialogHeader>
           <DialogTitle>Skip this job?</DialogTitle>
           <DialogDescription>
-            {jobTitle ? `${jobTitle}. ` : ""}Adding a reason is optional. It's
-            saved with the job.
+            {jobTitle ? `${jobTitle}. ` : ""}Pick a reason or add a note. Both
+            are optional.
           </DialogDescription>
         </DialogHeader>
         <form
@@ -80,7 +88,28 @@ export const SkipJobDialog: React.FC<{
             submit();
           }}
         >
-          <Label htmlFor="skip-reason">Reason (optional)</Label>
+          <fieldset className="flex flex-wrap gap-2 pb-2">
+            <legend className="sr-only">Reason</legend>
+            {SKIP_CATEGORIES.map((choice) => {
+              const selected = category === choice;
+              return (
+                <button
+                  key={choice}
+                  type="button"
+                  aria-pressed={selected}
+                  onClick={() => setCategory(selected ? null : choice)}
+                  className={`rounded-full border px-3 py-1 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+                    selected
+                      ? "border-primary bg-primary/10 text-foreground"
+                      : "border-border text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {choice}
+                </button>
+              );
+            })}
+          </fieldset>
+          <Label htmlFor="skip-reason">Note (optional)</Label>
           <Textarea
             id="skip-reason"
             autoFocus

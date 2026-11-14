@@ -1,7 +1,12 @@
 /** Overview dashboard data (fork: overview v2). */
-import { badRequest, toAppError } from "@infra/errors";
+import { badRequest, forbidden, toAppError } from "@infra/errors";
 import { fail, ok } from "@infra/http";
 import { logger } from "@infra/logger";
+import { isDemoMode } from "@server/config/demo";
+import {
+  estimateBackfill,
+  runBackfill,
+} from "@server/services/overview/backfill";
 import { computeOverview } from "@server/services/overview/compute";
 import { loadOverviewInput } from "@server/services/overview/load";
 import { OVERVIEW_RANGES, type OverviewRange } from "@shared/types";
@@ -51,5 +56,42 @@ overviewRouter.get("/", async (req: Request, res: Response) => {
       code: err.code,
     });
     fail(res, err);
+  }
+});
+
+const kindSchema = z.enum(["roles", "skips"], {
+  message: "kind must be roles or skips",
+});
+
+function failWith(res: Response, error: unknown, what: string) {
+  const err =
+    error instanceof z.ZodError
+      ? badRequest(error.issues.map((i) => i.message).join("; "))
+      : toAppError(error);
+  logger[err.status >= 500 ? "error" : "warn"](what, {
+    status: err.status,
+    code: err.code,
+  });
+  fail(res, err);
+}
+
+overviewRouter.get("/backfill", async (req: Request, res: Response) => {
+  try {
+    const kind = kindSchema.parse(req.query.kind);
+    ok(res, await estimateBackfill(kind));
+  } catch (error) {
+    failWith(res, error, "Overview backfill estimate failed");
+  }
+});
+
+overviewRouter.post("/backfill", async (req: Request, res: Response) => {
+  try {
+    const kind = kindSchema.parse(req.body?.kind);
+    if (isDemoMode()) {
+      throw forbidden("Categorizing is disabled in demo mode.");
+    }
+    ok(res, await runBackfill(kind));
+  } catch (error) {
+    failWith(res, error, "Overview backfill failed");
   }
 });

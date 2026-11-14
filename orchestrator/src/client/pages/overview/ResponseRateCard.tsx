@@ -1,9 +1,15 @@
 import { isExtractorSourceId, sourceLabel } from "@shared/extractors";
-import type { OverviewScoreBandRow, OverviewSourceRow } from "@shared/types.js";
+import {
+  OVERVIEW_FOCUS_OTHER_SHARE,
+  type OverviewResponse,
+  type OverviewScoreBandRow,
+  type OverviewSourceRow,
+} from "@shared/types.js";
 import type React from "react";
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CatchUpNotice } from "./CatchUpNotice";
 import { canShowRate, percent, rateLabel } from "./format";
 
 type Dimension = "score" | "role" | "source";
@@ -132,10 +138,48 @@ const SourceView: React.FC<{ rows: OverviewSourceRow[] }> = ({ rows }) => {
   );
 };
 
+const EMPTY_ROLES: OverviewResponse["roles"] = {
+  rows: [],
+  otherShare: null,
+  uncategorizedApplied: 0,
+};
+
+const RoleView: React.FC<{ roles: OverviewResponse["roles"] }> = ({
+  roles,
+}) => {
+  const focus =
+    roles.otherShare !== null && roles.otherShare >= OVERVIEW_FOCUS_OTHER_SHARE;
+  return (
+    <>
+      {roles.rows.length === 0 ? (
+        <Hint>Appears once your applications are scored.</Hint>
+      ) : (
+        <RateRows
+          showRates
+          rows={roles.rows.map((r) => ({
+            key: r.category,
+            label: r.category,
+            applied: r.applied,
+            replied: r.replied,
+          }))}
+        />
+      )}
+      {focus ? (
+        <p className="text-xs text-muted-foreground">
+          {Math.round((roles.otherShare as number) * 100)}% of applications fall
+          outside your search roles.
+        </p>
+      ) : null}
+      <CatchUpNotice kind="roles" noun="applications" />
+    </>
+  );
+};
+
 export const ResponseRateCard: React.FC<{
   scoreBands: OverviewScoreBandRow[];
   sources: OverviewSourceRow[];
-}> = ({ scoreBands, sources }) => {
+  roles?: OverviewResponse["roles"];
+}> = ({ scoreBands, sources, roles = EMPTY_ROLES }) => {
   const [dimension, setDimension] = useState<Dimension>("score");
   return (
     <Card>
@@ -156,9 +200,7 @@ export const ResponseRateCard: React.FC<{
           </Tabs>
         </div>
         {dimension === "score" ? <ScoreView rows={scoreBands} /> : null}
-        {dimension === "role" ? (
-          <Hint>Appears once applications are categorized by role.</Hint>
-        ) : null}
+        {dimension === "role" ? <RoleView roles={roles} /> : null}
         {dimension === "source" ? <SourceView rows={sources} /> : null}
       </CardContent>
     </Card>

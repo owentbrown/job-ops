@@ -104,13 +104,18 @@ export async function restoreFilteredJob(id: string): Promise<boolean> {
 }
 
 /** Saves (or clears, with null) the note typed when skipping a job. Only skipped jobs. */
-export async function setSkipReason(
+/** `undefined` leaves a field unchanged; `null` clears it. */
+export async function setSkipNote(
   id: string,
-  reason: string | null,
+  note: { reason?: string | null; category?: string | null },
 ): Promise<boolean> {
   const result = await db
     .update(jobs)
-    .set({ skipReason: reason, updatedAt: new Date().toISOString() })
+    .set({
+      ...(note.reason !== undefined ? { skipReason: note.reason } : {}),
+      ...(note.category !== undefined ? { skipCategory: note.category } : {}),
+      updatedAt: new Date().toISOString(),
+    })
     .where(
       and(
         privateDataScopeFilter(jobs),

@@ -1462,6 +1462,7 @@ describe.sequential("Jobs API routes", () => {
     expect(skipBody.data.results).toHaveLength(1);
     expect(skipBody.data.results[0].ok).toBe(true);
     expect(skipBody.data.results[0].job.status).toBe("skipped");
+    expect(skipBody.data.results[0].job.skipCategory).toBe("unspecified");
 
     const deleteRes = await fetch(`${baseUrl}/api/jobs/status/skipped`, {
       method: "DELETE",

@@ -711,12 +711,12 @@ describe("JobDetailPanel", () => {
       screen.getByRole("button", { name: /more actions/i }),
     );
     fireEvent.click(await screen.findByRole("menuitem", { name: /skip job/i }));
-    fireEvent.change(await screen.findByLabelText("Reason (optional)"), {
+    fireEvent.change(await screen.findByLabelText("Note (optional)"), {
       target: { value: "too far" },
     });
     fireEvent.click(screen.getByRole("button", { name: "Skip job" }));
     await waitFor(() =>
-      expect(api.saveSkipReason).toHaveBeenCalledWith("job-1", "too far"),
+      expect(api.saveSkipReason).toHaveBeenCalledWith("job-1", "too far", null),
     );
     // The parent moves on to no selected job, which unmounts the dialog.
     view.rerender(

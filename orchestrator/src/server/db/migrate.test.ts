@@ -585,9 +585,11 @@ describe.sequential("database migrations", () => {
       import Database from "better-sqlite3";
       const db = new Database(join(process.env.DATA_DIR, "jobs.db"));
       db.prepare(\`INSERT INTO jobs (id, tenant_id, user_id, title, employer, job_url,
-        cover_letter, filter_reason, filter_layer, filtered_at, skip_reason)
+        cover_letter, filter_reason, filter_layer, filtered_at, skip_reason,
+        role_category, skip_category)
         VALUES ('job-1', 'tenant_default', 'owner-1', 'Role', 'Acme', 'https://example.com/1',
-        'Dear team', 'too far', 'commute', '2026-11-11T00:00:00Z', 'not a fit')\`).run();
+        'Dear team', 'too far', 'commute', '2026-11-11T00:00:00Z', 'not a fit',
+        'Growth manager', 'Salary')\`).run();
       db.close();
     `;
     const check = `
@@ -602,6 +604,8 @@ describe.sequential("database migrations", () => {
         filter_layer: "commute",
         filtered_at: "2026-11-11T00:00:00Z",
         skip_reason: "not a fit",
+        role_category: "Growth manager",
+        skip_category: "Salary",
       };
       for (const [column, value] of Object.entries(expected)) {
         if (row?.[column] !== value) {

@@ -96,6 +96,8 @@ export const queryKeys = {
   overview: {
     all: ["overview"] as const,
     data: (range: number) => [...queryKeys.overview.all, range] as const,
+    backfill: (kind: string) =>
+      [...queryKeys.overview.all, "backfill", kind] as const,
   },
   watchlist: {
     all: ["watchlist"] as const,

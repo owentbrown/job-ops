@@ -13,11 +13,14 @@ describe("SkipJobDialog", () => {
         onConfirm={onConfirm}
       />,
     );
-    fireEvent.change(screen.getByLabelText("Reason (optional)"), {
+    fireEvent.change(screen.getByLabelText("Note (optional)"), {
       target: { value: "  3 days in office  " },
     });
     fireEvent.click(screen.getByRole("button", { name: "Skip job" }));
-    expect(onConfirm).toHaveBeenCalledWith("3 days in office");
+    expect(onConfirm).toHaveBeenCalledWith({
+      note: "3 days in office",
+      category: null,
+    });
   });
 
   it("allows skipping with no reason", () => {
@@ -26,7 +29,36 @@ describe("SkipJobDialog", () => {
       <SkipJobDialog open onOpenChange={() => {}} onConfirm={onConfirm} />,
     );
     fireEvent.click(screen.getByRole("button", { name: "Skip job" }));
-    expect(onConfirm).toHaveBeenCalledWith("");
+    expect(onConfirm).toHaveBeenCalledWith({ note: "", category: null });
+  });
+
+  it("sends the picked reason chip with the note", () => {
+    const onConfirm = vi.fn();
+    render(
+      <SkipJobDialog open onOpenChange={() => {}} onConfirm={onConfirm} />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Salary" }));
+    fireEvent.change(screen.getByLabelText(/note/i), {
+      target: { value: "too low" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /skip job/i }));
+    expect(onConfirm).toHaveBeenCalledWith({
+      note: "too low",
+      category: "Salary",
+    });
+  });
+
+  it("un-picks a chip when clicked again", () => {
+    const onConfirm = vi.fn();
+    render(
+      <SkipJobDialog open onOpenChange={() => {}} onConfirm={onConfirm} />,
+    );
+    const chip = screen.getByRole("button", { name: "Company" });
+    fireEvent.click(chip);
+    expect(chip).toHaveAttribute("aria-pressed", "true");
+    fireEvent.click(chip);
+    fireEvent.click(screen.getByRole("button", { name: /skip job/i }));
+    expect(onConfirm).toHaveBeenCalledWith({ note: "", category: null });
   });
 
   it("leaves the page clickable when opened from a menu that blocked clicks", async () => {

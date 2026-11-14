@@ -8,7 +8,12 @@ import {
 } from "@server/services/demo-simulator";
 import { getProfile } from "@server/services/profile";
 import { scoreJobSuitability } from "@server/services/scorer";
-import type { JobAction, JobActionResult, JobStatus } from "@shared/types";
+import {
+  type JobAction,
+  type JobActionResult,
+  type JobStatus,
+  SKIP_CATEGORY_UNSPECIFIED,
+} from "@shared/types";
 
 const SKIPPABLE_STATUSES: ReadonlySet<JobStatus> = new Set([
   "discovered",
@@ -132,7 +137,10 @@ export async function executeJobActionForJob(
         });
       }
 
-      const updated = await jobsRepo.updateJob(jobId, { status: "skipped" });
+      const updated = await jobsRepo.updateJob(jobId, {
+        status: "skipped",
+        skipCategory: SKIP_CATEGORY_UNSPECIFIED,
+      });
       if (!updated) {
         throw new AppError({
           status: 404,

@@ -32,6 +32,10 @@ export async function loadOverviewInput(args: {
           employer: jobs.employer,
           discoveredAt: jobs.discoveredAt,
           appliedAt: jobs.appliedAt,
+          roleCategory: jobs.roleCategory,
+          skipCategory: jobs.skipCategory,
+          skipReason: jobs.skipReason,
+          filterLayer: jobs.filterLayer,
         })
         .from(jobs)
         .where(privateDataScopeFilter(jobs)),

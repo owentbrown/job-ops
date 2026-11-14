@@ -58,7 +58,9 @@ export function useMarkAsAppliedMutation() {
   });
 }
 
-export type SkipJobInput = string | { id: string; reason?: string | null };
+export type SkipJobInput =
+  | string
+  | { id: string; reason?: string | null; category?: string | null };
 
 function skipInputId(input: SkipJobInput): string {
   return typeof input === "string" ? input : input.id;
@@ -72,10 +74,16 @@ export function useSkipJobMutation() {
       const job = await api.skipJob(id);
       const reason =
         typeof input === "string" ? "" : (input.reason ?? "").trim();
-      if (!reason) return job;
+      const category =
+        typeof input === "string" ? null : (input.category ?? null);
+      if (!reason && !category) return job;
       try {
-        const saved = await api.saveSkipReason(id, reason);
-        return { ...job, skipReason: saved.skipReason };
+        const saved = await api.saveSkipReason(id, reason || null, category);
+        return {
+          ...job,
+          skipReason: saved.skipReason,
+          skipCategory: saved.skipCategory ?? job?.skipCategory,
+        };
       } catch {
         // The skip itself worked; only the note failed.
         toast.error("Job skipped, but the reason could not be saved.");

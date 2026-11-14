@@ -346,4 +346,43 @@ describe.sequential("Prefilter API routes", () => {
     expect(res.status).toBe(200);
     expect((await getJobById(job.id))?.skipReason).toBe("too junior");
   });
+
+  it("saves a skip category alongside the note", async () => {
+    const job = await seedJob("Product Manager", "https://example.com/cat");
+    const { updateJob, getJobById } = await import("@server/repositories/jobs");
+    await updateJob(job.id, { status: "skipped", skipCategory: "unspecified" });
+
+    const res = await request(`/jobs/${job.id}/skip-reason`, {
+      method: "PUT",
+      body: JSON.stringify({ reason: "", category: "Salary" }),
+    });
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.data).toMatchObject({
+      skipCategory: "Salary",
+      skipReason: null,
+    });
+
+    await request(`/jobs/${job.id}/skip-reason`, {
+      method: "PUT",
+      body: JSON.stringify({ reason: "too far" }),
+    });
+    let saved = await getJobById(job.id);
+    expect(saved?.skipCategory).toBe("Salary");
+    expect(saved?.skipReason).toBe("too far");
+
+    await request(`/jobs/${job.id}/skip-reason`, {
+      method: "PUT",
+      body: JSON.stringify({ reason: "still far", category: null }),
+    });
+    saved = await getJobById(job.id);
+    expect(saved?.skipCategory).toBe("Salary");
+    expect(saved?.skipReason).toBe("still far");
+
+    const bad = await request(`/jobs/${job.id}/skip-reason`, {
+      method: "PUT",
+      body: JSON.stringify({ category: "Bogus" }),
+    });
+    expect(bad.status).toBe(400);
+  });
 });

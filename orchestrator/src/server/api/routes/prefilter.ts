@@ -20,6 +20,7 @@ import {
   writePrefilterConfig,
 } from "@server/services/prefilter/config";
 import { previewRules } from "@server/services/prefilter/preview";
+import { SKIP_CATEGORIES } from "@shared/types";
 import { type Request, type Response, Router } from "express";
 import { z } from "zod";
 
@@ -135,7 +136,8 @@ prefilterRouter.post(
 
 const recheckBodySchema = z.object({ apply: z.boolean().default(false) });
 const skipReasonBodySchema = z.object({
-  reason: z.string().trim().max(1000).nullable(),
+  reason: z.string().trim().max(1000).nullable().optional(),
+  category: z.enum(SKIP_CATEGORIES).nullable().optional(),
 });
 
 /**
@@ -199,12 +201,21 @@ prefilterRouter.put(
     if (isDemoMode()) {
       throw forbidden("Saving skip reasons is disabled in demo mode.");
     }
-    const { reason } = skipReasonBodySchema.parse(req.body ?? {});
-    const value = reason ? reason : null;
-    if (!(await prefilterRepo.setSkipReason(req.params.id, value))) {
+    const { reason, category } = skipReasonBodySchema.parse(req.body ?? {});
+    const note = {
+      reason: reason === undefined ? undefined : reason || null,
+      // No chip picked keeps the stored category ("unspecified" for user skips).
+      category: category ?? undefined,
+    };
+    if (!(await prefilterRepo.setSkipNote(req.params.id, note))) {
       throw notFound("Skipped job not found");
     }
-    ok(res, { id: req.params.id, skipReason: value });
+    const job = await jobsRepo.getJobById(req.params.id);
+    ok(res, {
+      id: req.params.id,
+      skipReason: job?.skipReason ?? null,
+      skipCategory: job?.skipCategory ?? null,
+    });
   }),
 );
 

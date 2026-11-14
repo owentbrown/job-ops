@@ -226,6 +226,8 @@ export interface Job {
   filterLayer?: PrefilterLayer | null; // rules | llm | restored
   filteredAt?: string | null; // ISO timestamp when filtered
   skipReason?: string | null; // Optional note the user typed when skipping
+  roleCategory?: string | null; // AI role category: a search term or "Other"
+  skipCategory?: string | null; // Skip chip, "unspecified", or null for system skips
   coverLetter?: string | null; // Approved cover letter draft (plain text)
   appliedDuplicateMatch?: AppliedDuplicateMatch | null; // Included on detail responses and may be omitted on list responses
 
@@ -590,6 +592,8 @@ export interface UpdateJobInput {
   appliedAt?: string;
   sponsorMatchScore?: number;
   sponsorMatchNames?: string;
+  roleCategory?: string | null;
+  skipCategory?: string | null;
 }
 
 export interface CreateJobNoteInput {

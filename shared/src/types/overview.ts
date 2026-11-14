@@ -24,6 +24,14 @@ export interface OverviewScoreBandRow extends OverviewRateRow {
   band: ScoreBand;
 }
 
+export interface OverviewRoleRow extends OverviewRateRow {
+  category: string;
+}
+
+/** The focus note shows when this share of applications is in "Other". */
+export const OVERVIEW_FOCUS_OTHER_SHARE = 0.2;
+export const SKIP_REASON_NONE_LABEL = "No reason given";
+
 export interface OverviewSkippedJob {
   jobId: string;
   title: string;
@@ -59,5 +67,16 @@ export interface OverviewResponse {
   };
   sources: { rows: OverviewSourceRow[] };
   scoreBands: { rows: OverviewScoreBandRow[] };
-  skips: { highScoreSkipped: OverviewSkippedJob[] };
+  roles: {
+    rows: OverviewRoleRow[];
+    /** Share of categorized applications in "Other"; null with none categorized. */
+    otherShare: number | null;
+    uncategorizedApplied: number;
+  };
+  skips: {
+    rows: { reason: string; count: number }[];
+    highScoreSkipped: OverviewSkippedJob[];
+    /** User skips from before the chips that have a note but no category. */
+    uncategorizedWithNote: number;
+  };
 }

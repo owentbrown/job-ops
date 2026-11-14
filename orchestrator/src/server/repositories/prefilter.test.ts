@@ -192,13 +192,13 @@ describe.sequential("prefilter repository", () => {
 
   it("saves a skip reason only on skipped jobs", async () => {
     const job = await makeJob("skip");
-    expect(await prefilterRepo.setSkipReason(job.id, "3 days in office")).toBe(
-      false,
-    );
+    expect(
+      await prefilterRepo.setSkipNote(job.id, { reason: "3 days in office" }),
+    ).toBe(false);
     await jobsRepo.updateJob(job.id, { status: "skipped" });
-    expect(await prefilterRepo.setSkipReason(job.id, "3 days in office")).toBe(
-      true,
-    );
+    expect(
+      await prefilterRepo.setSkipNote(job.id, { reason: "3 days in office" }),
+    ).toBe(true);
     expect((await jobsRepo.getJobById(job.id))?.skipReason).toBe(
       "3 days in office",
     );

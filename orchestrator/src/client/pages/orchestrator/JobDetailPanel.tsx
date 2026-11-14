@@ -9,7 +9,10 @@ import { GhostwriterDrawer } from "@client/components/ghostwriter/GhostwriterDra
 import { JobDetailsEditDrawer } from "@client/components/JobDetailsEditDrawer";
 import { KbdHint } from "@client/components/KbdHint";
 import { OpenJobListingButton } from "@client/components/OpenJobListingButton";
-import { SkipJobDialog } from "@client/components/SkipJobDialog";
+import {
+  type SkipJobConfirmInput,
+  SkipJobDialog,
+} from "@client/components/SkipJobDialog";
 import { Tip } from "@client/components/Tip";
 import { TailoringWorkspace } from "@client/components/tailoring/TailoringWorkspace";
 import {
@@ -512,10 +515,14 @@ export const JobDetailPanel: React.FC<JobDetailPanelProps> = ({
   }, [selectedJob]);
 
   const confirmSkip = useCallback(
-    async (reason: string) => {
+    async ({ note, category }: SkipJobConfirmInput) => {
       if (!selectedJob) return;
       try {
-        await skipJobMutation.mutateAsync({ id: selectedJob.id, reason });
+        await skipJobMutation.mutateAsync({
+          id: selectedJob.id,
+          reason: note,
+          category,
+        });
         setSkipDialogOpen(false);
         trackProductEvent("jobs_job_action_completed", {
           action: "skip",
@@ -1063,7 +1070,7 @@ export const JobDetailPanel: React.FC<JobDetailPanelProps> = ({
         jobTitle={selectedJob?.title}
         isPending={skipJobMutation.isPending}
         onOpenChange={setSkipDialogOpen}
-        onConfirm={(reason) => void confirmSkip(reason)}
+        onConfirm={(input) => void confirmSkip(input)}
       />
     </Tabs>
   );

@@ -1,5 +1,8 @@
 import { DocumentActions } from "@client/components/DocumentActions";
-import { SkipJobDialog } from "@client/components/SkipJobDialog";
+import {
+  type SkipJobConfirmInput,
+  SkipJobDialog,
+} from "@client/components/SkipJobDialog";
 import { resolveResumeProjectSelection } from "@shared/resume-projects";
 import {
   type ApplicationStage,
@@ -396,10 +399,14 @@ export const JobPage: React.FC = () => {
     setSkipDialogOpen(true);
   };
 
-  const confirmSkip = async (reason: string) => {
+  const confirmSkip = async ({ note, category }: SkipJobConfirmInput) => {
     await runAction("skip", async () => {
       if (!job) return;
-      await skipJobMutation.mutateAsync({ id: job.id, reason });
+      await skipJobMutation.mutateAsync({
+        id: job.id,
+        reason: note,
+        category,
+      });
       setSkipDialogOpen(false);
       toast.message("Job skipped");
     });
@@ -990,7 +997,7 @@ export const JobPage: React.FC = () => {
         jobTitle={job?.title}
         isPending={activeAction === "skip"}
         onOpenChange={setSkipDialogOpen}
-        onConfirm={(reason) => void confirmSkip(reason)}
+        onConfirm={(input) => void confirmSkip(input)}
       />
 
       <LogEventModal

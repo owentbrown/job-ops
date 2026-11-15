@@ -3,16 +3,28 @@ import { Tip } from "@client/components/Tip";
 import { getDisplayKey, SHORTCUTS } from "@client/lib/shortcut-map";
 import { Filter, RotateCcw, Search } from "lucide-react";
 import type React from "react";
-import { Link } from "react-router-dom";
+import { Fragment } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-import { tabs } from "../constants";
+import {
+  FILTERED_LIST_LABEL,
+  type FilterTab,
+  jobListItems,
+  tabs,
+} from "../constants";
 import { tabDescriptions } from "./filterOptions";
+import { JobListSwiper } from "./JobListSwiper";
 import type { OrchestratorTabRowProps } from "./types";
+
+const filteredLinkClass =
+  "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-all hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
 
 export const OrchestratorTabRow: React.FC<OrchestratorTabRowProps> = ({
   counts,
+  activeTab,
+  onTabChange,
   onOpenCommandBar,
   isFiltersOpen,
   onFiltersOpenChange,
@@ -20,10 +32,20 @@ export const OrchestratorTabRow: React.FC<OrchestratorTabRowProps> = ({
   onResetFilters,
 }) => {
   const commandShortcutLabel = getDisplayKey(SHORTCUTS.search);
+  const navigate = useNavigate();
 
   return (
     <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-      <div className="flex flex-wrap items-center gap-1">
+      <JobListSwiper
+        className="md:hidden"
+        items={jobListItems(counts)}
+        activeId={activeTab}
+        onSelect={(id) => {
+          if (id === "filtered") navigate("/jobs/filtered");
+          else onTabChange(id as FilterTab);
+        }}
+      />
+      <div className="hidden flex-wrap items-center gap-1 md:flex">
         <TabsList className="h-auto w-full flex-wrap justify-start gap-1 lg:w-auto">
           {tabs.map((tab, index) => {
             const description = tabDescriptions[tab.id];
@@ -43,27 +65,29 @@ export const OrchestratorTabRow: React.FC<OrchestratorTabRowProps> = ({
               </TabsTrigger>
             );
 
-            if (!description) {
-              return trigger;
-            }
-
-            return (
+            const item = description ? (
               <Tip
-                key={tab.id}
                 asChild
                 content={<p>{description}</p>}
                 contentClassName="max-w-xs text-center"
               >
                 {trigger}
               </Tip>
+            ) : (
+              trigger
+            );
+
+            return (
+              <Fragment key={tab.id}>
+                {tab.id === "all" ? (
+                  <Link to="/jobs/filtered" className={filteredLinkClass}>
+                    {FILTERED_LIST_LABEL}
+                  </Link>
+                ) : null}
+                {item}
+              </Fragment>
             );
           })}
-          <Link
-            to="/jobs/filtered"
-            className="inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium ring-offset-background transition-all hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          >
-            Filtered
-          </Link>
         </TabsList>
       </div>
 

@@ -1,5 +1,5 @@
 import type { JobSource } from "@shared/types.js";
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import type { ComponentProps } from "react";
 import { MemoryRouter } from "react-router-dom";
 import {
@@ -42,6 +42,15 @@ afterAll(() => {
 beforeEach(() => {
   vi.clearAllMocks();
 });
+
+/** The desktop tab strip (the phone swiper is also in the DOM under jsdom). */
+const desktopTabs = () => {
+  const list = screen
+    .getAllByRole("tablist")
+    .find((el) => el.getAttribute("data-testid") !== "job-list-swiper");
+  if (!list) throw new Error("desktop tab list not found");
+  return list;
+};
 
 const renderFilters = (
   overrides?: Partial<ComponentProps<typeof OrchestratorFilters>>,
@@ -138,7 +147,9 @@ describe("OrchestratorFilters", () => {
   it("notifies when tabs and command search shortcut are used", () => {
     const { props } = renderFilters();
 
-    fireEvent.mouseDown(screen.getByRole("tab", { name: /all jobs/i }));
+    fireEvent.mouseDown(
+      within(desktopTabs()).getByRole("tab", { name: /all jobs/i }),
+    );
     expect(props.onTabChange).toHaveBeenCalledWith("all");
 
     fireEvent.click(screen.getByRole("button", { name: /search jobs/i }));
@@ -148,7 +159,9 @@ describe("OrchestratorFilters", () => {
   it("shows contextual tab descriptions on hover", async () => {
     renderFilters();
 
-    const discoveredTab = screen.getByRole("tab", { name: /discovered/i });
+    const discoveredTab = within(desktopTabs()).getByRole("tab", {
+      name: /to review/i,
+    });
     fireEvent.pointerOver(discoveredTab);
     fireEvent.pointerMove(discoveredTab);
 

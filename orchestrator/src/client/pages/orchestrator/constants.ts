@@ -210,14 +210,39 @@ export const tabs: Array<{
   label: string;
   statuses: JobStatus[];
 }> = [
-  { id: "ready", label: "Ready", statuses: ["ready", "processing"] },
+  { id: "ready", label: "To apply", statuses: ["ready", "processing"] },
   {
     id: "discovered",
-    label: "Discovered",
+    label: "To review",
     statuses: ["discovered", "processing"],
   },
-  { id: "all", label: "All Jobs", statuses: [] },
+  { id: "all", label: "All jobs", statuses: [] },
 ];
+
+/** The Filtered page is its own route but sits among the job lists. */
+export const FILTERED_LIST_LABEL = "Filtered out";
+
+/**
+ * Order of the job lists in the tab bars: what to do next first, then what
+ * the rules cut, then the archive. The phone swiper loops through them.
+ */
+export type JobListId = FilterTab | "filtered";
+export const jobListOrder: JobListId[] = [
+  "ready",
+  "discovered",
+  "filtered",
+  "all",
+];
+
+export function jobListItems(
+  counts?: Partial<Record<FilterTab, number>>,
+): Array<{ id: JobListId; label: string; count?: number }> {
+  return jobListOrder.map((id) => {
+    if (id === "filtered") return { id, label: FILTERED_LIST_LABEL };
+    const tab = tabs.find((item) => item.id === id);
+    return { id, label: tab?.label ?? id, count: counts?.[id] };
+  });
+}
 
 export const emptyStateCopy: Record<FilterTab, string> = {
   ready: "Run a search to discover and process new jobs.",

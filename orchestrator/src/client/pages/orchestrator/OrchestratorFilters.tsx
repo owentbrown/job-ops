@@ -79,6 +79,8 @@ export const OrchestratorFilters: React.FC<OrchestratorFiltersProps> = ({
       <div className="space-y-3">
         <OrchestratorTabRow
           counts={counts}
+          activeTab={activeTab}
+          onTabChange={onTabChange}
           onOpenCommandBar={onOpenCommandBar}
           isFiltersOpen={isFiltersOpen}
           onFiltersOpenChange={onFiltersOpenChange}

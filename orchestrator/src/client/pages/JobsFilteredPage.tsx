@@ -1,9 +1,10 @@
 import { EmbeddedPage, PageFrame } from "@client/components/PageFrame";
 import type React from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { FilteredJobsPage } from "./FilteredJobsPage";
-import { tabs } from "./orchestrator/constants";
+import { jobListItems } from "./orchestrator/constants";
+import { JobListSwiper } from "./orchestrator/filters/JobListSwiper";
 
 // Mirrors the Jobs page header (OrchestratorHeader) without its run controls.
 const JobsIcon: React.FC<{ className?: string }> = () => (
@@ -20,23 +21,30 @@ const linkClass = ({ isActive }: { isActive: boolean }) =>
   );
 
 /** Jobs > Filtered: the same tab strip as the Jobs page, then the filtered list. */
-export const JobsFilteredPage: React.FC = () => (
-  <PageFrame icon={JobsIcon} title="Job Ops" subtitle="Orchestrator">
-    <nav
-      aria-label="Job lists"
-      className="inline-flex h-auto w-full flex-wrap items-center justify-start gap-1 rounded-lg bg-muted p-1 text-muted-foreground lg:w-auto"
-    >
-      {tabs.map((tab) => (
-        <NavLink key={tab.id} to={`/jobs/${tab.id}`} className={linkClass}>
-          {tab.label}
-        </NavLink>
-      ))}
-      <NavLink to="/jobs/filtered" className={linkClass}>
-        Filtered
-      </NavLink>
-    </nav>
-    <EmbeddedPage hideHeading>
-      <FilteredJobsPage view="jobs" />
-    </EmbeddedPage>
-  </PageFrame>
-);
+export const JobsFilteredPage: React.FC = () => {
+  const navigate = useNavigate();
+  const items = jobListItems();
+  return (
+    <PageFrame icon={JobsIcon} title="Job Ops" subtitle="Orchestrator">
+      <JobListSwiper
+        className="md:hidden"
+        items={items}
+        activeId="filtered"
+        onSelect={(id) => navigate(`/jobs/${id}`)}
+      />
+      <nav
+        aria-label="Job lists"
+        className="hidden h-auto w-full flex-wrap items-center justify-start gap-1 rounded-lg bg-muted p-1 text-muted-foreground md:inline-flex lg:w-auto"
+      >
+        {items.map((item) => (
+          <NavLink key={item.id} to={`/jobs/${item.id}`} className={linkClass}>
+            {item.label}
+          </NavLink>
+        ))}
+      </nav>
+      <EmbeddedPage hideHeading>
+        <FilteredJobsPage view="jobs" />
+      </EmbeddedPage>
+    </PageFrame>
+  );
+};

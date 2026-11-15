@@ -42,6 +42,11 @@ vi.mock("../api", () => ({
   }),
   getProfile: vi.fn().mockResolvedValue({ personName: "Test User" }),
   skipJob: vi.fn().mockResolvedValue({}),
+  saveSkipReason: vi.fn().mockResolvedValue({
+    id: "job-1",
+    skipReason: null,
+    skipCategory: "Salary",
+  }),
   markAsApplied: vi.fn().mockResolvedValue({}),
   processJob: vi.fn().mockResolvedValue({}),
   getWatchlistSources: vi.fn().mockResolvedValue({
@@ -1677,8 +1682,13 @@ describe("OrchestratorPage", () => {
     expect(screen.getByTestId("location")).toBeInTheDocument();
 
     pressKey("s");
+    // The shortcut asks for a reason before skipping.
+    fireEvent.click(await screen.findByRole("button", { name: "Salary" }));
+    expect(api.skipJob).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole("button", { name: "Skip job" }));
     await waitFor(() => {
       expect(api.skipJob).toHaveBeenCalledWith("job-1");
+      expect(api.saveSkipReason).toHaveBeenCalledWith("job-1", null, "Salary");
       expect(toast.message).toHaveBeenCalledWith("Job skipped");
     });
 

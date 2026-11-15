@@ -511,7 +511,8 @@ export const JobDetailPanel: React.FC<JobDetailPanelProps> = ({
 
   const handleSkip = useCallback(async () => {
     if (!selectedJob) return;
-    setSkipDialogOpen(true);
+    // Wait for the menu to close, or its closing click dismisses the dialog.
+    window.setTimeout(() => setSkipDialogOpen(true), 0);
   }, [selectedJob]);
 
   const confirmSkip = useCallback(

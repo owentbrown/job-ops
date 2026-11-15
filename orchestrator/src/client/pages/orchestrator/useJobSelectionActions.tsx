@@ -1,4 +1,5 @@
 import * as api from "@client/api";
+import type { SkipJobConfirmInput } from "@client/components/SkipJobDialog";
 import type {
   JobAction,
   JobActionResponse,
@@ -36,6 +37,25 @@ interface UseJobSelectionActionsArgs {
   activeJobs: JobListItem[];
   activeTab: FilterTab;
   loadJobs: () => Promise<void>;
+}
+
+/** Records the picked reason on every job the bulk skip succeeded on. */
+async function saveBulkSkipNote(
+  result: JobActionResponse,
+  { note, category }: SkipJobConfirmInput,
+): Promise<void> {
+  const reason = note.trim();
+  if (!reason && !category) return;
+  const ids = result.results
+    .filter((entry) => entry.ok)
+    .map((entry) => entry.jobId);
+  const saved = await Promise.allSettled(
+    ids.map((id) => api.saveSkipReason(id, reason || null, category)),
+  );
+  const failed = saved.filter((entry) => entry.status === "rejected").length;
+  if (failed > 0) {
+    toast.error(`Skipped, but the reason didn't save for ${failed} job(s).`);
+  }
 }
 
 export function useJobSelectionActions({
@@ -136,7 +156,7 @@ export function useJobSelectionActions({
   }, []);
 
   const runJobAction = useCallback(
-    async (action: JobAction) => {
+    async (action: JobAction, skipNote?: SkipJobConfirmInput) => {
       const selectedAtStart = Array.from(selectedJobIds);
       if (selectedAtStart.length === 0) return;
       if (selectedAtStart.length > MAX_JOB_ACTION_JOB_IDS) {
@@ -252,6 +272,9 @@ export function useJobSelectionActions({
 
         const result = finalResult as JobActionResponse;
         const failedIds = getFailedJobIds(result);
+        if (action === "skip" && skipNote) {
+          await saveBulkSkipNote(result, skipNote);
+        }
         const successLabel = jobActionSuccessLabel[action];
         trackProductEvent("jobs_bulk_action_completed", {
           action: result.action,

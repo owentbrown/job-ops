@@ -41,10 +41,20 @@ export interface SkipJobConfirmInput {
 export const SkipJobDialog: React.FC<{
   open: boolean;
   jobTitle?: string;
+  heading?: string;
+  confirmLabel?: string;
   isPending?: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: (input: SkipJobConfirmInput) => void;
-}> = ({ open, jobTitle, isPending = false, onOpenChange, onConfirm }) => {
+}> = ({
+  open,
+  jobTitle,
+  heading,
+  confirmLabel = "Skip job",
+  isPending = false,
+  onOpenChange,
+  onConfirm,
+}) => {
   const [reason, setReason] = useState("");
   const [category, setCategory] = useState<SkipCategoryChoice | null>(null);
 
@@ -75,7 +85,7 @@ export const SkipJobDialog: React.FC<{
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Skip this job?</DialogTitle>
+          <DialogTitle>{heading ?? "Skip this job?"}</DialogTitle>
           <DialogDescription>
             {jobTitle ? `${jobTitle}. ` : ""}Pick a reason or add a note. Both
             are optional.
@@ -138,7 +148,7 @@ export const SkipJobDialog: React.FC<{
               Cancel
             </Button>
             <Button type="submit" disabled={isPending}>
-              {isPending ? "Skipping…" : "Skip job"}
+              {isPending ? "Skipping…" : confirmLabel}
             </Button>
           </DialogFooter>
         </form>

@@ -1,5 +1,6 @@
 import { KeyboardShortcutBar } from "@client/components/KeyboardShortcutBar";
 import { KeyboardShortcutDialog } from "@client/components/KeyboardShortcutDialog";
+import { useSkipReasonPrompt } from "@client/components/useSkipReasonPrompt";
 import type { Job, JobListItem, JobStatus } from "@shared/types.js";
 import type React from "react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
@@ -129,10 +130,30 @@ export const OrchestratorJobWorkspaceContainer: React.FC<
     listHandleRef: jobListHandleRef,
   });
 
+  const {
+    askSkipReason,
+    isAsking: isAskingSkipReason,
+    isOpen: isSkipReasonOpen,
+    skipReasonDialog,
+  } = useSkipReasonPrompt();
+
+  const skipSelected = useCallback(async () => {
+    const count = selectedJobIds.size;
+    if (count === 0 || isAskingSkipReason()) return;
+    const note = await askSkipReason({
+      heading: count === 1 ? "Skip this job?" : `Skip ${count} jobs?`,
+      confirmLabel: count === 1 ? "Skip job" : `Skip ${count} jobs`,
+    });
+    if (!note) return;
+    await runJobAction("skip", note);
+  }, [askSkipReason, isAskingSkipReason, runJobAction, selectedJobIds]);
+
   useKeyboardShortcuts({
-    isAnyModalOpen: ui.isAnyModalOpen,
-    isAnyModalOpenExcludingCommandBar: ui.isAnyModalOpenExcludingCommandBar,
-    isAnyModalOpenExcludingHelp: ui.isAnyModalOpenExcludingHelp,
+    isAnyModalOpen: ui.isAnyModalOpen || isSkipReasonOpen,
+    isAnyModalOpenExcludingCommandBar:
+      ui.isAnyModalOpenExcludingCommandBar || isSkipReasonOpen,
+    isAnyModalOpenExcludingHelp:
+      ui.isAnyModalOpenExcludingHelp || isSkipReasonOpen,
     activeTab: navigation.activeTab,
     activeJobs,
     selectedJobId: navigation.selectedJobId,
@@ -148,6 +169,8 @@ export const OrchestratorJobWorkspaceContainer: React.FC<
     clearSelection,
     toggleSelectJob,
     runJobAction,
+    askSkipReason,
+    skipSelected,
     loadJobs,
   });
 
@@ -276,6 +299,8 @@ export const OrchestratorJobWorkspaceContainer: React.FC<
         />
       </div>
 
+      {skipReasonDialog}
+
       <FloatingJobActionsBar
         selectedCount={selectedJobIds.size}
         canMoveSelected={canMoveSelected}
@@ -283,7 +308,7 @@ export const OrchestratorJobWorkspaceContainer: React.FC<
         canRescoreSelected={canRescoreSelected}
         jobActionInFlight={jobActionInFlight !== null}
         onMoveToReady={() => void runJobAction("move_to_ready")}
-        onSkipSelected={() => void runJobAction("skip")}
+        onSkipSelected={() => void skipSelected()}
         onRescoreSelected={() => void runJobAction("rescore")}
         onClear={clearSelection}
       />

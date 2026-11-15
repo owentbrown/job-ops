@@ -1,4 +1,6 @@
 import * as api from "@client/api";
+import type { SkipJobConfirmInput } from "@client/components/SkipJobDialog";
+import type { SkipReasonPromptOptions } from "@client/components/useSkipReasonPrompt";
 import {
   useMarkAsAppliedMutation,
   useSkipJobMutation,
@@ -36,6 +38,12 @@ type UseKeyboardShortcutsArgs = {
   clearSelection: () => void;
   toggleSelectJob: (id: string) => void;
   runJobAction: (action: JobAction) => Promise<void>;
+  /** Asks for a skip reason; null means the user cancelled. */
+  askSkipReason: (
+    options?: SkipReasonPromptOptions,
+  ) => Promise<SkipJobConfirmInput | null>;
+  /** Bulk skip of the selected jobs, asking for a reason first. */
+  skipSelected: () => Promise<void>;
   loadJobs: () => Promise<void>;
 };
 
@@ -59,6 +67,8 @@ export function useKeyboardShortcuts(args: UseKeyboardShortcutsArgs): void {
     clearSelection,
     toggleSelectJob,
     runJobAction,
+    askSkipReason,
+    skipSelected,
     loadJobs,
   } = args;
 
@@ -145,16 +155,24 @@ export function useKeyboardShortcuts(args: UseKeyboardShortcutsArgs): void {
         if (shortcutActionInFlight.current) return;
 
         if (selectedJobIds.size > 0) {
-          void runJobAction("skip");
+          void skipSelected();
           return;
         }
 
         if (!selectedJob) return;
         shortcutActionInFlight.current = true;
         const jobId = selectedJob.id;
-        skipJobMutation
-          .mutateAsync(jobId)
-          .then(async () => {
+        askSkipReason({ jobTitle: selectedJob.title })
+          .then((note) => {
+            if (!note) return null;
+            return skipJobMutation.mutateAsync({
+              id: jobId,
+              reason: note.note,
+              category: note.category,
+            });
+          })
+          .then(async (skipped) => {
+            if (skipped === null) return;
             toast.message("Job skipped");
             selectNextAfterAction(jobId);
             await loadJobs();

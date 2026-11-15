@@ -37,9 +37,11 @@ export const PipelineActionRequired = ({
         ) : null}
       </div>
       <div className="flex shrink-0 flex-wrap gap-2 self-start sm:self-auto">
+        {/* Solid so the main action stands out from the warning box. */}
         <Button
           size="sm"
-          variant="outline"
+          variant="default"
+          className="font-semibold shadow-sm"
           disabled={pending || secondaryPending}
           onClick={onAction}
         >

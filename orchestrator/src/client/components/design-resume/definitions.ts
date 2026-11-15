@@ -61,7 +61,12 @@ export const ITEM_DEFINITIONS: ItemDefinition[] = [
       { key: "company", label: "Company", type: "text" },
       { key: "location", label: "Location", type: "text" },
       { key: "position", label: "Position", type: "text", aiAssist: true },
-      { key: "period", label: "Period", type: "text" },
+      {
+        key: "period",
+        label: "Period",
+        type: "period",
+        presentLabel: "I currently work here",
+      },
       {
         key: "website.url",
         label: "Website",
@@ -105,7 +110,12 @@ export const ITEM_DEFINITIONS: ItemDefinition[] = [
       { key: "degree", label: "Degree", type: "text" },
       { key: "grade", label: "Grade", type: "text" },
       { key: "location", label: "Location", type: "text" },
-      { key: "period", label: "Period", type: "text" },
+      {
+        key: "period",
+        label: "Period",
+        type: "period",
+        presentLabel: "I currently study here",
+      },
       { key: "website.url", label: "Website", type: "text" },
       {
         key: "website.inlineLink",
@@ -142,7 +152,12 @@ export const ITEM_DEFINITIONS: ItemDefinition[] = [
     secondaryField: "period",
     fields: [
       { key: "name", label: "Name", type: "text", aiAssist: true },
-      { key: "period", label: "Period", type: "text" },
+      {
+        key: "period",
+        label: "Period",
+        type: "period",
+        presentLabel: "This project is ongoing",
+      },
       { key: "website.url", label: "Website", type: "text" },
       {
         key: "website.inlineLink",
@@ -363,7 +378,12 @@ export const ITEM_DEFINITIONS: ItemDefinition[] = [
         aiAssist: true,
       },
       { key: "location", label: "Location", type: "text" },
-      { key: "period", label: "Period", type: "text" },
+      {
+        key: "period",
+        label: "Period",
+        type: "period",
+        presentLabel: "I'm currently involved",
+      },
       { key: "website.url", label: "Website", type: "text" },
       {
         key: "website.inlineLink",
@@ -422,3 +442,10 @@ export const ITEM_DEFINITIONS: ItemDefinition[] = [
     }),
   },
 ];
+
+/** Key of the definition's date-range field, if it has one. */
+export function getPeriodFieldKey(definition: ItemDefinition): string | null {
+  return (
+    definition.fields.find((field) => field.type === "period")?.key ?? null
+  );
+}

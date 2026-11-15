@@ -147,3 +147,94 @@ describe("ItemDialog", () => {
     ).not.toBeInTheDocument();
   });
 });
+
+describe("ItemDialog period field", () => {
+  const periodFields: ItemFieldConfig[] = [
+    {
+      key: "period",
+      label: "Period",
+      type: "period",
+      presentLabel: "I currently work here",
+    },
+  ];
+
+  function renderPeriodDialog(period: string, onSave = vi.fn()) {
+    render(
+      <ItemDialog
+        open
+        title="Edit item"
+        description="Dialog description"
+        item={{ id: "item-1", period }}
+        fields={periodFields}
+        onOpenChange={vi.fn()}
+        onSave={onSave}
+      />,
+    );
+    return onSave;
+  }
+
+  it("fills start and end from an existing period", () => {
+    renderPeriodDialog("Aug 2022 – Aug 2026");
+
+    expect(screen.getByLabelText("Start month")).toHaveValue("8");
+    expect(screen.getByLabelText("Start year")).toHaveValue("2022");
+    expect(screen.getByLabelText("End month")).toHaveValue("8");
+    expect(screen.getByLabelText("End year")).toHaveValue("2026");
+    expect(screen.getByTestId("period-preview")).toHaveTextContent(
+      "Shows as: Aug 2022 – Aug 2026",
+    );
+  });
+
+  it("saves Present when the current toggle is on", () => {
+    const onSave = renderPeriodDialog("");
+
+    fireEvent.change(screen.getByLabelText("Start month"), {
+      target: { value: "8" },
+    });
+    fireEvent.change(screen.getByLabelText("Start year"), {
+      target: { value: "2026" },
+    });
+    fireEvent.click(
+      screen.getByRole("switch", { name: "I currently work here" }),
+    );
+
+    expect(screen.queryByLabelText("End year")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Save item" }));
+
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({ period: "Aug 2026 – Present" }),
+    );
+  });
+
+  it("normalizes free-typed periods it can read", () => {
+    renderPeriodDialog("Aug 2026 to Present");
+
+    expect(
+      screen.getByRole("switch", { name: "I currently work here" }),
+    ).toBeChecked();
+    expect(screen.getByTestId("period-preview")).toHaveTextContent(
+      "Shows as: Aug 2026 – Present",
+    );
+  });
+
+  it("keeps unreadable periods as editable text", () => {
+    const onSave = renderPeriodDialog("Summer 2019");
+
+    const input = screen.getByLabelText("Period");
+    expect(input).toHaveValue("Summer 2019");
+    fireEvent.change(input, { target: { value: "Summer 2020 " } });
+    fireEvent.click(screen.getByRole("button", { name: "Save item" }));
+
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({ period: "Summer 2020" }),
+    );
+  });
+
+  it("warns when the end date is before the start date", () => {
+    renderPeriodDialog("Aug 2026 – Jan 2020");
+
+    expect(screen.getByTestId("period-preview")).toHaveTextContent(
+      "End date is before the start date.",
+    );
+  });
+});

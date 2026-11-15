@@ -110,3 +110,59 @@ describe("DesignResumeListSection", () => {
     expect(onMaxProjectsChange).toHaveBeenCalledWith(1);
   });
 });
+
+describe("DesignResumeListSection date sorting", () => {
+  const experienceDefinition: ItemDefinition = {
+    key: "experience",
+    title: "Experience",
+    singularTitle: "Experience entry",
+    description: "Roles.",
+    primaryField: "company",
+    secondaryField: "position",
+    fields: [{ key: "period", label: "Period", type: "period" }],
+    createItem: () => ({ id: "new", company: "", period: "" }),
+  };
+
+  function renderExperience(
+    items: Record<string, unknown>[],
+    onUpdateItems = vi.fn(),
+  ) {
+    render(
+      <Accordion type="multiple" defaultValue={["experience"]}>
+        <DesignResumeListSection
+          definition={experienceDefinition}
+          items={items}
+          onAdd={vi.fn()}
+          onEdit={vi.fn()}
+          onUpdateItems={onUpdateItems}
+        />
+      </Accordion>,
+    );
+    return onUpdateItems;
+  }
+
+  it("offers Sort by date when entries are out of order", () => {
+    const onUpdateItems = renderExperience([
+      { id: "senior", company: "Sunlife", period: "Aug 2022 – Aug 2026" },
+      { id: "dpm", company: "Sunlife", period: "Aug 2026 to Present" },
+    ]);
+
+    fireEvent.click(screen.getByRole("button", { name: "Sort by date" }));
+
+    expect(onUpdateItems).toHaveBeenCalledWith([
+      expect.objectContaining({ id: "dpm" }),
+      expect.objectContaining({ id: "senior" }),
+    ]);
+  });
+
+  it("hides Sort by date when entries are already in order", () => {
+    renderExperience([
+      { id: "dpm", company: "Sunlife", period: "Aug 2026 – Present" },
+      { id: "senior", company: "Sunlife", period: "Aug 2022 – Aug 2026" },
+    ]);
+
+    expect(
+      screen.queryByRole("button", { name: "Sort by date" }),
+    ).not.toBeInTheDocument();
+  });
+});

@@ -21,6 +21,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { DesignResumeFieldAssistant } from "./DesignResumeFieldAssistant";
 import { IconPickerField } from "./IconPickerField";
+import { PeriodField } from "./PeriodField";
 import { RichTextEditor } from "./RichTextEditor";
 
 export type ItemFieldType =
@@ -30,7 +31,8 @@ export type ItemFieldType =
   | "richtext"
   | "tags"
   | "toggle"
-  | "icon";
+  | "icon"
+  | "period";
 
 export type ItemFieldConfig = {
   key: string;
@@ -43,6 +45,8 @@ export type ItemFieldConfig = {
   /** When true on an icon field, render it inline to the left of the next field with no separate label */
   groupWithNext?: boolean;
   aiAssist?: boolean;
+  /** Label for the "still ongoing" toggle on a period field. */
+  presentLabel?: string;
 };
 
 type ItemDialogProps = {
@@ -126,7 +130,11 @@ function normalizeDraftForSave(
   let next = structuredClone(draft) as Record<string, unknown>;
   for (const field of fields) {
     const currentValue = getValue(next, field.key);
-    if (field.type === "text" || field.type === "textarea") {
+    if (
+      field.type === "text" ||
+      field.type === "textarea" ||
+      field.type === "period"
+    ) {
       if (typeof currentValue === "string") {
         next = setValue(next, field.key, currentValue.trim());
       }
@@ -382,6 +390,21 @@ function renderFields(
             ) : null}
           </div>
         </div>,
+      );
+      i++;
+      continue;
+    }
+
+    if (field.type === "period") {
+      nodes.push(
+        <PeriodField
+          key={field.key}
+          id={fieldId}
+          label={field.label}
+          presentLabel={field.presentLabel}
+          value={value as string}
+          onChange={(next) => updateField(field.key, next)}
+        />,
       );
       i++;
       continue;

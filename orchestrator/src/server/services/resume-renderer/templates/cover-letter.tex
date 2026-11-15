@@ -102,8 +102,12 @@
   \vspace{4pt}%
   \ifstrempty{#1}{}{#1\par}
   \vspace{2pt}#2\par
-  \ifstrempty{#3}{}{\vspace{4pt}\includegraphics[height=0.550in]{#3}\par}
+  \ifstrempty{#3}{}{\vspace{4pt}\includegraphics[height=\letterSignatureHeight]{#3}\par}
 }
+\newcommand{\letterSignatureHeight}{0.550in}
+
+% JobOps tightens the layout here when a letter runs past one page.
+__FIT__
 
 \pagestyle{empty}
 

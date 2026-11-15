@@ -14,7 +14,11 @@ import { logger } from "@infra/logger";
 import { getDataDir } from "@server/config/dataDir";
 import { loadBaseResumeDocument } from "../pdf";
 import { resolveTemplatePath, runTectonic } from "../resume-renderer/latex";
-import { buildCoverLetterBody, fillCoverLetterTemplate } from "./format";
+import {
+  buildCoverLetterBody,
+  COVER_LETTER_FIT_STEPS,
+  fillCoverLetterTemplate,
+} from "./format";
 
 const TEMPLATE_PATH = resolveTemplatePath("cover-letter.tex");
 const SIGNATURE_MAX_BYTES = 2 * 1024 * 1024;
@@ -40,6 +44,16 @@ export async function saveSignature(dataBase64: string): Promise<void> {
   const path = getSignaturePath();
   await mkdir(join(path, ".."), { recursive: true });
   await writeFile(path, bytes);
+}
+
+export async function countPdfPages(pdf: Buffer): Promise<number> {
+  const { getDocument } = await import("pdfjs-dist/legacy/build/pdf.mjs");
+  const doc = await getDocument({ data: new Uint8Array(pdf) }).promise;
+  try {
+    return doc.numPages;
+  } finally {
+    await doc.destroy();
+  }
 }
 
 export async function removeSignature(): Promise<void> {
@@ -76,19 +90,39 @@ export async function renderCoverLetterPdf(args: {
       date: new Date(),
       signatureFile,
     });
-    const tex = fillCoverLetterTemplate(
-      await readFile(TEMPLATE_PATH, "utf8"),
-      body,
-      appendFile,
-    );
+    const template = await readFile(TEMPLATE_PATH, "utf8");
     const texPath = join(tempDir, "letter.tex");
-    await writeFile(texPath, tex, "utf8");
-    await runTectonic({ cwd: tempDir, texPath, jobId: args.jobId });
-    const pdf = await readFile(join(tempDir, "letter.pdf"));
+    const compile = async (fitStep: number, append: string | null) => {
+      await writeFile(
+        texPath,
+        fillCoverLetterTemplate(template, body, append, fitStep),
+        "utf8",
+      );
+      await runTectonic({ cwd: tempDir, texPath, jobId: args.jobId });
+      return readFile(join(tempDir, "letter.pdf"));
+    };
+
+    // Keep the letter itself on one page: tighten the layout step by step
+    // until it fits (the last step is used even if it still runs over).
+    let fitStep = 0;
+    let letterPages = 0;
+    let pdf = await compile(fitStep, null);
+    for (;;) {
+      letterPages = await countPdfPages(pdf);
+      if (letterPages <= 1 || fitStep >= COVER_LETTER_FIT_STEPS.length - 1) {
+        break;
+      }
+      fitStep += 1;
+      pdf = await compile(fitStep, null);
+    }
+    if (appendFile) pdf = await compile(fitStep, appendFile);
+
     logger.info("Rendered cover letter PDF", {
       jobId: args.jobId,
       withResume: Boolean(appendFile),
       withSignature: Boolean(signatureFile),
+      fitStep,
+      letterPages,
     });
     return pdf;
   } finally {

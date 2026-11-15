@@ -188,13 +188,50 @@ export function buildCoverLetterBody(args: {
   return lines.join("\n");
 }
 
+/**
+ * Layout steps for keeping the letter on one page. Step 0 is the normal
+ * layout; each later step trims margins, spacing, font and signature a
+ * little more. The top margin stays generous because the header is pulled
+ * up into it.
+ */
+export const COVER_LETTER_FIT_STEPS: readonly string[] = [
+  "",
+  [
+    "\\geometry{hmargin=1.25in,top=1.5in,bottom=1.15in}",
+    "\\setlength{\\parskip}{5pt}",
+  ].join("\n"),
+  [
+    "\\geometry{hmargin=1.05in,top=1.4in,bottom=0.9in}",
+    "\\setlength{\\parskip}{4pt}",
+    "\\setstretch{1.04}",
+    "\\AtBeginDocument{\\fontsize{10.25}{12.4}\\selectfont}",
+  ].join("\n"),
+  [
+    "\\geometry{hmargin=0.9in,top=1.3in,bottom=0.7in}",
+    "\\setlength{\\parskip}{3pt}",
+    "\\setstretch{1.0}",
+    "\\AtBeginDocument{\\fontsize{10}{12}\\selectfont}",
+    "\\renewcommand{\\letterSignatureHeight}{0.45in}",
+  ].join("\n"),
+  [
+    "\\geometry{hmargin=0.75in,top=1.2in,bottom=0.55in}",
+    "\\setlength{\\parskip}{2pt}",
+    "\\setstretch{1.0}",
+    "\\AtBeginDocument{\\fontsize{9.5}{11.4}\\selectfont}",
+    "\\renewcommand{\\letterSignatureHeight}{0.4in}",
+  ].join("\n"),
+];
+
 export function fillCoverLetterTemplate(
   template: string,
   body: string,
   appendPdfFile: string | null,
+  fitStep = 0,
 ): string {
+  const fit = COVER_LETTER_FIT_STEPS[fitStep] ?? "";
   // Function replacers: "$" in letter text must not be read as a pattern.
   return template
+    .replace("__FIT__", () => fit)
     .replace("__BODY__", () => body)
     .replace("__APPEND_PDF__", () =>
       appendPdfFile ? `\\includepdf[pages=-]{${appendPdfFile}}` : "",

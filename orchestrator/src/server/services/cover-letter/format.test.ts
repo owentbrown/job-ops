@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { LatexResumeDocument } from "../resume-renderer/types";
 import {
   buildCoverLetterBody,
+  COVER_LETTER_FIT_STEPS,
   fillCoverLetterTemplate,
   formatLetterDate,
   inlineLatex,
@@ -118,6 +119,17 @@ describe("buildCoverLetterBody", () => {
       "\\includepdf[pages=-]{resume.pdf}",
     );
   });
+
+  it("adds tighter layout settings only for later fit steps", () => {
+    const template = "__FIT__|__BODY__";
+    expect(fillCoverLetterTemplate(template, "x", null)).toBe("|x");
+    const last = COVER_LETTER_FIT_STEPS.length - 1;
+    const tight = fillCoverLetterTemplate(template, "x", null, last);
+    expect(tight).toContain("\\geometry{");
+    expect(tight).toContain("\\renewcommand{\\letterSignatureHeight}");
+    // Steps past the end fall back to the normal layout instead of crashing.
+    expect(fillCoverLetterTemplate(template, "x", null, 99)).toBe("|x");
+  });
 });
 
 describe("formatLetterDate", () => {
@@ -165,6 +177,7 @@ describe("cover-letter.tex template", () => {
     );
     expect(template.split("__BODY__")).toHaveLength(2);
     expect(template.split("__APPEND_PDF__")).toHaveLength(2);
+    expect(template.split("__FIT__")).toHaveLength(2);
     const filled = fillCoverLetterTemplate(template, "BODY", "resume.pdf");
     expect(filled).not.toMatch(/__[A-Z_]+__/);
     expect(filled).toContain("BODY\n\\includepdf[pages=-]{resume.pdf}");

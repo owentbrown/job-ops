@@ -7,7 +7,9 @@ import {
 import { DesignResumeDock } from "@client/components/design-resume/DesignResumeDock";
 import { DesignResumePreviewPanel } from "@client/components/design-resume/DesignResumePreviewPanel";
 import { DesignResumeRail } from "@client/components/design-resume/DesignResumeRail";
+import { getPeriodFieldKey } from "@client/components/design-resume/definitions";
 import { ItemDialog } from "@client/components/design-resume/ItemDialog";
+import { placeSavedItem } from "@client/components/design-resume/period";
 import {
   asArray,
   asRecord,
@@ -608,12 +610,12 @@ export const DesignResumePage: React.FC<{ toolbar?: React.ReactNode }> = ({
               const items = asArray(section.items).map(
                 (entry) => asRecord(entry) ?? {},
               ) as Record<string, unknown>[];
-              const nextItems =
-                dialogState.index == null
-                  ? [...items, item]
-                  : items.map((entry, index) =>
-                      index === dialogState.index ? item : entry,
-                    );
+              const nextItems = placeSavedItem(
+                items,
+                item,
+                dialogState.index,
+                getPeriodFieldKey(dialogState.definition),
+              );
               next.sections = {
                 ...sections,
                 [dialogState.definition.key]: {

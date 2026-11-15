@@ -37,6 +37,16 @@ Resume Studio reduces that dependency by letting you:
 5. Watch for the local save indicator in the header.
 6. Use **Export** when you want the current Reactive Resume v5 JSON.
 
+### Dates and ordering
+
+Experience, Education, Projects, and Volunteer entries use **Start** and **End** month/year pickers with an "I currently work here" (or equivalent) toggle instead of a free-text period. The stored value is still the Reactive Resume `period` text (for example `Aug 2026 – Present`), so PDFs, tailoring, and JSON export are unchanged.
+
+- New entries, and entries whose dates you change, move into date order automatically: current entries first, then newest end date.
+- Editing anything else keeps an entry where it is, so manual drag-and-drop order is preserved.
+- **Sort by date** appears when a section is out of order and re-sorts it once. Entries without readable dates move to the end.
+- Use **Type it instead** for periods that aren't plain dates (for example `Summer 2019`). Custom text isn't sorted.
+- While dragging an entry, hold it near the top or bottom of the panel to scroll.
+
 AI-assisted field editing is available for writing-heavy fields such as headline, summary, item names/titles/positions, rich descriptions, and skill keywords. It is not shown for contact details, URLs, picture settings, icons, toggles, or numeric style fields.
 
 The AI assistant is ephemeral. Closing the field assistant clears that short conversation. Empty fields are filled automatically when the AI response arrives; fields that already contain content show an **Apply** action so you can review the suggestion before it changes the resume.

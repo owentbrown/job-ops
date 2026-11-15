@@ -140,7 +140,7 @@ describe("ApplicationsPerDayChart - Edge Cases", () => {
   describe("Date Range Filtering", () => {
     it("filters out dates before the start of range", () => {
       const today = mockDate.toISOString();
-      const oldDate = "2025-01-01T00:00:00Z"; // Before 7-day window
+      const oldDate = "2025-01-01T12:00:00Z"; // Before 7-day window
       render(
         <ApplicationsPerDayChart
           appliedAt={[oldDate, today, today]}
@@ -155,7 +155,7 @@ describe("ApplicationsPerDayChart - Edge Cases", () => {
 
     it("filters out dates after the end of range (future dates)", () => {
       const today = mockDate.toISOString();
-      const futureDate = "2025-01-20T00:00:00Z"; // After today
+      const futureDate = "2025-01-20T12:00:00Z"; // After today
       render(
         <ApplicationsPerDayChart
           appliedAt={[today, futureDate, today]}
@@ -170,7 +170,7 @@ describe("ApplicationsPerDayChart - Edge Cases", () => {
 
     it("handles single day range (daysToShow=1)", () => {
       const today = mockDate.toISOString();
-      const yesterday = "2025-01-14T00:00:00Z";
+      const yesterday = "2025-01-14T12:00:00Z";
       render(
         <ApplicationsPerDayChart
           appliedAt={[today, yesterday, today]}
@@ -202,9 +202,9 @@ describe("ApplicationsPerDayChart - Edge Cases", () => {
 
     it("shows up trend when first half is 0 but second half has activity", () => {
       const dates = [
-        "2025-01-15T00:00:00Z", // Today (second half)
-        "2025-01-15T00:00:00Z",
-        "2025-01-15T00:00:00Z",
+        "2025-01-15T12:00:00Z", // Today (second half)
+        "2025-01-15T12:00:00Z",
+        "2025-01-15T12:00:00Z",
       ];
       render(
         <ApplicationsPerDayChart
@@ -221,10 +221,10 @@ describe("ApplicationsPerDayChart - Edge Cases", () => {
     it("calculates trend percentage correctly for positive trend", () => {
       // First half: 1 app per day avg, Second half: 3 apps per day avg = 200% increase
       const dates = [
-        "2025-01-09T00:00:00Z", // First half
-        "2025-01-15T00:00:00Z", // Second half
-        "2025-01-15T00:00:00Z",
-        "2025-01-15T00:00:00Z",
+        "2025-01-09T12:00:00Z", // First half
+        "2025-01-15T12:00:00Z", // Second half
+        "2025-01-15T12:00:00Z",
+        "2025-01-15T12:00:00Z",
       ];
       render(
         <ApplicationsPerDayChart
@@ -241,10 +241,10 @@ describe("ApplicationsPerDayChart - Edge Cases", () => {
     it("shows down trend for significant negative trend", () => {
       // First half: high activity, Second half: low activity
       const dates = [
-        "2025-01-09T00:00:00Z", // First half - 3 apps
-        "2025-01-09T00:00:00Z",
-        "2025-01-09T00:00:00Z",
-        "2025-01-15T00:00:00Z", // Second half - 1 app
+        "2025-01-09T12:00:00Z", // First half - 3 apps
+        "2025-01-09T12:00:00Z",
+        "2025-01-09T12:00:00Z",
+        "2025-01-15T12:00:00Z", // Second half - 1 app
       ];
       render(
         <ApplicationsPerDayChart
@@ -323,13 +323,13 @@ describe("ApplicationsPerDayChart - Edge Cases", () => {
 
     it("handles applications spread across different days in range", () => {
       const dates = [
-        "2025-01-09T00:00:00Z",
-        "2025-01-10T00:00:00Z",
-        "2025-01-10T00:00:00Z",
-        "2025-01-11T00:00:00Z",
-        "2025-01-11T00:00:00Z",
-        "2025-01-11T00:00:00Z",
-        "2025-01-15T00:00:00Z",
+        "2025-01-09T12:00:00Z",
+        "2025-01-10T12:00:00Z",
+        "2025-01-10T12:00:00Z",
+        "2025-01-11T12:00:00Z",
+        "2025-01-11T12:00:00Z",
+        "2025-01-11T12:00:00Z",
+        "2025-01-15T12:00:00Z",
       ];
       render(
         <ApplicationsPerDayChart

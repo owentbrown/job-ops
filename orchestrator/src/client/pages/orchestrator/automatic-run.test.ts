@@ -214,8 +214,7 @@ describe("automatic-run utilities", () => {
   });
 
   it("scopes run memory to the authenticated workspace", () => {
-    const sessionStorage = ensureSessionStorage();
-    sessionStorage.setItem("jobops.authToken", makeAuthToken("tenant-one"));
+    ensureStorage().setItem("jobops.authToken", makeAuthToken("tenant-one"));
 
     saveAutomaticRunMemory({
       topN: 6,
@@ -228,7 +227,7 @@ describe("automatic-run utilities", () => {
       `${RUN_MEMORY_STORAGE_KEY}:workspace:tenant-one`,
     );
 
-    sessionStorage.setItem("jobops.authToken", makeAuthToken("tenant-two"));
+    ensureStorage().setItem("jobops.authToken", makeAuthToken("tenant-two"));
     expect(loadAutomaticRunMemory()).toBeNull();
 
     saveAutomaticRunMemory({
@@ -243,7 +242,7 @@ describe("automatic-run utilities", () => {
       minSuitabilityScore: 40,
     });
 
-    sessionStorage.setItem("jobops.authToken", makeAuthToken("tenant-one"));
+    ensureStorage().setItem("jobops.authToken", makeAuthToken("tenant-one"));
     expect(loadAutomaticRunMemory()).toMatchObject({
       topN: 6,
       minSuitabilityScore: 70,
@@ -251,9 +250,8 @@ describe("automatic-run utilities", () => {
   });
 
   it("migrates legacy run memory into the workspace-scoped key", () => {
-    const sessionStorage = ensureSessionStorage();
     const localStorage = ensureStorage();
-    sessionStorage.setItem("jobops.authToken", makeAuthToken("tenant-one"));
+    ensureStorage().setItem("jobops.authToken", makeAuthToken("tenant-one"));
     localStorage.setItem(
       RUN_MEMORY_STORAGE_KEY,
       JSON.stringify({

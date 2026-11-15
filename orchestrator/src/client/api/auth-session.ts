@@ -93,12 +93,20 @@ function storeLegacyCredentials(credentials: AuthCredentials | null): void {
   }
 }
 
+/**
+ * The sign-in token lives in localStorage so it survives closing the tab or
+ * the iPhone home-screen app; the server still expires it. Tokens saved by
+ * older builds in sessionStorage are moved over on first read.
+ */
 function loadStoredAuthToken(): string | null {
   try {
-    return (
+    const persisted = localStorage.getItem(SESSION_AUTH_TOKEN_KEY);
+    if (persisted) return persisted;
+    const legacy =
       sessionStorage.getItem(SESSION_AUTH_TOKEN_KEY) ??
-      sessionStorage.getItem(LEGACY_SESSION_JWT_KEY)
-    );
+      sessionStorage.getItem(LEGACY_SESSION_JWT_KEY);
+    if (legacy) storeAuthToken(legacy);
+    return legacy;
   } catch {
     return null;
   }
@@ -107,12 +115,12 @@ function loadStoredAuthToken(): string | null {
 function storeAuthToken(token: string | null): void {
   try {
     if (token) {
-      sessionStorage.setItem(SESSION_AUTH_TOKEN_KEY, token);
-      sessionStorage.removeItem(LEGACY_SESSION_JWT_KEY);
+      localStorage.setItem(SESSION_AUTH_TOKEN_KEY, token);
     } else {
-      sessionStorage.removeItem(SESSION_AUTH_TOKEN_KEY);
-      sessionStorage.removeItem(LEGACY_SESSION_JWT_KEY);
+      localStorage.removeItem(SESSION_AUTH_TOKEN_KEY);
     }
+    sessionStorage.removeItem(SESSION_AUTH_TOKEN_KEY);
+    sessionStorage.removeItem(LEGACY_SESSION_JWT_KEY);
   } catch {
     // Ignore storage errors in restricted browser contexts.
   }

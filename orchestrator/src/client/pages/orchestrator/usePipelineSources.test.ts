@@ -157,20 +157,19 @@ describe("usePipelineSources", () => {
   });
 
   it("loads and saves sources using workspace-scoped storage keys", () => {
-    const sessionStorage = ensureSessionStorage();
-    sessionStorage.setItem("jobops.authToken", makeAuthToken("tenant-one"));
+    ensureStorage().setItem("jobops.authToken", makeAuthToken("tenant-one"));
     ensureStorage().setItem(
       getPipelineSourcesStorageKey(),
       JSON.stringify(["ukvisajobs"]),
     );
 
-    sessionStorage.setItem("jobops.authToken", makeAuthToken("tenant-two"));
+    ensureStorage().setItem("jobops.authToken", makeAuthToken("tenant-two"));
     ensureStorage().setItem(
       getPipelineSourcesStorageKey(),
       JSON.stringify(["linkedin"]),
     );
 
-    sessionStorage.setItem("jobops.authToken", makeAuthToken("tenant-one"));
+    ensureStorage().setItem("jobops.authToken", makeAuthToken("tenant-one"));
     const enabledSources = ["ukvisajobs", "linkedin"] as const;
     const { result } = renderHook(() => usePipelineSources(enabledSources));
 
@@ -200,9 +199,8 @@ describe("usePipelineSources", () => {
   });
 
   it("migrates legacy stored sources into the workspace-scoped key", () => {
-    const sessionStorage = ensureSessionStorage();
     const localStorage = ensureStorage();
-    sessionStorage.setItem("jobops.authToken", makeAuthToken("tenant-one"));
+    ensureStorage().setItem("jobops.authToken", makeAuthToken("tenant-one"));
     localStorage.setItem(
       PIPELINE_SOURCES_STORAGE_KEY,
       JSON.stringify(["ukvisajobs"]),

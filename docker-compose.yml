@@ -26,6 +26,8 @@ services:
       # Server config
       - NODE_ENV=production
       - PORT=3001
+      # Stay signed in for 30 days (default is 24 hours)
+      - JWT_EXPIRY_SECONDS=2592000
 
       # Python path (uses system python in container)
       - PYTHON_PATH=/usr/bin/python3

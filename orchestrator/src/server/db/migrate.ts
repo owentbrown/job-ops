@@ -192,6 +192,7 @@ const jobsCarriedColumns = [
   "cover_letter",
   "role_category",
   "skip_category",
+  "selected_experience_bullets",
 ].filter((column) => tableHasColumn("jobs", column));
 const jobsCarriedColumnDefs = jobsCarriedColumns
   .map((column) => `,\n    ${column} TEXT`)
@@ -1306,6 +1307,9 @@ const migrations = [
   `ALTER TABLE jobs ADD COLUMN cover_letter TEXT`,
   `ALTER TABLE jobs ADD COLUMN role_category TEXT`,
   `ALTER TABLE jobs ADD COLUMN skip_category TEXT`,
+  // Per-job experience bullet selection for tailored PDFs (JSON object of
+  // experience item id -> kept bullet indices). NULL keeps every bullet.
+  `ALTER TABLE jobs ADD COLUMN selected_experience_bullets TEXT`,
 
   // AI spend tracking (fork: spend). No FKs on job/run so spend outlives them.
   `CREATE TABLE IF NOT EXISTS llm_usage (

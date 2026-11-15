@@ -1,4 +1,8 @@
 import { TokenizedInput } from "@client/pages/orchestrator/TokenizedInput";
+import type {
+  ExperienceBulletCatalogItem,
+  ExperienceBulletSelection,
+} from "@shared/resume-experience-bullets";
 import { resolveResumeProjectSelection } from "@shared/resume-projects";
 import type {
   ResumeProjectCatalogItem,
@@ -29,6 +33,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import { ProjectSelector } from "../discovered-panel/ProjectSelector";
 import type { EditableSkillGroup } from "../tailoring-utils";
+import {
+  countKeptExperienceBullets,
+  ExperienceBulletSelector,
+} from "./ExperienceBulletSelector";
 import {
   applySummaryTextareaHeight,
   formatTextCount,
@@ -85,6 +93,17 @@ interface TailoringSectionsProps {
   onRemoveSkillGroup: (id: string) => void;
   onToggleProject: (id: string) => void;
   onTracerLinksEnabledChange: (value: boolean) => void;
+  /** Experience items of the base resume; the section hides when empty. */
+  experienceCatalog?: ExperienceBulletCatalogItem[];
+  bulletSelection?: ExperienceBulletSelection | null;
+  isGeneratingBullets?: boolean;
+  onGenerateBullets?: () => void;
+  onToggleExperienceBullet?: (
+    itemId: string,
+    index: number,
+    bulletCount: number,
+  ) => void;
+  onKeepAllExperienceBullets?: (itemId?: string) => void;
 }
 
 type SectionState =
@@ -346,6 +365,12 @@ export const TailoringSections: React.FC<TailoringSectionsProps> = ({
   onRemoveSkillGroup,
   onToggleProject,
   onTracerLinksEnabledChange,
+  experienceCatalog = [],
+  bulletSelection = null,
+  isGeneratingBullets = false,
+  onGenerateBullets,
+  onToggleExperienceBullet,
+  onKeepAllExperienceBullets,
 }) => {
   const [keywordDrafts, setKeywordDrafts] = useState<Record<string, string>>(
     {},
@@ -382,6 +407,11 @@ export const TailoringSections: React.FC<TailoringSectionsProps> = ({
     projectResolution?.effectiveSelectedIds.length ?? 0;
   const projectsState: SectionState =
     selectedProjectCount > 0 ? "ready" : "none";
+  const bulletCounts = useMemo(
+    () => countKeptExperienceBullets(experienceCatalog, bulletSelection),
+    [experienceCatalog, bulletSelection],
+  );
+  const bulletsTrimmed = bulletCounts.kept < bulletCounts.total;
   const noSelectedProjectsInfo = getNoSelectedProjectsInfo({
     catalog,
     isCatalogLoading,
@@ -788,6 +818,62 @@ export const TailoringSections: React.FC<TailoringSectionsProps> = ({
           )}
         </AccordionContent>
       </AccordionItem>
+
+      {bulletCounts.total > 0 && onToggleExperienceBullet ? (
+        <AccordionItem value="experience-bullets" className={sectionClass}>
+          <AccordionTrigger
+            className={triggerClass}
+            aria-label="Experience Bullets"
+          >
+            <SectionTriggerLabel
+              title="Experience Bullets"
+              state={bulletsTrimmed ? "ready" : "optional"}
+              badgeLabel={
+                bulletsTrimmed
+                  ? `${bulletCounts.kept}/${bulletCounts.total}`
+                  : "All kept"
+              }
+            />
+          </AccordionTrigger>
+          <AccordionContent className="px-3 pb-3 pt-3">
+            <div className="mb-2 flex flex-wrap justify-end gap-2">
+              {bulletsTrimmed && onKeepAllExperienceBullets ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className={actionButtonClass}
+                  onClick={() => onKeepAllExperienceBullets()}
+                  disabled={disableInputs}
+                >
+                  <Undo2 className="mr-1 h-3.5 w-3.5" />
+                  Keep all bullets
+                </Button>
+              ) : null}
+              {onGenerateBullets ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className={actionButtonClass}
+                  onClick={onGenerateBullets}
+                  disabled={disableInputs}
+                >
+                  <Sparkles className="mr-1 h-3.5 w-3.5" />
+                  {isGeneratingBullets ? "Picking..." : "Pick again with AI"}
+                </Button>
+              ) : null}
+            </div>
+            <ExperienceBulletSelector
+              catalog={experienceCatalog}
+              selection={bulletSelection}
+              onToggleBullet={onToggleExperienceBullet}
+              onKeepAll={(itemId) => onKeepAllExperienceBullets?.(itemId)}
+              disabled={disableInputs}
+            />
+          </AccordionContent>
+        </AccordionItem>
+      ) : null}
 
       {!isCatalogLoading && catalog.length > 0 && (
         <AccordionItem value="projects" className={sectionClass}>

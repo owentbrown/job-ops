@@ -2,6 +2,7 @@ import * as api from "@client/api";
 import { useProfile } from "@client/hooks/useProfile";
 import { useSettings } from "@client/hooks/useSettings";
 import { useTracerReadiness } from "@client/hooks/useTracerReadiness";
+import { extractExperienceBulletCatalog } from "@shared/resume-experience-bullets";
 import { resolveResumeProjectSelection } from "@shared/resume-projects";
 import type { Job } from "@shared/types.js";
 import {
@@ -62,7 +63,8 @@ type TailoringGenerateTarget =
   | "summary"
   | "headline"
   | "skills"
-  | "projects";
+  | "projects"
+  | "bullets";
 
 const AutosaveStatusIcon: React.FC<{ status: AutosaveStatus }> = ({
   status,
@@ -119,6 +121,7 @@ const toSavePayloadFromJob = (job: Job): TailoringSavePayload => ({
   tailoredSkills: normalizeSkillsJson(job.tailoredSkills),
   jobDescription: job.jobDescription ?? "",
   selectedProjectIds: job.selectedProjectIds ?? "",
+  selectedExperienceBullets: job.selectedExperienceBullets ?? "",
   tracerLinksEnabled: Boolean(job.tracerLinksEnabled),
 });
 
@@ -136,6 +139,8 @@ export const TailoringWorkspace: React.FC<TailoringWorkspaceProps> = (
     setJobDescription,
     selectedIds,
     selectedIdsCsv,
+    bulletSelection,
+    bulletSelectionJson,
     tracerLinksEnabled,
     setTracerLinksEnabled,
     skillsDraft,
@@ -149,6 +154,8 @@ export const TailoringWorkspace: React.FC<TailoringWorkspaceProps> = (
     markSavedSnapshot,
     markSavedJob,
     replaceSelectedProjects,
+    handleToggleExperienceBullet,
+    handleKeepAllExperienceBullets,
     handleAddSkillGroup,
     handleUpdateSkillGroup,
     handleRemoveSkillGroup,
@@ -182,6 +189,12 @@ export const TailoringWorkspace: React.FC<TailoringWorkspaceProps> = (
     };
   }, [profile]);
   const canUseOriginalValues = Boolean(profile) && !profileError;
+  // The base resume is never edited here: bullets are only trimmed in this
+  // job's tailored PDF.
+  const experienceCatalog = useMemo(
+    () => extractExperienceBulletCatalog(profile),
+    [profile],
+  );
   const [aiBaseline, setAiBaseline] = useState<TailoringBaseline>(() =>
     toBaselineFromJob(props.job),
   );
@@ -213,9 +226,11 @@ export const TailoringWorkspace: React.FC<TailoringWorkspaceProps> = (
       tailoredSkills: skillsJson,
       jobDescription,
       selectedProjectIds: selectedIdsCsv,
+      selectedExperienceBullets: bulletSelectionJson,
       tracerLinksEnabled,
     }),
     [
+      bulletSelectionJson,
       summary,
       headline,
       skillsJson,
@@ -393,14 +408,18 @@ export const TailoringWorkspace: React.FC<TailoringWorkspaceProps> = (
         const updatedJob = await api.summarizeJob(props.job.id, {
           force: true,
           fields:
-            target === "all" ? ["summary", "headline", "skills"] : [target],
+            target === "all"
+              ? ["summary", "headline", "skills", "bullets"]
+              : [target],
         });
         applyIncomingDraft(updatedJob);
         setAiBaseline(toBaselineFromJob(updatedJob));
         toast.success(
           target === "all"
             ? "Draft content generated"
-            : `${target[0].toUpperCase()}${target.slice(1)} generated`,
+            : target === "bullets"
+              ? "Experience bullets picked"
+              : `${target[0].toUpperCase()}${target.slice(1)} generated`,
         );
         await props.onUpdate();
       } catch (error) {
@@ -430,6 +449,10 @@ export const TailoringWorkspace: React.FC<TailoringWorkspaceProps> = (
 
   const handleGenerateProjects = useCallback(async () => {
     await handleGenerateTailoring("projects");
+  }, [handleGenerateTailoring]);
+
+  const handleGenerateBullets = useCallback(async () => {
+    await handleGenerateTailoring("bullets");
   }, [handleGenerateTailoring]);
 
   const handleToggleProject = useCallback(
@@ -571,8 +594,19 @@ export const TailoringWorkspace: React.FC<TailoringWorkspaceProps> = (
       onRemoveSkillGroup: handleRemoveSkillGroup,
       onToggleProject: handleToggleProject,
       onTracerLinksEnabledChange: setTracerLinksEnabled,
+      experienceCatalog,
+      bulletSelection,
+      isGeneratingBullets: generateTarget === "bullets",
+      onGenerateBullets: handleGenerateBullets,
+      onToggleExperienceBullet: handleToggleExperienceBullet,
+      onKeepAllExperienceBullets: handleKeepAllExperienceBullets,
     }),
     [
+      experienceCatalog,
+      bulletSelection,
+      handleGenerateBullets,
+      handleToggleExperienceBullet,
+      handleKeepAllExperienceBullets,
       catalog,
       isCatalogLoading,
       summary,

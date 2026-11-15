@@ -314,7 +314,7 @@ export async function summarizeJob(
   id: string,
   options?: {
     force?: boolean;
-    fields?: Array<"summary" | "headline" | "skills" | "projects">;
+    fields?: Array<"summary" | "headline" | "skills" | "projects" | "bullets">;
   },
 ): Promise<Job> {
   const params = new URLSearchParams();

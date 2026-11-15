@@ -19,6 +19,10 @@ import {
   resolvePdfFingerprintContext,
 } from "@server/services/pdf-fingerprint";
 import {
+  parseExperienceBulletSelection,
+  serializeExperienceBulletSelection,
+} from "@shared/resume-experience-bullets";
+import {
   APPLICATION_OUTCOMES,
   APPLICATION_STAGES,
   type Job,
@@ -35,6 +39,20 @@ const tailoredSkillsPayloadSchema = z.array(
     keywords: z.array(z.string()),
   }),
 );
+
+const experienceBulletSelectionPayloadSchema = z.record(
+  z.string().min(1).max(200),
+  z.array(z.number().int().min(0).max(500)).max(500),
+);
+
+function isExperienceBulletSelectionPayload(value: string): boolean {
+  try {
+    return experienceBulletSelectionPayloadSchema.safeParse(JSON.parse(value))
+      .success;
+  } catch {
+    return false;
+  }
+}
 
 export const jobNoteSchema = z.object({
   title: z.string().trim().min(1).max(120),
@@ -170,6 +188,30 @@ export const updateJobSchema = z.object({
       }
     }),
   selectedProjectIds: z.string().optional(),
+  // JSON { experienceItemId: keptBulletIndices[] }; "" or null clears the
+  // selection so the tailored PDF keeps every bullet.
+  selectedExperienceBullets: z
+    .string()
+    .max(20000)
+    .nullable()
+    .optional()
+    .superRefine((value, ctx) => {
+      if (value == null || value.trim().length === 0) return;
+      if (!isExperienceBulletSelectionPayload(value)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message:
+            "selectedExperienceBullets must be a JSON object mapping experience item ids to arrays of bullet indices",
+        });
+      }
+    })
+    .transform((value) =>
+      value === undefined
+        ? undefined
+        : serializeExperienceBulletSelection(
+            parseExperienceBulletSelection(value),
+          ) || null,
+    ),
   pdfPath: z.string().optional(),
   tracerLinksEnabled: z.boolean().optional(),
   sponsorMatchScore: z.number().min(0).max(100).optional(),

@@ -1,4 +1,5 @@
 import {
+  ArrowDownWideNarrow,
   Bot,
   Eye,
   EyeOff,
@@ -26,7 +27,9 @@ import { Input } from "@/components/ui/input";
 import { bucketCount, trackProductEvent } from "@/lib/analytics";
 import { clampInt, cn } from "@/lib/utils";
 import { DesignResumeSection } from "./DesignResumeSection";
-import type { ItemDefinition } from "./definitions";
+import { getPeriodFieldKey, type ItemDefinition } from "./definitions";
+import { isSortedByPeriod, sortItemsByPeriod } from "./period";
+import { useDragAutoScroll } from "./useDragAutoScroll";
 import { getByPath, toBoolean, toText } from "./utils";
 
 const itemActionClassName =
@@ -387,6 +390,12 @@ export function DesignResumeListSectionContent({
   const [dragOverIndex, setDragOverIndex] = useState<number | null>(null);
   const maxProjectsInputId = useId();
   const cardRefs = useRef<Array<HTMLLIElement | null>>([]);
+  const autoScroll = useDragAutoScroll();
+  const periodKey = getPeriodFieldKey(definition);
+  const canSortByDate =
+    periodKey != null &&
+    items.length > 1 &&
+    !isSortedByPeriod(items, periodKey);
   const pendingRemovalItem = useMemo(
     () =>
       pendingRemovalIndex == null ? null : (items[pendingRemovalIndex] ?? null),
@@ -448,8 +457,20 @@ export function DesignResumeListSectionContent({
   };
 
   const resetDragState = () => {
+    autoScroll.stop();
     setDraggingIndex(null);
     setDragOverIndex(null);
+  };
+
+  const sortByDate = () => {
+    if (!periodKey) return;
+    onUpdateItems(sortItemsByPeriod(items, periodKey));
+    trackProductEvent("resume_studio_section_edited", {
+      section: definition.key,
+      action: "reorder",
+      item_count_bucket: bucketCount(items.length),
+      device_layout: getDeviceLayout(),
+    });
   };
 
   const handleDragStart = (
@@ -465,6 +486,7 @@ export function DesignResumeListSectionContent({
     if (card) {
       event.dataTransfer.setDragImage(card, 24, 24);
     }
+    autoScroll.start(card ?? event.currentTarget);
   };
 
   const handleDrop = (event: DragEvent<HTMLElement>, index: number) => {
@@ -497,7 +519,7 @@ export function DesignResumeListSectionContent({
     <>
       <div className="space-y-3">
         <div className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/20 px-4 py-3 flex-wrap gap-3">
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
             <div>
               <div className="text-sm font-medium text-foreground">
                 {items.length} item{items.length === 1 ? "" : "s"}
@@ -513,6 +535,18 @@ export function DesignResumeListSectionContent({
               <Plus className="mr-2 h-4 w-4" />
               Add
             </Button>
+            {canSortByDate ? (
+              <Tip
+                asChild
+                content="Order entries newest first, with current ones on top. Entries without readable dates move to the end."
+                contentClassName="max-w-64 text-center"
+              >
+                <Button type="button" variant="ghost" onClick={sortByDate}>
+                  <ArrowDownWideNarrow className="mr-2 h-4 w-4" />
+                  Sort by date
+                </Button>
+              </Tip>
+            ) : null}
           </div>
           {showProjectPolicyControls ? (
             <div className="flex items-center gap-2 w-full">

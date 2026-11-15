@@ -14,7 +14,7 @@ import type {
 
 type ProcessOptions = {
   force?: boolean;
-  fields?: Array<"summary" | "headline" | "skills" | "projects">;
+  fields?: Array<"summary" | "headline" | "skills" | "projects" | "bullets">;
 };
 
 function scoreFromJob(job: Job): number {

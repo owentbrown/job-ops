@@ -3,6 +3,7 @@ import { useSettings } from "@client/hooks/useSettings";
 import type { Job } from "@shared/types.js";
 import type React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { trackProductEvent } from "@/lib/analytics";
 import { OrchestratorHeader } from "./orchestrator/OrchestratorHeader";
 import { OrchestratorJobWorkspaceContainer } from "./orchestrator/OrchestratorJobWorkspaceContainer";
@@ -100,6 +101,20 @@ export const OrchestratorPage: React.FC = () => {
     }
     wasSearchComposerVisible.current = isSearchComposerVisible;
   }, [isSearchComposerVisible]);
+
+  // "Find jobs" on the Filtered page lands here and opens the search form.
+  const location = useLocation();
+  const routerNavigate = useNavigate();
+  useEffect(() => {
+    const intent = (location.state as { jobsIntent?: string } | null)
+      ?.jobsIntent;
+    if (intent !== "find") return;
+    routerNavigate(`${location.pathname}${location.search}`, {
+      replace: true,
+      state: null,
+    });
+    openSearch();
+  }, [location, routerNavigate, openSearch]);
 
   const canToggleSearchComposer = !isFirstRunWorkspace;
   const searchPresetProps = usePipelineSearchPresets({

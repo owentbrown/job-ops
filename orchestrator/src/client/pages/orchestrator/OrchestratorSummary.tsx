@@ -14,9 +14,13 @@ export const OrchestratorSummary: React.FC<OrchestratorSummaryProps> = ({
   const welcomeText = useWelcomeMessage();
 
   return (
-    <section className="space-y-4">
+    // On phones the greeting is hidden, so the section only shows during a run.
+    <section
+      className={isPipelineRunning ? "space-y-4" : "hidden space-y-4 md:block"}
+    >
       {welcomeText ? (
-        <div className="flex items-center justify-between">
+        // Phones skip the greeting so the job lists start higher up.
+        <div className="hidden items-center justify-between md:flex">
           <h1 className="text-lg font-medium tracking-tight">{welcomeText}</h1>
         </div>
       ) : null}

@@ -136,7 +136,10 @@ export const OrchestratorJobsWorkspace: React.FC<
   <>
     <OrchestratorSummary stats={stats} isPipelineRunning={isPipelineRunning} />
 
-    <section className="mt-6 space-y-4">
+    {/* The summary is hidden on phones unless a search is running. */}
+    <section
+      className={isPipelineRunning ? "mt-6 space-y-4" : "space-y-4 md:mt-6"}
+    >
       <JobCommandBar
         jobs={jobs}
         onSelectJob={onCommandSelectJob}

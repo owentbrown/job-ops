@@ -19,9 +19,15 @@ interface OrchestratorHeaderProps {
   onRunLastSearch?: () => void;
 }
 
-export const OrchestratorHeader: React.FC<OrchestratorHeaderProps> = ({
-  navOpen,
-  onNavOpenChange,
+type OrchestratorHeaderActionsProps = Omit<
+  OrchestratorHeaderProps,
+  "navOpen" | "onNavOpenChange"
+>;
+
+/** Find jobs / repeat / schedule / Add a job: shared by the Jobs and Filtered pages. */
+export const OrchestratorHeaderActions: React.FC<
+  OrchestratorHeaderActionsProps
+> = ({
   isPipelineRunning,
   isCancelling,
   pipelineSources,
@@ -65,7 +71,7 @@ export const OrchestratorHeader: React.FC<OrchestratorHeaderProps> = ({
       <span>{isSearchComposerOpen ? "Close search" : "Find jobs"}</span>
     </Button>
   );
-  const actions = (
+  return (
     <div className="flex items-center gap-2">
       {primaryAction}
       {onRunLastSearch && !hideRunAction ? (
@@ -85,22 +91,24 @@ export const OrchestratorHeader: React.FC<OrchestratorHeaderProps> = ({
       </Button>
     </div>
   );
-
-  return (
-    <PageHeader
-      icon={() => (
-        <img src="/favicon.png" alt="" className="size-8 rounded-lg" />
-      )}
-      title="Job Ops"
-      subtitle="Orchestrator"
-      navOpen={navOpen}
-      onNavOpenChange={onNavOpenChange}
-      statusIndicator={
-        isPipelineRunning ? (
-          <StatusIndicator label="Search running" variant="amber" />
-        ) : undefined
-      }
-      actions={actions}
-    />
-  );
 };
+
+export const OrchestratorHeader: React.FC<OrchestratorHeaderProps> = ({
+  navOpen,
+  onNavOpenChange,
+  ...actionProps
+}) => (
+  <PageHeader
+    icon={() => <img src="/favicon.png" alt="" className="size-8 rounded-lg" />}
+    title="Job Ops"
+    subtitle="Orchestrator"
+    navOpen={navOpen}
+    onNavOpenChange={onNavOpenChange}
+    statusIndicator={
+      actionProps.isPipelineRunning ? (
+        <StatusIndicator label="Search running" variant="amber" />
+      ) : undefined
+    }
+    actions={<OrchestratorHeaderActions {...actionProps} />}
+  />
+);

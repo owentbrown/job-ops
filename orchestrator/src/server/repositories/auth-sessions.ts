@@ -46,6 +46,17 @@ export async function getAuthSession(id: string): Promise<{
   return row ?? null;
 }
 
+/** Pushes a session's idle deadline out (sliding sign-in window). */
+export async function extendAuthSession(
+  id: string,
+  expiresAt: number,
+): Promise<void> {
+  await db
+    .update(authSessions)
+    .set({ expiresAt, updatedAt: new Date().toISOString() })
+    .where(eq(authSessions.id, id));
+}
+
 export async function revokeAuthSession(id: string): Promise<void> {
   const now = Math.floor(Date.now() / 1000);
   await db

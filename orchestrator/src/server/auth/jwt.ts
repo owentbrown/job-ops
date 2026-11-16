@@ -7,6 +7,14 @@ import * as authSessionsRepo from "@server/repositories/auth-sessions";
 import jwt from "jsonwebtoken";
 
 const DEFAULT_EXPIRY_SECONDS = 86400; // 24 hours
+/**
+ * JWT_EXPIRY_SECONDS is an idle limit: each use of a token pushes its
+ * session's deadline out again, so only that long without using the app
+ * signs you out. The token itself carries a long hard cap as a backstop.
+ */
+const TOKEN_HARD_CAP_SECONDS = 365 * 24 * 60 * 60;
+/** Only rewrite the session row when the deadline has slipped this much. */
+const SLIDE_THROTTLE_SECONDS = 60 * 60;
 const MIN_JWT_SECRET_LENGTH = 32;
 const LOCAL_JWT_SECRET_FILENAME = "jwt-secret";
 let cachedJwtSecret: string | null = null;
@@ -108,6 +116,7 @@ export async function signToken(args: {
   const expiresIn = getJwtExpirySeconds();
   const jti = randomUUID();
   const expiresAt = Math.floor(Date.now() / 1000) + expiresIn;
+  const tokenLifetime = Math.max(expiresIn, TOKEN_HARD_CAP_SECONDS);
 
   await authSessionsRepo.createAuthSession({
     id: jti,
@@ -128,7 +137,7 @@ export async function signToken(args: {
     secret,
     {
       algorithm: "HS256",
-      expiresIn,
+      expiresIn: tokenLifetime,
       jwtid: jti,
     },
   );
@@ -172,6 +181,11 @@ export async function verifyToken(token: string): Promise<{
     session.tenantId !== payload.tenantId
   ) {
     throw new Error("Token has been revoked");
+  }
+
+  const slidDeadline = now + getJwtExpirySeconds();
+  if (slidDeadline - session.expiresAt >= SLIDE_THROTTLE_SECONDS) {
+    await authSessionsRepo.extendAuthSession(payload.jti, slidDeadline);
   }
 
   return {

@@ -59,6 +59,20 @@ describe("Tailoring Flow", () => {
     vi.mocked(trackServerProductEvent).mockClear();
   });
 
+  it("keeps the PDF of a sent application instead of regenerating it", async () => {
+    vi.mocked(jobsRepo.getJobById).mockResolvedValue({
+      id: "sent",
+      status: "in_progress",
+      jobDescription: "A role",
+    } as any);
+
+    const result = await generateFinalPdf("sent");
+
+    expect(result).toMatchObject({ success: false, errorCode: "CONFLICT" });
+    expect(jobsRepo.updateJob).not.toHaveBeenCalled();
+    expect(pdfService.generatePdf).not.toHaveBeenCalled();
+  });
+
   it("does not generate a PDF when the job is deleted before generation is claimed", async () => {
     vi.mocked(jobsRepo.getJobById).mockResolvedValue({
       id: "deleted-before-pdf",

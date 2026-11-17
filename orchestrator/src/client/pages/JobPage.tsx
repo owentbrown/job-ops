@@ -3,6 +3,10 @@ import {
   type SkipJobConfirmInput,
   SkipJobDialog,
 } from "@client/components/SkipJobDialog";
+import {
+  descriptionRefreshMessages,
+  needsFullDescription,
+} from "@client/lib/full-description";
 import { resolveResumeProjectSelection } from "@shared/resume-projects";
 import {
   type ApplicationStage,
@@ -489,6 +493,19 @@ export const JobPage: React.FC = () => {
     [job, loadData, updateJobMutation],
   );
 
+  const handleFetchFullDescription = React.useCallback(async () => {
+    if (!job) return;
+    try {
+      const { result } = await api.refreshJobDescription(job.id);
+      const message = descriptionRefreshMessages[result];
+      if (result === "updated") toast.success(message);
+      else toast.message(message);
+      await loadData();
+    } catch (error) {
+      showErrorToast(error, "Could not fetch the full description");
+    }
+  }, [job, loadData]);
+
   const handleUploadPdf = async (file: File) => {
     if (!job) return;
 
@@ -867,6 +884,11 @@ export const JobPage: React.FC = () => {
                     description={job.jobDescription}
                     jobUrl={job.jobUrl}
                     onSave={handleSaveJobDescription}
+                    onFetchFull={
+                      needsFullDescription(job)
+                        ? handleFetchFullDescription
+                        : undefined
+                    }
                   />
                 </div>
               </div>

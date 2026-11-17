@@ -1,4 +1,10 @@
-import { badRequest, forbidden, notFound, toAppError } from "@infra/errors";
+import {
+  badRequest,
+  conflict,
+  forbidden,
+  notFound,
+  toAppError,
+} from "@infra/errors";
 import { fail, ok } from "@infra/http";
 import { logger } from "@infra/logger";
 import { isDemoMode } from "@server/config/demo";
@@ -8,6 +14,7 @@ import { generateCoverLetter } from "@server/services/cover-letter/generate";
 import { renderCoverLetterPdf } from "@server/services/cover-letter/render";
 import { getPdfPath, pdfExists } from "@server/services/pdf";
 import { safePdfFileName } from "@shared/filename-sanitizer";
+import { isApplicationSent } from "@shared/types";
 import { type Request, type Response, Router } from "express";
 import { z } from "zod";
 
@@ -80,6 +87,13 @@ jobsCoverLetterRouter.put(
     if (isDemoMode())
       throw forbidden("Cover letters are disabled in demo mode.");
     const { text } = saveSchema.parse(req.body ?? {});
+    const existing = await jobsRepo.getJobById(req.params.id);
+    if (!existing) throw notFound("Job not found");
+    if (isApplicationSent(existing.status)) {
+      throw conflict(
+        "This letter was sent with your application, so it's kept as it is.",
+      );
+    }
     const value = text?.trim() ? text.trim() : null;
     if (!(await setCoverLetter(req.params.id, value))) {
       throw notFound("Job not found");

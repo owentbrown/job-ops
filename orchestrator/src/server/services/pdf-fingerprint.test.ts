@@ -36,6 +36,33 @@ describe("PDF freshness", () => {
     ).toBe("uploaded");
   });
 
+  it("never marks the PDF of a sent application as stale", () => {
+    for (const status of ["applied", "in_progress"] as const) {
+      expect(
+        getJobPdfFreshness(
+          createJob({
+            status,
+            pdfPath: "data/pdfs/generated.pdf",
+            pdfSource: "generated",
+            pdfFingerprint: "an-old-fingerprint",
+          }),
+          context,
+        ),
+      ).toBe("current");
+    }
+    expect(
+      getJobPdfFreshness(
+        createJob({
+          status: "ready",
+          pdfPath: "data/pdfs/generated.pdf",
+          pdfSource: "generated",
+          pdfFingerprint: "an-old-fingerprint",
+        }),
+        context,
+      ),
+    ).toBe("stale");
+  });
+
   it("maps active PDF generation to regenerating", () => {
     expect(
       getJobPdfFreshness(

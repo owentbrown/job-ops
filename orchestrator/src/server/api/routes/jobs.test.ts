@@ -384,6 +384,27 @@ describe.sequential("Jobs API routes", () => {
     enabledInfoSpy.mockRestore();
   });
 
+  it("refuses to change the cover letter of a sent application", async () => {
+    const { createJob, updateJob } = await import("@server/repositories/jobs");
+    const job = await createJob({
+      source: "manual",
+      title: "Success Enablement Manager",
+      employer: "Jobber",
+      jobUrl: "https://example.com/job/sent-letter",
+      jobDescription: "Enablement",
+    });
+    const put = (text: string) =>
+      fetch(`${baseUrl}/api/jobs/${job.id}/cover-letter`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+
+    expect((await put("The letter I sent")).status).toBe(200);
+    await updateJob(job.id, { status: "applied" });
+    expect((await put("A rewrite")).status).toBe(409);
+  });
+
   it("includes the pre-score filter layer in list responses", async () => {
     const { createJob } = await import("@server/repositories/jobs");
     const { markJobFiltered } = await import("@server/repositories/prefilter");

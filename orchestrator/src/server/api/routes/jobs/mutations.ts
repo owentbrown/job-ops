@@ -5,6 +5,7 @@ import { isDemoMode, sendDemoBlocked } from "@server/config/demo";
 import { resolveRequestOrigin } from "@server/infra/request-origin";
 import * as jobsRepo from "@server/repositories/jobs";
 import { reconcileActivationMilestonesFromHistorySafely } from "@server/services/activation-funnel";
+import { refreshHiringCafeDescription } from "@server/services/hiring-cafe-descriptions";
 import { removeStoredJobDocuments } from "@server/services/job-document-storage";
 import { trackApplicationAcceptedIfNeeded } from "@server/services/jobs/analytics";
 import { removeStoredJobPdf } from "@server/services/pdf-storage";
@@ -14,6 +15,7 @@ import {
   hydrateJobPdfFreshness,
   isJobUrlConflictError,
   queueTailoringAutoPdfRegenerationIfNeeded,
+  requireJob,
   toJobsRouteError,
   updateJobSchema,
 } from "./shared";
@@ -182,3 +184,24 @@ jobsMutationsRouter.patch("/:id", async (req: Request, res: Response) => {
     fail(res, err);
   }
 });
+
+/** Fetches the full description for a job saved with only a summary. */
+jobsMutationsRouter.post(
+  "/:id/refresh-description",
+  async (req: Request, res: Response) => {
+    try {
+      const job = await requireJob(req.params.id);
+      const result = await refreshHiringCafeDescription(job);
+      const updated = await requireJob(job.id);
+      ok(res, { result, job: await hydrateJobPdfFreshness(updated) });
+    } catch (error) {
+      const err = toJobsRouteError(error);
+      logger.warn("Full description fetch failed", {
+        route: "POST /api/jobs/:id/refresh-description",
+        jobId: req.params.id,
+        status: err.status,
+      });
+      fail(res, err);
+    }
+  },
+);

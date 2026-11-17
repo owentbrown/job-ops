@@ -3,7 +3,7 @@ import { DocumentActions } from "@client/components/DocumentActions";
 import { SignatureCard } from "@client/components/SignatureCard";
 import { showErrorToast } from "@client/lib/error-toast";
 import { queryKeys } from "@client/lib/queryKeys";
-import type { Job } from "@shared/types.js";
+import { isApplicationSent, type Job } from "@shared/types.js";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Mail, Save, Sparkles } from "lucide-react";
 import type React from "react";
@@ -80,6 +80,45 @@ export const CoverLetterPanel: React.FC<{
   };
 
   const hasResume = Boolean(job.pdfPath);
+  const isSent = isApplicationSent(job.status);
+
+  if (isSent) {
+    return (
+      <section className="space-y-4 rounded-xl border border-border/50 bg-card/75 p-4">
+        <div className="space-y-0.5">
+          <div className="flex items-center gap-2 text-sm font-semibold">
+            <Mail className="h-4 w-4 text-primary" />
+            Cover letter
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {hasSaved
+              ? "The letter you applied with. It's kept as it is."
+              : "No cover letter was saved for this application."}
+          </p>
+        </div>
+        {hasSaved ? (
+          <>
+            <div
+              data-testid="sent-cover-letter"
+              className="whitespace-pre-wrap rounded-md border border-border/50 bg-muted/20 p-3 font-mono text-xs leading-5"
+            >
+              {saved}
+            </div>
+            <div className="border-t border-border/50 pt-4">
+              <DocumentActions
+                job={job}
+                resumeFileName={
+                  resumeFileName ??
+                  `${fileSafe(job.employer)}_${fileSafe(job.title)}`
+                }
+                disabledReason={null}
+              />
+            </div>
+          </>
+        ) : null}
+      </section>
+    );
+  }
 
   return (
     <section className="space-y-4 rounded-xl border border-border/50 bg-card/75 p-4">

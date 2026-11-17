@@ -14,6 +14,14 @@ export type JobStatus =
   | "skipped" // User skipped this job
   | "expired"; // Deadline passed
 
+/**
+ * The application has been sent: its CV PDF and cover letter are the ones the
+ * employer has, so they are kept as they are (never regenerated).
+ */
+export function isApplicationSent(status: JobStatus): boolean {
+  return status === "applied" || status === "in_progress";
+}
+
 /** Which pre-score filter layer acted on a job. "restored" = user un-filtered it; never re-filter. */
 export type PrefilterLayer = "rules" | "llm" | "restored";
 

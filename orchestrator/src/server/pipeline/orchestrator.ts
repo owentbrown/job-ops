@@ -15,6 +15,7 @@ import { runWithRequestContext } from "@infra/request-context";
 import { setCoverLetter } from "@server/repositories/cover-letter";
 import { isOnline, OFFLINE_RUN_MESSAGE } from "@server/services/connectivity";
 import { generateCoverLetter } from "@server/services/cover-letter/generate";
+import { backfillHiringCafeDescriptions } from "@server/services/hiring-cafe-descriptions";
 import { getPrivateDataScope } from "@server/tenancy/private-scope";
 import { createLocationIntentFromLegacyInputs } from "@shared/location-domain.js";
 import {
@@ -22,11 +23,12 @@ import {
   serializeExperienceBulletSelection,
 } from "@shared/resume-experience-bullets";
 import { resolveResumeProjectSelection } from "@shared/resume-projects";
-import type {
-  CreateJobInput,
-  JobStatus,
-  PipelineConfig,
-  PipelineRunSavedDetails,
+import {
+  type CreateJobInput,
+  isApplicationSent,
+  type JobStatus,
+  type PipelineConfig,
+  type PipelineRunSavedDetails,
 } from "@shared/types";
 import { getDataDir } from "../config/dataDir";
 import * as jobsRepo from "../repositories/jobs";
@@ -770,6 +772,19 @@ export async function runPipeline(
         jobsProcessed: processedCount,
       });
 
+      if (mergedConfig.enableCrawling !== false) {
+        // Let the run finish and release its lock first.
+        setTimeout(() => {
+          void backfillHiringCafeDescriptions({
+            shouldStop: () => getPipelineStatus().isRunning,
+          }).catch((error: unknown) =>
+            pipelineLogger.warn("Hiring Cafe description backfill failed", {
+              error,
+            }),
+          );
+        }, 10_000).unref();
+      }
+
       await notifyPipelineWebhookStep("pipeline.completed", {
         pipelineRunId: pipelineRun.id,
         jobsDiscovered,
@@ -1113,6 +1128,14 @@ export async function generateFinalPdf(
     try {
       const job = await jobsRepo.getJobById(jobId);
       if (!job) return { success: false, error: "Job not found" };
+      if (isApplicationSent(job.status)) {
+        return {
+          success: false,
+          error:
+            "This CV was sent with your application, so it's kept as it is.",
+          errorCode: "CONFLICT",
+        };
+      }
       if (job.pdfRegenerating) {
         return {
           success: false,

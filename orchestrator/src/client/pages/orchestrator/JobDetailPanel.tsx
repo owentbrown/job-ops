@@ -22,6 +22,10 @@ import {
 import { useProfile } from "@client/hooks/useProfile";
 import { useRescoreJob } from "@client/hooks/useRescoreJob";
 import { useSettings } from "@client/hooks/useSettings";
+import {
+  descriptionRefreshMessages,
+  needsFullDescription,
+} from "@client/lib/full-description";
 import { uploadJobPdfFromFile } from "@client/lib/job-pdf-upload";
 import { resolveFilenameLanguage } from "@client/lib/pdf-filename";
 import {
@@ -406,6 +410,19 @@ export const JobDetailPanel: React.FC<JobDetailPanelProps> = ({
     },
     [onJobUpdated, selectedJob],
   );
+
+  const handleFetchFullDescription = useCallback(async () => {
+    if (!selectedJob) return;
+    try {
+      const { result } = await api.refreshJobDescription(selectedJob.id);
+      const message = descriptionRefreshMessages[result];
+      if (result === "updated") toast.success(message);
+      else toast.message(message);
+      await onJobUpdated();
+    } catch (error) {
+      showErrorToast(error, "Could not fetch the full description");
+    }
+  }, [onJobUpdated, selectedJob]);
 
   const openEditDetails = useCallback(() => {
     window.setTimeout(() => setIsEditDetailsOpen(true), 0);
@@ -929,6 +946,11 @@ export const JobDetailPanel: React.FC<JobDetailPanelProps> = ({
             description={selectedJob.jobDescription}
             jobUrl={selectedJob.jobUrl}
             onSave={handleSaveDescription}
+            onFetchFull={
+              needsFullDescription(selectedJob)
+                ? handleFetchFullDescription
+                : undefined
+            }
           />
         </TabsContent>
 

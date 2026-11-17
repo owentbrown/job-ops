@@ -1,13 +1,14 @@
 import { createHash } from "node:crypto";
 import * as settingsRepo from "@server/repositories/settings";
 import { settingsRegistry } from "@shared/settings-registry";
-import type {
-  Job,
-  JobPdfFreshness,
-  PdfPaperSize,
-  PdfRenderer,
-  ResumeProjectsSettings,
-  TypstTheme,
+import {
+  isApplicationSent,
+  type Job,
+  type JobPdfFreshness,
+  type PdfPaperSize,
+  type PdfRenderer,
+  type ResumeProjectsSettings,
+  type TypstTheme,
 } from "@shared/types";
 import { getCurrentDesignResumeOrNullOnLegacy } from "./design-resume";
 import { getConfiguredRxResumeBaseResumeId } from "./rxresume/baseResumeId";
@@ -26,7 +27,10 @@ type JobPdfFingerprintInput = Pick<
 >;
 
 type JobPdfFreshnessInput = JobPdfFingerprintInput &
-  Pick<Job, "pdfPath" | "pdfSource" | "pdfRegenerating" | "pdfFingerprint">;
+  Pick<
+    Job,
+    "status" | "pdfPath" | "pdfSource" | "pdfRegenerating" | "pdfFingerprint"
+  >;
 
 export interface PdfFingerprintContext {
   version: typeof PDF_FINGERPRINT_VERSION;
@@ -125,6 +129,8 @@ export function getJobPdfFreshness(
   if (job.pdfRegenerating) return "regenerating";
   if (!job.pdfPath) return "missing";
   if (job.pdfSource === "uploaded") return "uploaded";
+  // The PDF that was sent is the record of the application, never "stale".
+  if (isApplicationSent(job.status)) return "current";
 
   const nextFingerprint = createJobPdfFingerprint(job, context);
   return job.pdfFingerprint === nextFingerprint ? "current" : "stale";

@@ -1,5 +1,9 @@
 import * as api from "@client/api";
-import type { Job, JobDocument } from "@shared/types.js";
+import {
+  isApplicationSent,
+  type Job,
+  type JobDocument,
+} from "@shared/types.js";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   AlertTriangle,
@@ -366,15 +370,17 @@ export const JobDocumentsPanel: React.FC<JobDocumentsPanelProps> = ({
                       <Upload className="mr-1.5 h-3.5 w-3.5" />
                       Replace PDF
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={onRegeneratePdf}
-                      disabled={Boolean(pdfRegeneratingReason)}
-                    >
-                      <RefreshCcw className="mr-1.5 h-3.5 w-3.5" />
-                      Regenerate
-                    </Button>
+                    {isApplicationSent(job.status) ? null : (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={onRegeneratePdf}
+                        disabled={Boolean(pdfRegeneratingReason)}
+                      >
+                        <RefreshCcw className="mr-1.5 h-3.5 w-3.5" />
+                        Regenerate
+                      </Button>
+                    )}
                   </div>
                 </div>
                 <AccordionContent className="p-0">

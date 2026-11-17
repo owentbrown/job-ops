@@ -6,6 +6,7 @@ export * from "./auth-sso";
 export * from "./billing";
 export * from "./cover-letter";
 export * from "./ghostwriter";
+export * from "./job-description";
 export * from "./jobs";
 export * from "./overview";
 export * from "./pipeline";

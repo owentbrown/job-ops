@@ -5,6 +5,7 @@ import {
 } from "@client/lib/jobDescription";
 import {
   Copy,
+  DownloadCloud,
   Edit2,
   ExternalLink,
   FileText,
@@ -39,6 +40,8 @@ type JobDescriptionPanelProps = {
   maxHeightClassName?: string;
   onSave?: (description: string) => Promise<void> | void;
   onOpen?: () => void;
+  /** Set when only a summary was saved and the full text can be fetched. */
+  onFetchFull?: () => Promise<void>;
 };
 
 const defaultHelperText =
@@ -56,7 +59,9 @@ export const JobDescriptionPanel: React.FC<JobDescriptionPanelProps> = ({
   maxHeightClassName = "max-h-[420px]",
   onSave,
   onOpen,
+  onFetchFull,
 }) => {
+  const [isFetchingFull, setIsFetchingFull] = useState(false);
   const { renderMarkdownInJobDescriptions } = useSettings();
   const [isEditing, setIsEditing] = useState(false);
   const [editedDescription, setEditedDescription] = useState(
@@ -121,6 +126,24 @@ export const JobDescriptionPanel: React.FC<JobDescriptionPanelProps> = ({
         <Button size="sm" variant="ghost" onClick={() => void handleCopy()}>
           <Copy className="mr-1.5 h-3.5 w-3.5" />
           Copy
+        </Button>
+      ) : null}
+      {onFetchFull && !isLoading ? (
+        <Button
+          size="sm"
+          variant="ghost"
+          disabled={isFetchingFull}
+          onClick={() => {
+            setIsFetchingFull(true);
+            void onFetchFull().finally(() => setIsFetchingFull(false));
+          }}
+        >
+          {isFetchingFull ? (
+            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <DownloadCloud className="mr-1.5 h-3.5 w-3.5" />
+          )}
+          {isFetchingFull ? "Fetching…" : "Fetch full description"}
         </Button>
       ) : null}
       {canEdit ? (

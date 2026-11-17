@@ -68,6 +68,8 @@ export async function renderCoverLetterPdf(args: {
   jobId: string;
   text: string;
   appendPdfPath?: string | null;
+  /** Letter date; defaults to today. A sent application keeps its own. */
+  date?: Date;
 }): Promise<Buffer> {
   const tempDir = await mkdtemp(
     join(tmpdir(), `job-ops-letter-${args.jobId}-`),
@@ -87,7 +89,7 @@ export async function renderCoverLetterPdf(args: {
     const body = buildCoverLetterBody({
       document,
       text: args.text,
-      date: new Date(),
+      date: args.date ?? new Date(),
       signatureFile,
     });
     const template = await readFile(TEMPLATE_PATH, "utf8");

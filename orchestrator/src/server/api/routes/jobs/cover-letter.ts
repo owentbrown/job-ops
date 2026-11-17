@@ -14,7 +14,7 @@ import { generateCoverLetter } from "@server/services/cover-letter/generate";
 import { renderCoverLetterPdf } from "@server/services/cover-letter/render";
 import { getPdfPath, pdfExists } from "@server/services/pdf";
 import { safePdfFileName } from "@shared/filename-sanitizer";
-import { isApplicationSent } from "@shared/types";
+import { isApplicationSent, type Job } from "@shared/types";
 import { type Request, type Response, Router } from "express";
 import { z } from "zod";
 
@@ -81,6 +81,15 @@ function sendPdf(res: Response, bytes: Buffer, fileName: string) {
   res.send(bytes);
 }
 
+/** A sent application's letter keeps the date it was sent. */
+export function sentLetterDate(
+  job: Pick<Job, "status" | "appliedAt">,
+): Date | undefined {
+  if (!isApplicationSent(job.status) || !job.appliedAt) return undefined;
+  const date = new Date(job.appliedAt);
+  return Number.isNaN(date.getTime()) ? undefined : date;
+}
+
 jobsCoverLetterRouter.put(
   "/:id/cover-letter",
   handle("PUT /api/jobs/:id/cover-letter", async (req, res) => {
@@ -126,6 +135,7 @@ jobsCoverLetterRouter.get(
     const pdf = await renderCoverLetterPdf({
       jobId: job.id,
       text: job.coverLetter,
+      date: sentLetterDate(job),
     });
     sendPdf(res, pdf, letterFileName(job.employer, "Cover_Letter"));
   }),
@@ -143,6 +153,7 @@ jobsCoverLetterRouter.get(
     const pdf = await renderCoverLetterPdf({
       jobId: job.id,
       text: job.coverLetter,
+      date: sentLetterDate(job),
       appendPdfPath: getPdfPath(job.id),
     });
     sendPdf(res, pdf, letterFileName(job.employer, "Application"));

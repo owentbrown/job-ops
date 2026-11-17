@@ -11,6 +11,10 @@
  * a scheduled run, rather than sleeping until the slot. A laptop that was
  * asleep (lid closed) at the set hour therefore runs the search as soon as it
  * wakes, instead of skipping the day.
+ *
+ * Same for a run with no internet: it's recorded as "offline" rather than
+ * done, so the slot stays due and the search runs once the connection is
+ * back (checked each minute).
  */
 import { existsSync, readFileSync } from "node:fs";
 import { mkdir, rename, writeFile } from "node:fs/promises";
@@ -22,6 +26,7 @@ import { getPipelineStatus } from "@server/pipeline/index";
 import * as pipelineRepo from "@server/repositories/pipeline";
 import type { PipelineRun, SearchScheduleStatus } from "@shared/types";
 import { z } from "zod";
+import { isOnline, OFFLINE_RUN_MESSAGE } from "./connectivity";
 import {
   launchSearch,
   type RunPipelineRequest,
@@ -68,7 +73,7 @@ const scheduleFileSchema = z.object({
   lastScheduledRun: z
     .object({
       at: z.string(),
-      outcome: z.enum(["started", "skipped", "failed"]),
+      outcome: z.enum(["started", "skipped", "failed", "offline"]),
       message: z.string().optional(),
     })
     .nullable()
@@ -214,9 +219,11 @@ export function isScheduledRunDue(
     state.days,
   ).getTime();
   if (slot <= Date.parse(state.activeSince)) return false;
-  const lastAt = state.lastScheduledRun
-    ? Date.parse(state.lastScheduledRun.at)
-    : Number.NEGATIVE_INFINITY;
+  // An offline attempt doesn't count: keep trying until one gets through.
+  const lastAt =
+    state.lastScheduledRun && state.lastScheduledRun.outcome !== "offline"
+      ? Date.parse(state.lastScheduledRun.at)
+      : Number.NEGATIVE_INFINITY;
   return lastAt < slot;
 }
 
@@ -327,6 +334,8 @@ export async function checkScheduledSearch(
         late: now.getTime() - slot.getTime() > 2 * CHECK_INTERVAL_MS,
       });
       await runScheduledSearch();
+    } else {
+      await checkStartedRunWentThrough(state);
     }
     if (timer) refreshNextRunAt(readFileState());
   } finally {
@@ -349,8 +358,30 @@ function armTimer(state: ScheduleFile): void {
   void checkScheduledSearch();
 }
 
+/**
+ * A scheduled run that started fine but lost the connection mid-search ends
+ * as a failed run with the offline message; mark it offline so it retries.
+ */
+async function checkStartedRunWentThrough(state: ScheduleFile): Promise<void> {
+  const last = state.lastScheduledRun;
+  if (last?.outcome !== "started" || getPipelineStatus().isRunning) return;
+  const run = await pipelineRepo.getLatestPipelineRun();
+  if (
+    run &&
+    run.status === "failed" &&
+    run.errorMessage === OFFLINE_RUN_MESSAGE &&
+    Date.parse(run.startedAt) >= Date.parse(last.at) - 5 * 60 * 1000
+  ) {
+    logger.info("Scheduled search had no internet; will retry when online");
+    await recordOutcome("offline", OFFLINE_WAIT_MESSAGE);
+  }
+}
+
+const OFFLINE_WAIT_MESSAGE =
+  "No internet connection. It will run as soon as you're back online.";
+
 async function recordOutcome(
-  outcome: "started" | "skipped" | "failed",
+  outcome: "started" | "skipped" | "failed" | "offline",
   message?: string,
 ): Promise<void> {
   try {
@@ -370,6 +401,14 @@ export async function runScheduledSearch(): Promise<void> {
     if (getPipelineStatus().isRunning) {
       logger.info("Scheduled search skipped: a search is already running");
       await recordOutcome("skipped", "Another search was already running");
+      return;
+    }
+    if (!(await isOnline())) {
+      // Log and record once, not every minute while waiting.
+      if (state.lastScheduledRun?.outcome !== "offline") {
+        logger.info("Scheduled search waiting: no internet connection");
+        await recordOutcome("offline", OFFLINE_WAIT_MESSAGE);
+      }
       return;
     }
     const { request } = await resolveLastSearch();

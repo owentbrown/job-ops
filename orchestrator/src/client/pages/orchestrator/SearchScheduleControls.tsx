@@ -85,6 +85,16 @@ interface SearchScheduleControlsProps {
   onRunLastSearch: () => void;
 }
 
+const OUTCOME_LABELS: Record<
+  NonNullable<SearchScheduleStatus["lastScheduledRun"]>["outcome"],
+  string
+> = {
+  started: "started",
+  skipped: "skipped",
+  failed: "failed",
+  offline: "waiting for internet",
+};
+
 export const SearchScheduleControls: React.FC<SearchScheduleControlsProps> = ({
   isPipelineRunning,
   onRunLastSearch,
@@ -347,7 +357,7 @@ export const SearchScheduleControls: React.FC<SearchScheduleControlsProps> = ({
             {status?.lastScheduledRun ? (
               <p>
                 Last scheduled run: {formatWhen(status.lastScheduledRun.at)} —{" "}
-                {status.lastScheduledRun.outcome}
+                {OUTCOME_LABELS[status.lastScheduledRun.outcome]}
                 {status.lastScheduledRun.message
                   ? ` (${status.lastScheduledRun.message})`
                   : ""}

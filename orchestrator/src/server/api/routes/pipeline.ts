@@ -126,10 +126,14 @@ function resolveRequestOrigin(req: Request): string | null {
 pipelineRouter.get("/status", async (_req: Request, res: Response) => {
   try {
     const { isRunning } = getPipelineStatus();
-    const lastRun = await pipelineRepo.getLatestPipelineRun();
+    const [lastRun, lastSuccessfulRun] = await Promise.all([
+      pipelineRepo.getLatestPipelineRun(),
+      pipelineRepo.getLatestSuccessfulPipelineRun(),
+    ]);
     const data: PipelineStatusResponse = {
       isRunning,
       lastRun,
+      lastSuccessfulRun,
       nextScheduledRun: getNextScheduledSearchRun(),
     };
     ok(res, data);

@@ -13,6 +13,7 @@ import { logger } from "@infra/logger";
 import { trackServerProductEvent } from "@infra/product-analytics";
 import { runWithRequestContext } from "@infra/request-context";
 import { setCoverLetter } from "@server/repositories/cover-letter";
+import { isOnline, OFFLINE_RUN_MESSAGE } from "@server/services/connectivity";
 import { generateCoverLetter } from "@server/services/cover-letter/generate";
 import { getPrivateDataScope } from "@server/tenancy/private-scope";
 import { createLocationIntentFromLegacyInputs } from "@shared/location-domain.js";
@@ -591,6 +592,15 @@ export async function runPipeline(
 
       ensureNotCancelled(scopeKey);
       jobsDiscovered = discoveredJobs.length;
+      // Nothing back from every site is usually a dropped connection, not a
+      // quiet day; fail the run so it isn't reported as "0 found".
+      if (
+        mergedConfig.enableCrawling !== false &&
+        jobsDiscovered === 0 &&
+        !(await isOnline())
+      ) {
+        throw new Error(OFFLINE_RUN_MESSAGE);
+      }
       const { created, skipped, fuzzyMerged } =
         mergedConfig.enableCrawling === false
           ? { created: 0, skipped: 0, fuzzyMerged: 0 }

@@ -13,7 +13,13 @@ vi.mock("@server/pipeline/index", () => ({
 
 vi.mock("@server/repositories/pipeline", () => ({
   getRecentPipelineRuns: vi.fn(async () => []),
+  getLatestPipelineRun: vi.fn(async () => null),
 }));
+
+vi.mock("./connectivity", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./connectivity")>();
+  return { ...actual, isOnline: vi.fn(async () => true) };
+});
 
 vi.mock("./search-launch", async (importOriginal) => {
   const actual = await importOriginal<typeof import("./search-launch")>();
@@ -22,6 +28,7 @@ vi.mock("./search-launch", async (importOriginal) => {
 
 import * as pipelineIndex from "@server/pipeline/index";
 import * as pipelineRepo from "@server/repositories/pipeline";
+import { isOnline, OFFLINE_RUN_MESSAGE } from "./connectivity";
 import { launchSearch } from "./search-launch";
 import {
   checkScheduledSearch,
@@ -225,9 +232,12 @@ describe("search schedule state", () => {
       isRunning: false,
     } as ReturnType<typeof pipelineIndex.getPipelineStatus>);
     vi.mocked(pipelineRepo.getRecentPipelineRuns).mockResolvedValue([]);
+    vi.mocked(pipelineRepo.getLatestPipelineRun).mockResolvedValue(null);
+    vi.mocked(isOnline).mockResolvedValue(true);
   });
 
   afterEach(() => {
+    vi.useRealTimers();
     stopSearchScheduler();
     rmSync(dir, { recursive: true, force: true });
     delete process.env.DATA_DIR;
@@ -383,5 +393,66 @@ describe("search schedule state", () => {
     expect((await getSearchScheduleStatus()).lastScheduledRun?.outcome).toBe(
       "skipped",
     );
+  });
+
+  async function scheduleOnForAWeek() {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-11-10T03:00:00Z"));
+    await recordLastSearch({ sources: ["indeed"] });
+    await updateSearchSchedule({ enabled: true, hour: 6, timeZone: "UTC" });
+    const path = getSearchScheduleFilePath();
+    const saved = JSON.parse(readFileSync(path, "utf8"));
+    saved.activeSince = "2026-11-01T00:00:00.000Z";
+    const { writeFileSync } = await import("node:fs");
+    writeFileSync(path, JSON.stringify(saved));
+  }
+  /** Check at minutes past this morning's 06:00 UTC slot. */
+  async function checkAt(minutesPastSlot: number) {
+    const now = new Date(
+      Date.parse("2026-11-10T06:00:00Z") + minutesPastSlot * 60000,
+    );
+    vi.setSystemTime(now);
+    await checkScheduledSearch(now);
+  }
+
+  it("waits for the internet and runs once it's back", async () => {
+    await scheduleOnForAWeek();
+    vi.mocked(isOnline).mockResolvedValue(false);
+    await checkAt(0);
+    await checkAt(1);
+    expect(launchSearch).not.toHaveBeenCalled();
+    expect((await getSearchScheduleStatus()).lastScheduledRun?.outcome).toBe(
+      "offline",
+    );
+
+    vi.mocked(isOnline).mockResolvedValue(true);
+    await checkAt(45);
+    expect(launchSearch).toHaveBeenCalledTimes(1);
+    await checkAt(46);
+    expect(launchSearch).toHaveBeenCalledTimes(1);
+    vi.useRealTimers();
+  });
+
+  it("retries a run that lost the connection mid-search", async () => {
+    await scheduleOnForAWeek();
+    await checkAt(0);
+    expect(launchSearch).toHaveBeenCalledTimes(1);
+
+    vi.mocked(pipelineRepo.getLatestPipelineRun).mockResolvedValue({
+      id: "run-1",
+      startedAt: "2026-11-10T06:00:00.000Z",
+      completedAt: "2026-11-10T06:00:20.000Z",
+      status: "failed",
+      jobsDiscovered: 0,
+      jobsProcessed: 0,
+      errorMessage: OFFLINE_RUN_MESSAGE,
+    });
+    await checkAt(1);
+    expect((await getSearchScheduleStatus()).lastScheduledRun?.outcome).toBe(
+      "offline",
+    );
+    await checkAt(2);
+    expect(launchSearch).toHaveBeenCalledTimes(2);
+    vi.useRealTimers();
   });
 });

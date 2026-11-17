@@ -105,6 +105,7 @@ export const OverviewPage: React.FC = () => {
               <EngineStatusStrip
                 schedule={schedule.data ?? null}
                 lastRun={status.data?.lastRun ?? null}
+                lastSuccessfulRun={status.data?.lastSuccessfulRun ?? null}
                 allJobsCount={data.actions.allJobsCount}
               />
             </section>

@@ -9,8 +9,9 @@ import type {
   PipelineRunInsights,
   PipelineRunResultSummary,
   PipelineRunSavedDetails,
+  PipelineRunTally,
 } from "@shared/types";
-import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
+import { and, desc, eq, gt, gte, lte, sql } from "drizzle-orm";
 import { db, schema } from "../db/index";
 import {
   getPrivateDataScope,
@@ -163,6 +164,34 @@ export async function getLatestPipelineRun(): Promise<PipelineRun | null> {
 /**
  * Get recent pipeline runs.
  */
+/**
+ * Newest completed run that got jobs back from the sites. A completed run
+ * with nothing discovered almost always means the sites weren't reached.
+ */
+export async function getLatestSuccessfulPipelineRun(): Promise<PipelineRunTally | null> {
+  const [row] = await db
+    .select()
+    .from(pipelineRuns)
+    .where(
+      and(
+        pipelineRunsScopeFilter(),
+        eq(pipelineRuns.status, "completed"),
+        gt(pipelineRuns.jobsDiscovered, 0),
+      ),
+    )
+    .orderBy(desc(pipelineRuns.startedAt))
+    .limit(1);
+  if (!row) return null;
+  const summary = mapRowToSavedDetails(row)?.resultSummary;
+  return {
+    id: row.id,
+    startedAt: row.startedAt,
+    jobsDiscovered: row.jobsDiscovered,
+    jobsScored: summary?.jobsScored ?? null,
+    jobsProcessed: row.jobsProcessed,
+  };
+}
+
 export async function getRecentPipelineRuns(
   limit: number = 10,
 ): Promise<PipelineRun[]> {

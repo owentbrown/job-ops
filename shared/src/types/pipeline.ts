@@ -218,7 +218,7 @@ export interface SearchScheduleStatus {
   nextRunAt: string | null;
   lastScheduledRun: {
     at: string;
-    outcome: "started" | "skipped" | "failed";
+    outcome: "started" | "skipped" | "failed" | "offline";
     message?: string;
   } | null;
   lastSearch: {
@@ -240,9 +240,22 @@ export interface UpdateSearchScheduleInput {
   maxJobsToScore?: number;
 }
 
+/** Counts from the newest run that actually reached the job sites. */
+export interface PipelineRunTally {
+  id: string;
+  startedAt: string;
+  /** Jobs the sites returned. */
+  jobsDiscovered: number;
+  /** Jobs the AI scored (null for runs saved before this was tracked). */
+  jobsScored: number | null;
+  /** Jobs moved to "To apply". */
+  jobsProcessed: number;
+}
+
 export interface PipelineStatusResponse {
   isRunning: boolean;
   lastRun: PipelineRun | null;
+  lastSuccessfulRun?: PipelineRunTally | null;
   nextScheduledRun: string | null;
 }
 

@@ -460,4 +460,48 @@ describe.sequential("pipeline challenge handling", () => {
       discoveredJobs: [partialJob],
     });
   });
+
+  it("keeps jobs from other sites when the challenged site's retry fails", async () => {
+    const pipeline = await import("./orchestrator");
+    const steps = await import("./steps");
+    const indeedJob = {
+      source: "indeed",
+      sourceJobId: "indeed-1",
+      title: "Product Manager",
+      employer: "Acme",
+      jobUrl: "https://indeed.com/job/indeed-1",
+      jobDescription: "PM role",
+    };
+    vi.mocked(steps.discoverJobsStep)
+      .mockReset()
+      .mockResolvedValueOnce({
+        discoveredJobs: [indeedJob],
+        sourceErrors: ["Hiring Cafe challenged"],
+        pendingChallenges: [
+          {
+            extractorId: "hiringcafe",
+            extractorName: "Hiring Cafe",
+            url: "https://hiringcafe.com/",
+            sources: ["hiringcafe" as const],
+          },
+        ],
+      })
+      .mockRejectedValueOnce(
+        new Error("All sources failed: hiringcafe: timed out after 10 minutes"),
+      );
+
+    const runPromise = pipeline.runPipeline({
+      sources: ["indeed", "hiringcafe"],
+    });
+    await vi.waitFor(() => {
+      expect(pipeline.getPendingChallenges()).toHaveLength(1);
+    });
+    pipeline.resolvePipelineChallenge("hiringcafe");
+    const result = await runPromise;
+
+    expect(result.success).toBe(true);
+    expect(vi.mocked(steps.importJobsStep)).toHaveBeenCalledWith({
+      discoveredJobs: [expect.objectContaining({ sourceJobId: "indeed-1" })],
+    });
+  });
 });

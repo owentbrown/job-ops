@@ -553,19 +553,42 @@ export async function runPipeline(
         });
 
         const retryConfig = { ...mergedConfig, sources: challengedSources };
-        const retryResult = await discoverJobsStep({
-          mergedConfig: retryConfig,
-          includeWatchlist: false,
-          preserveFanout: true,
-          fanoutSeedJobs: discoveredJobs,
-          retryChallengeUrls,
-          resumeStates,
-          skippedChallengeSearchStates: Array.from(
-            tenantState.skippedChallengeSearchStates,
-          ),
-          shouldCancel: () =>
-            getPipelineState(scopeKey).cancelRequestedAt !== null,
-        });
+        // A retry that fails outright (e.g. the bot-checked site times out)
+        // mustn't throw away jobs the other sites already returned.
+        let retryResult: Awaited<ReturnType<typeof discoverJobsStep>>;
+        try {
+          retryResult = await discoverJobsStep({
+            mergedConfig: retryConfig,
+            includeWatchlist: false,
+            preserveFanout: true,
+            fanoutSeedJobs: discoveredJobs,
+            retryChallengeUrls,
+            resumeStates,
+            skippedChallengeSearchStates: Array.from(
+              tenantState.skippedChallengeSearchStates,
+            ),
+            shouldCancel: () =>
+              getPipelineState(scopeKey).cancelRequestedAt !== null,
+          });
+        } catch (error) {
+          if (
+            error instanceof PipelineCancelledError ||
+            discoveredJobs.length === 0
+          ) {
+            throw error;
+          }
+          const message =
+            error instanceof Error ? error.message : "Unknown error";
+          pipelineLogger.warn(
+            "Retry of challenged sources failed; keeping jobs already found",
+            { sources: challengedSources, error: message },
+          );
+          retryResult = {
+            discoveredJobs: [],
+            sourceErrors: [message],
+            pendingChallenges: [],
+          };
+        }
 
         discoveredJobs = mergeRetriedJobs(
           discoveredJobs,

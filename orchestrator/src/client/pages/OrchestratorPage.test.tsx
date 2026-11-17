@@ -1631,6 +1631,11 @@ describe("OrchestratorPage", () => {
 
     pressKey("3");
     await waitFor(() => {
+      expect(locationText()).toContain("/filtered");
+    });
+
+    pressKey("4");
+    await waitFor(() => {
       expect(locationText()).toContain("/all");
     });
   });

@@ -230,7 +230,15 @@ export const FilteredJobsPage: React.FC<{
           <div className="space-y-4">{filteredList}</div>
         </div>
       ) : (
-        rulesEditor
+        // Settings: the rules, plus the free re-check of already-scored jobs
+        // (the filtered jobs themselves are a list on the Jobs page).
+        <div className="space-y-4">
+          <RecheckScoredPanel
+            rulesDirty={rulesDirty}
+            filteredJobsKey={FILTERED_JOBS_KEY}
+          />
+          {rulesEditor}
+        </div>
       )}
     </PageFrame>
   );

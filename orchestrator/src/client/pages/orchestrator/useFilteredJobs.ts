@@ -6,6 +6,7 @@ import type {
   JobFilters,
   SponsorFilter,
 } from "./constants";
+import { isFilteredOutJob } from "./jobActions";
 import {
   compareJobs,
   getJobDateValue,
@@ -47,6 +48,8 @@ export const useFilteredJobs = (jobs: JobListItem[], filters: JobFilters) => {
       filtered = filtered.filter(
         (job) => job.status === "discovered" || job.status === "processing",
       );
+    } else if (activeTab === "filtered") {
+      filtered = filtered.filter(isFilteredOutJob);
     } else if (activeTab === "all") {
       const includeClosedJobs = dateFilter.dimensions.includes("closed");
       if (!includeClosedJobs) {

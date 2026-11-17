@@ -285,6 +285,7 @@ export type JobListItem = Pick<
   | "closedAt"
   | "suitabilityScore"
   | "sponsorMatchScore"
+  | "filterLayer"
   | "appliedDuplicateMatch"
   | "jobType"
   | "jobFunction"

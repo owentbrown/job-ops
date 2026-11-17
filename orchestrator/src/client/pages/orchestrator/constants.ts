@@ -80,7 +80,7 @@ export const appliedDuplicateIndicator = {
   dot: "bg-warning",
 };
 
-export type FilterTab = "ready" | "discovered" | "all";
+export type FilterTab = "ready" | "discovered" | "filtered" | "all";
 export type DateFilterPreset = "7" | "14" | "30" | "90" | "custom";
 export type DateFilterDimension = "ready" | "applied" | "closed" | "discovered";
 
@@ -216,37 +216,29 @@ export const tabs: Array<{
     label: "To review",
     statuses: ["discovered", "processing"],
   },
+  // Jobs the pre-score filter removed (skipped with a rules/llm filter layer).
+  { id: "filtered", label: "Filtered out", statuses: ["skipped"] },
   { id: "all", label: "All jobs", statuses: [] },
 ];
 
-/** The Filtered page is its own route but sits among the job lists. */
-export const FILTERED_LIST_LABEL = "Filtered out";
-
 /**
- * Order of the job lists in the tab bars: what to do next first, then what
- * the rules cut, then the archive. The phone swiper loops through them.
+ * The job lists in tab-bar order: what to do next first, then what the
+ * rules cut, then the archive. The phone swiper loops through them.
  */
-export type JobListId = FilterTab | "filtered";
-export const jobListOrder: JobListId[] = [
-  "ready",
-  "discovered",
-  "filtered",
-  "all",
-];
-
 export function jobListItems(
   counts?: Partial<Record<FilterTab, number>>,
-): Array<{ id: JobListId; label: string; count?: number }> {
-  return jobListOrder.map((id) => {
-    if (id === "filtered") return { id, label: FILTERED_LIST_LABEL };
-    const tab = tabs.find((item) => item.id === id);
-    return { id, label: tab?.label ?? id, count: counts?.[id] };
-  });
+): Array<{ id: FilterTab; label: string; count?: number }> {
+  return tabs.map((tab) => ({
+    id: tab.id,
+    label: tab.label,
+    count: counts?.[tab.id],
+  }));
 }
 
 export const emptyStateCopy: Record<FilterTab, string> = {
   ready: "Run a search to discover and process new jobs.",
   discovered: "All discovered jobs have been processed.",
+  filtered: "Nothing has been filtered out.",
   all: "No jobs in the system yet. Run a search to get started.",
 };
 

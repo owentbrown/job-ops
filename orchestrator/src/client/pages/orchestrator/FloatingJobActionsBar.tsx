@@ -49,7 +49,7 @@ export const FloatingJobActionsBar: React.FC<FloatingJobActionsBarProps> = ({
                   disabled={jobActionInFlight}
                   onClick={onMoveToReady}
                 >
-                  Move to Ready
+                  Move to Apply
                 </Button>
               )}
               {canSkipSelected && (

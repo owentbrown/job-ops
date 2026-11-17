@@ -349,7 +349,10 @@ export const JobCommandBar: React.FC<JobCommandBarProps> = ({
         ),
       });
       closeDialog();
-      onSelectJob(getFilterTab(row.job.status), row.job.id);
+      onSelectJob(
+        getFilterTab(row.job.status, row.job.filterLayer),
+        row.job.id,
+      );
     },
     [activeLock, applyLock, closeDialog, onSelectJob, query],
   );

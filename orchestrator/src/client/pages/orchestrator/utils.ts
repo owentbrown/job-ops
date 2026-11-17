@@ -12,6 +12,7 @@ import {
   orderedFilterSources,
   orderedSources,
 } from "./constants";
+import { isFilteredOutJob } from "./jobActions";
 
 const dateValue = (value: string | null) => {
   if (!value) return null;
@@ -260,10 +261,12 @@ export const getJobCounts = (
   const byTab: Record<FilterTab, number> = {
     ready: 0,
     discovered: 0,
+    filtered: 0,
     all: jobs.length,
   };
 
   for (const job of jobs) {
+    if (isFilteredOutJob(job)) byTab.filtered += 1;
     if (job.closedAt != null) continue;
     if (job.status === "in_progress") continue;
     if (job.status === "ready" || job.status === "processing") byTab.ready += 1;

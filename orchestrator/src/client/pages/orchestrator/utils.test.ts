@@ -55,8 +55,24 @@ describe("orchestrator utils", () => {
     expect(getJobCounts(jobs)).toEqual({
       ready: 2,
       discovered: 2,
+      filtered: 0,
       all: 4,
     });
+  });
+
+  it("counts only jobs the pre-score filter removed as filtered out", () => {
+    const jobs = [
+      createJob({ id: "rules", status: "skipped", filterLayer: "rules" }),
+      createJob({ id: "llm", status: "skipped", filterLayer: "llm" }),
+      createJob({ id: "user-skip", status: "skipped", filterLayer: null }),
+      createJob({
+        id: "restored",
+        status: "discovered",
+        filterLayer: "restored",
+      }),
+    ];
+
+    expect(getJobCounts(jobs).filtered).toBe(2);
   });
 
   describe("extractEmploymentTypes", () => {

@@ -2,8 +2,9 @@ import type { JobListItem } from "@shared/types.js";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { type FilterTab, tabs } from "./constants";
+import { isFilteredOutJob } from "./jobActions";
 
-const validTabs: FilterTab[] = ["ready", "discovered", "all"];
+const validTabs: FilterTab[] = tabs.map((item) => item.id);
 
 const commandSelectionFilterKeys = [
   "source",
@@ -76,8 +77,10 @@ export function useOrchestratorNavigation({
         : null;
       const jobFitsTab =
         selectedItem &&
-        (tabDef?.statuses.length === 0 ||
-          tabDef?.statuses.includes(selectedItem.status));
+        (newTab === "filtered"
+          ? isFilteredOutJob(selectedItem)
+          : tabDef?.statuses.length === 0 ||
+            tabDef?.statuses.includes(selectedItem.status));
 
       navigateWithContext(newTab, jobFitsTab ? selectedJobId : null);
     },

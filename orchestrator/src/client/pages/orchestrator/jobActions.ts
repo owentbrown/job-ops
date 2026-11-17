@@ -1,5 +1,15 @@
 import type { JobActionResponse, JobListItem } from "@shared/types";
 
+/** A job the pre-score filter removed (and the user hasn't restored). */
+export function isFilteredOutJob(
+  job: Pick<JobListItem, "status" | "filterLayer">,
+): boolean {
+  return (
+    job.status === "skipped" &&
+    (job.filterLayer === "rules" || job.filterLayer === "llm")
+  );
+}
+
 const SKIPPABLE_STATUSES = new Set(["discovered", "ready"]);
 
 export function canSkip(jobs: JobListItem[]): boolean {

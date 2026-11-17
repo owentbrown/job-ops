@@ -103,7 +103,16 @@ export const getCommandGroup = (status: JobStatus): CommandGroupId => {
   return "other";
 };
 
-export const getFilterTab = (status: JobStatus): FilterTab => {
+export const getFilterTab = (
+  status: JobStatus,
+  filterLayer?: string | null,
+): FilterTab => {
+  if (
+    status === "skipped" &&
+    (filterLayer === "rules" || filterLayer === "llm")
+  ) {
+    return "filtered";
+  }
   if (status === "ready") return "ready";
   if (status === "discovered" || status === "processing") return "discovered";
   return "all";

@@ -48,6 +48,7 @@ export const sortFieldOrder: JobSort["key"][] = [
 export const tabDescriptions: Partial<Record<FilterTab, string>> = {
   discovered: "Jobs searched, ready to be tailored",
   ready: "Jobs with tailored CVs, ready to apply",
+  filtered: "Jobs your filter rules removed before scoring",
 };
 
 export const datePresetOptions: Array<{

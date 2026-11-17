@@ -61,6 +61,7 @@ const renderFilters = (
     counts: {
       ready: 2,
       discovered: 1,
+      filtered: 3,
       all: 6,
     },
     onOpenCommandBar: vi.fn(),

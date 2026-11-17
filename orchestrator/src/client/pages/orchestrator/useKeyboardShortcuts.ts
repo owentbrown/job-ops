@@ -139,6 +139,7 @@ export function useKeyboardShortcuts(args: UseKeyboardShortcutsArgs): void {
       // ── Tab switching ───────────────────────────────────────────────────
       [SHORTCUTS.tabReady.key]: () => setActiveTab("ready"),
       [SHORTCUTS.tabDiscovered.key]: () => setActiveTab("discovered"),
+      [SHORTCUTS.tabFiltered.key]: () => setActiveTab("filtered"),
       [SHORTCUTS.tabAll.key]: () => setActiveTab("all"),
       [SHORTCUTS.prevTabArrow.key]: (e) => {
         e.preventDefault();

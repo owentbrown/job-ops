@@ -152,6 +152,7 @@ export async function getJobListItems(
     closedAt: jobs.closedAt,
     suitabilityScore: jobs.suitabilityScore,
     sponsorMatchScore: jobs.sponsorMatchScore,
+    filterLayer: jobs.filterLayer,
     pdfPath: jobs.pdfPath,
     pdfSource: jobs.pdfSource,
     pdfRegenerating: jobs.pdfRegenerating,
@@ -194,6 +195,7 @@ export async function getJobListItems(
       ...row,
       source: row.source as JobListItem["source"],
       status: row.status as JobStatus,
+      filterLayer: (row.filterLayer as JobListItem["filterLayer"]) ?? null,
       pdfSource: row.pdfSource as JobPdfSource | null,
       pdfRegenerating: row.pdfRegenerating ?? false,
       pdfFreshness: row.pdfRegenerating

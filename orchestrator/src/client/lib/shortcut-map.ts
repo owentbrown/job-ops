@@ -51,18 +51,24 @@ export const SHORTCUTS = {
   tabReady: {
     key: "1",
     displayKey: "1",
-    label: "Ready tab",
+    label: "To apply tab",
     group: "tabs",
   },
   tabDiscovered: {
     key: "2",
     displayKey: "2",
-    label: "Discovered tab",
+    label: "To review tab",
+    group: "tabs",
+  },
+  tabFiltered: {
+    key: "3",
+    displayKey: "3",
+    label: "Filtered out tab",
     group: "tabs",
   },
   tabAll: {
-    key: "3",
-    displayKey: "3",
+    key: "4",
+    displayKey: "4",
     label: "All Jobs tab",
     group: "tabs",
   },
@@ -90,7 +96,7 @@ export const SHORTCUTS = {
   moveToReady: {
     key: "r",
     displayKey: "r",
-    label: "Move to Ready",
+    label: "Move to Apply",
     group: "actions",
     scope: ["discovered"],
   },

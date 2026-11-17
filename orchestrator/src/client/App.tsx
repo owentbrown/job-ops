@@ -28,7 +28,6 @@ import { ApplicationsPage } from "./pages/ApplicationsPage";
 import { ClassicOverviewPage } from "./pages/ClassicOverviewPage";
 import { GmailOauthCallbackPage } from "./pages/GmailOauthCallbackPage";
 import { JobPage } from "./pages/JobPage";
-import { JobsFilteredPage } from "./pages/JobsFilteredPage";
 import { OfflinePage } from "./pages/OfflinePage";
 import { OnboardingPage } from "./pages/OnboardingPage";
 import { OrchestratorPage } from "./pages/OrchestratorPage";
@@ -246,7 +245,6 @@ export const App: React.FC = () => {
                     element={<SsoCallbackPage />}
                   />
                   <Route path="/settings" element={<SettingsPage />} />
-                  <Route path="/jobs/filtered" element={<JobsFilteredPage />} />
                   <Route path="/jobs/:tab" element={<OrchestratorPage />} />
                   <Route
                     path="/jobs/:tab/:jobId"

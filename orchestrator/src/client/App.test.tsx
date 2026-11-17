@@ -79,10 +79,6 @@ vi.mock("./pages/SignInPage", () => ({
   SignInPage: () => <div>sign-in</div>,
 }));
 
-vi.mock("./pages/JobsFilteredPage", () => ({
-  JobsFilteredPage: () => <div>jobs-filtered</div>,
-}));
-
 describe("App demo banner", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -284,7 +280,7 @@ describe("Filtered jobs tab", () => {
   it.each([
     "/filtered",
     "/jobs/filtered",
-  ])("%s shows the Jobs Filtered tab", async (from) => {
+  ])("%s opens the Filtered out list on the Jobs page", async (from) => {
     vi.mocked(useDemoInfo).mockReturnValue({
       demoMode: false,
       resetCadenceHours: 6,
@@ -298,7 +294,9 @@ describe("Filtered jobs tab", () => {
         <App />
       </MemoryRouter>,
     );
-    expect(await screen.findByText("jobs-filtered")).toBeInTheDocument();
+    expect(
+      await screen.findByText("orchestrator:filtered:"),
+    ).toBeInTheDocument();
   });
 });
 

@@ -53,6 +53,7 @@ import {
   Loader2,
   MoreHorizontal,
   RefreshCcw,
+  RotateCcw,
   Sparkles,
   Star,
   Upload,
@@ -60,7 +61,7 @@ import {
 } from "lucide-react";
 import type React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { parseJobBrief } from "@/client/components/JobBriefPane";
 import { showErrorToast } from "@/client/lib/error-toast";
@@ -84,6 +85,7 @@ import {
 } from "@/lib/utils";
 import { CoverLetterPanel } from "../job-page/CoverLetterPanel";
 import type { FilterTab } from "./constants";
+import { isFilteredOutJob } from "./jobActions";
 import type { SelectedJobLoadState } from "./useOrchestratorData";
 
 interface JobDetailPanelProps {
@@ -214,6 +216,7 @@ const statusTone: Record<
 };
 
 const getPrimaryAction = (job: Job): string => {
+  if (isFilteredOutJob(job)) return "Restore to review";
   if (job.status === "processing") return "Processing";
   if (job.status === "ready") return "Mark Applied";
   if (job.status === "discovered") return "Start Tailoring";
@@ -475,8 +478,29 @@ export const JobDetailPanel: React.FC<JobDetailPanelProps> = ({
     }
   }, [handleJobMoved, markAsAppliedMutation, onJobUpdated, selectedJob]);
 
+  const [isRestoring, setIsRestoring] = useState(false);
+  const handleRestore = useCallback(async () => {
+    if (!selectedJob) return;
+    setIsRestoring(true);
+    try {
+      await api.restoreFilteredJob(selectedJob.id);
+      toast.success("Restored", {
+        description: "It's back in To review and will be scored.",
+      });
+      await onJobUpdated();
+    } catch (error) {
+      showErrorToast(error, "Failed to restore job");
+    } finally {
+      setIsRestoring(false);
+    }
+  }, [onJobUpdated, selectedJob]);
+
   const handlePrimaryAction = useCallback(async () => {
     if (!selectedJob) return;
+    if (isFilteredOutJob(selectedJob)) {
+      await handleRestore();
+      return;
+    }
     if (selectedJob.status === "discovered") {
       setInspectorTab("tailoring");
       return;
@@ -496,7 +520,7 @@ export const JobDetailPanel: React.FC<JobDetailPanelProps> = ({
       return;
     }
     setInspectorTab("brief");
-  }, [handleMarkApplied, navigate, selectedJob]);
+  }, [handleMarkApplied, handleRestore, navigate, selectedJob]);
 
   const handleJobListingOpened = useCallback(() => {
     if (!selectedJob) return;
@@ -694,8 +718,12 @@ export const JobDetailPanel: React.FC<JobDetailPanelProps> = ({
     );
   }
 
+  const isFilteredOut = isFilteredOutJob(selectedJob);
   const primaryBusy =
-    isProcessing || isApplying || selectedJob.status === "processing";
+    isProcessing ||
+    isApplying ||
+    isRestoring ||
+    selectedJob.status === "processing";
   const canGenerate = ["discovered", "ready"].includes(selectedJob.status);
   const canSkip = ["discovered", "ready"].includes(selectedJob.status);
   const isRegeneratingPdf = isPdfRegenerating(selectedJob);
@@ -741,6 +769,8 @@ export const JobDetailPanel: React.FC<JobDetailPanelProps> = ({
             >
               {primaryBusy ? (
                 <Loader2 className="h-3.5 w-3.5 animate-spin" />
+              ) : isFilteredOut ? (
+                <RotateCcw className="h-3.5 w-3.5" />
               ) : selectedJob.status === "discovered" ? (
                 <Sparkles className="h-3.5 w-3.5" />
               ) : (
@@ -858,6 +888,31 @@ export const JobDetailPanel: React.FC<JobDetailPanelProps> = ({
 
       <div className="flex min-w-0 flex-col rounded-lg rounded-t-none border border-t-0 border-border/50 bg-card p-4">
         <TabsContent value="brief" className="space-y-4">
+          {isFilteredOut ? (
+            <Alert>
+              <AlertTitle>
+                Filtered out
+                {selectedJob.filterLayer === "llm"
+                  ? " by the AI title check"
+                  : " by your rules"}
+              </AlertTitle>
+              <AlertDescription className="space-y-1">
+                {selectedJob.filterReason ? (
+                  <p>{selectedJob.filterReason}</p>
+                ) : null}
+                <p>
+                  Restore it to score it like any other job, or{" "}
+                  <Link
+                    to="/settings#prefilter"
+                    className="text-primary hover:underline"
+                  >
+                    edit the filter rules
+                  </Link>
+                  .
+                </p>
+              </AlertDescription>
+            </Alert>
+          ) : null}
           {!brief && (
             <div className="grid gap-2 sm:grid-cols-2">
               <Stat label="Location" value={selectedJob.location} tone="blue" />

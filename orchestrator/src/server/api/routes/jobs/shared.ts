@@ -93,6 +93,7 @@ export function toJobListItem(
     closedAt: job.closedAt,
     suitabilityScore: job.suitabilityScore,
     sponsorMatchScore: job.sponsorMatchScore,
+    filterLayer: job.filterLayer ?? null,
     jobType: job.jobType,
     jobFunction: job.jobFunction,
     pdfRegenerating: job.pdfRegenerating,

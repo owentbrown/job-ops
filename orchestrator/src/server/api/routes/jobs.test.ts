@@ -384,6 +384,24 @@ describe.sequential("Jobs API routes", () => {
     enabledInfoSpy.mockRestore();
   });
 
+  it("includes the pre-score filter layer in list responses", async () => {
+    const { createJob } = await import("@server/repositories/jobs");
+    const { markJobFiltered } = await import("@server/repositories/prefilter");
+    const job = await createJob({
+      source: "manual",
+      title: "Night Shift Cook",
+      employer: "Diner",
+      jobUrl: "https://example.com/job/filtered-list",
+      jobDescription: "Cooking",
+    });
+    await markJobFiltered({ id: job.id, layer: "rules", reason: "title" });
+
+    const res = await fetch(`${baseUrl}/api/jobs?view=list`);
+    const body = await res.json();
+    const item = body.data.jobs.find((j: { id: string }) => j.id === job.id);
+    expect(item).toMatchObject({ status: "skipped", filterLayer: "rules" });
+  });
+
   it("omits applied duplicate match metadata from list responses and keeps it in detail responses", async () => {
     const { createJob, updateJob } = await import("@server/repositories/jobs");
     const appliedJob = await createJob({

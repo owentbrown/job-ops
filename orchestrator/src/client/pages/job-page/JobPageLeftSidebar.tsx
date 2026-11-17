@@ -1,4 +1,8 @@
-import { isAwaitingAiScore, ScoreRing } from "@client/components";
+import {
+  getNotScoredLabel,
+  isAwaitingAiScore,
+  ScoreRing,
+} from "@client/components";
 import type { Job } from "@shared/types.js";
 import {
   ClipboardList,
@@ -106,6 +110,7 @@ export const JobPageLeftSidebar: React.FC<JobPageLeftSidebarProps> = ({
           <ScoreRing
             score={job.suitabilityScore}
             isAwaitingAi={isAwaitingAiScore(job)}
+            notScoredLabel={getNotScoredLabel(job)}
             suitabilityReason={job.suitabilityReason}
             jobId={job.id}
           />

@@ -16,7 +16,17 @@ import { Tip } from "./Tip";
 const getSuitabilityScoreTokens = (
   score: number | null,
   isAwaitingAi = false,
+  notScoredLabel: string | null = null,
 ) => {
+  if (score === null && notScoredLabel) {
+    return {
+      shell:
+        "border-muted-foreground/40 bg-muted-foreground/5 text-muted-foreground",
+      value: "–",
+      label: notScoredLabel,
+    };
+  }
+
   if (score === null && isAwaitingAi) {
     return {
       shell: "border-info/55 bg-info/10 text-info",
@@ -65,20 +75,37 @@ export function isAwaitingAiScore(
   return job.status === "discovered" || job.status === "processing";
 }
 
+/**
+ * Why an unscored job was never scored, when that's expected rather than an
+ * AI error: the pre-score filter removed it, or it was skipped first.
+ */
+export function getNotScoredLabel(
+  job: Pick<Job, "status" | "suitabilityScore" | "filterLayer">,
+): string | null {
+  if (job.suitabilityScore != null || job.status !== "skipped") return null;
+  if (job.filterLayer === "rules" || job.filterLayer === "llm") {
+    return "Not scored: filtered out before scoring.";
+  }
+  return "Not scored: skipped before scoring.";
+}
+
 export const ScoreRing: React.FC<{
   score: number | null;
   size?: "sm" | "lg";
   isAwaitingAi?: boolean;
+  /** Set when the job was deliberately never scored (not an AI error). */
+  notScoredLabel?: string | null;
   suitabilityReason?: string | null;
   jobId?: string;
 }> = ({
   score,
   size = "lg",
   isAwaitingAi = false,
+  notScoredLabel = null,
   suitabilityReason,
   jobId,
 }) => {
-  const tokens = getSuitabilityScoreTokens(score, isAwaitingAi);
+  const tokens = getSuitabilityScoreTokens(score, isAwaitingAi, notScoredLabel);
   const isLoading = score === null && isAwaitingAi;
   const hasReason = !!suitabilityReason;
 

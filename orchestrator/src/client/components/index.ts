@@ -7,7 +7,7 @@ export { ManualImportSheet } from "./ManualImportSheet";
 export { OpenJobListingButton } from "./OpenJobListingButton";
 export { PipelineProgress } from "./PipelineProgress";
 export { ScoreIndicator } from "./ScoreIndicator";
-export { isAwaitingAiScore, ScoreRing } from "./ScoreRing";
+export { getNotScoredLabel, isAwaitingAiScore, ScoreRing } from "./ScoreRing";
 export { Stats } from "./Stats";
 export { StatusBadge } from "./StatusBadge";
 export { TailoredSummary } from "./TailoredSummary";

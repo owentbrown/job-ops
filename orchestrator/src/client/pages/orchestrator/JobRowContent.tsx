@@ -1,4 +1,4 @@
-import { isAwaitingAiScore } from "@client/components";
+import { getNotScoredLabel, isAwaitingAiScore } from "@client/components";
 import type { JobListItem } from "@shared/types.js";
 import { Loader2, XCircle } from "lucide-react";
 import { Tip } from "@/client/components/Tip";
@@ -31,6 +31,7 @@ export const JobRowContent = ({
 }: JobRowContentProps) => {
   const hasScore = job.suitabilityScore != null;
   const isAwaitingAi = isAwaitingAiScore(job);
+  const notScoredLabel = getNotScoredLabel(job);
   const statusToken = statusTokens[job.status] ?? defaultStatusToken;
   const suitabilityTone = getSuitabilityScoreTone(job.suitabilityScore ?? 0);
   const showStalePdf = isPdfStale(job);
@@ -102,6 +103,18 @@ export const JobRowContent = ({
               aria-label="Waiting for AI scoring to finish."
               className="h-4 w-4 animate-spin text-muted-foreground"
             />
+          </Tip>
+        </div>
+      ) : showSuitabilityScore && notScoredLabel ? (
+        <div className="shrink-0 text-right">
+          <Tip content={notScoredLabel} contentClassName="max-w-60 text-xs">
+            <span
+              role="img"
+              aria-label={notScoredLabel}
+              className="text-sm text-muted-foreground/60"
+            >
+              –
+            </span>
           </Tip>
         </div>
       ) : showSuitabilityScore ? (

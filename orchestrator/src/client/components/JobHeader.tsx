@@ -1,4 +1,8 @@
-import { isAwaitingAiScore, ScoreRing } from "@client/components";
+import {
+  getNotScoredLabel,
+  isAwaitingAiScore,
+  ScoreRing,
+} from "@client/components";
 import type { AppliedDuplicateMatch, Job, JobListItem } from "@shared/types.js";
 import { Calendar, DollarSign, Loader2, MapPin, Search } from "lucide-react";
 import type React from "react";
@@ -242,6 +246,7 @@ export const JobHeader: React.FC<JobHeaderProps> = ({
               score={job.suitabilityScore}
               size="sm"
               isAwaitingAi={isAwaitingAiScore(job)}
+              notScoredLabel={getNotScoredLabel(job)}
               suitabilityReason={fullJob?.suitabilityReason}
               jobId={job.id}
             />

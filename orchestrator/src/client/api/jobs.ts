@@ -338,6 +338,10 @@ export async function checkSponsor(id: string): Promise<Job> {
   });
 }
 
+export async function markJobViewed(id: string): Promise<void> {
+  await fetchApi<null>(`/jobs/${id}/viewed`, { method: "POST" });
+}
+
 export async function markAsApplied(id: string): Promise<Job> {
   return fetchApi<Job>(`/jobs/${id}/apply`, {
     method: "POST",

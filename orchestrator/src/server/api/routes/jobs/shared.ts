@@ -103,6 +103,7 @@ export function toJobListItem(
     salaryCurrency: job.salaryCurrency,
     discoveredAt: job.discoveredAt,
     readyAt: job.readyAt,
+    viewedAt: job.viewedAt ?? null,
     appliedAt: job.appliedAt,
     updatedAt: job.updatedAt,
   };

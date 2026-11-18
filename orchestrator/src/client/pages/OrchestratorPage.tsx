@@ -42,6 +42,7 @@ export const OrchestratorPage: React.FC = () => {
     setIsRefreshPaused,
     loadJobs,
     applySelectedJobUpdate,
+    markJobViewed,
   } = useOrchestratorData(navigation.selectedJobId);
 
   const handleJobUpdated = useCallback(
@@ -187,6 +188,7 @@ export const OrchestratorPage: React.FC = () => {
         ) : (
           <OrchestratorJobWorkspaceContainer
             jobs={jobs}
+            markJobViewed={markJobViewed}
             selectedJob={selectedJob}
             selectedJobListItem={selectedJobListItem}
             selectedJobLoadState={selectedJobLoadState}

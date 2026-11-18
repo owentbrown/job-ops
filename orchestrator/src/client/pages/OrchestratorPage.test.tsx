@@ -163,6 +163,7 @@ vi.mock("./orchestrator/useOrchestratorData", () => ({
     setIsRefreshPaused: vi.fn(),
     loadJobs: mockLoadJobs,
     applySelectedJobUpdate: vi.fn(),
+    markJobViewed: vi.fn(),
   }),
 }));
 

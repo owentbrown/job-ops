@@ -271,6 +271,7 @@ export interface Job {
   processedAt: string | null;
   readyAt: string | null;
   appliedAt: string | null;
+  viewedAt?: string | null; // First time the job was opened; null = new
   createdAt: string;
   updatedAt: string;
 }
@@ -304,6 +305,7 @@ export type JobListItem = Pick<
   | "salaryCurrency"
   | "discoveredAt"
   | "readyAt"
+  | "viewedAt"
   | "appliedAt"
   | "updatedAt"
 >;

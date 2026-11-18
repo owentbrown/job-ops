@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import { EngineStatusStrip } from "./EngineStatusStrip";
+import { EngineStatusStrip, when } from "./EngineStatusStrip";
 
 const daily = { enabled: true, hour: 8, days: [0, 1, 2, 3, 4, 5, 6] };
 const goodRun = {
@@ -76,5 +76,18 @@ describe("EngineStatusStrip", () => {
     );
     expect(screen.getByText(/not scheduled/i)).toBeInTheDocument();
     expect(screen.getByText(/no successful runs yet/i)).toBeInTheDocument();
+  });
+
+  it("names today and yesterday instead of the date", () => {
+    const now = new Date(2026, 10, 18, 14, 0);
+    expect(when(new Date(2026, 10, 18, 6, 0).toISOString(), now)).toMatch(
+      /^today at 6\sAM$/,
+    );
+    expect(when(new Date(2026, 10, 17, 6, 15).toISOString(), now)).toMatch(
+      /^yesterday at 6:15\sAM$/,
+    );
+    expect(when(new Date(2026, 10, 12, 8, 0).toISOString(), now)).toMatch(
+      /Nov 12/,
+    );
   });
 });

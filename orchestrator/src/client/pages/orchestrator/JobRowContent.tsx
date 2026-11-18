@@ -36,6 +36,9 @@ export const JobRowContent = ({
   const suitabilityTone = getSuitabilityScoreTone(job.suitabilityScore ?? 0);
   const showStalePdf = isPdfStale(job);
   const showRegeneratingPdf = isPdfRegenerating(job);
+  const isNew =
+    job.viewedAt === null &&
+    (job.status === "discovered" || job.status === "ready");
 
   return (
     <div className={cn("flex min-w-0 flex-1 items-center gap-3", className)}>
@@ -57,6 +60,11 @@ export const JobRowContent = ({
             isSelected ? "font-semibold" : "font-medium",
           )}
         >
+          {isNew && (
+            <span className="mr-1.5 inline-flex -translate-y-px rounded-sm bg-primary px-1 py-0.5 align-middle text-[10px] font-semibold uppercase leading-none tracking-wide text-primary-foreground">
+              New
+            </span>
+          )}
           {job.title}
         </div>
         <div className="truncate text-sm text-muted-foreground mt-0.5">

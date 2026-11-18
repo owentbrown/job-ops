@@ -172,6 +172,7 @@ export async function getJobListItems(
     salaryCurrency: jobs.salaryCurrency,
     discoveredAt: jobs.discoveredAt,
     readyAt: jobs.readyAt,
+    viewedAt: jobs.viewedAt,
     appliedAt: jobs.appliedAt,
     updatedAt: jobs.updatedAt,
   } as const;
@@ -969,6 +970,7 @@ function mapRowToJob(row: typeof jobs.$inferSelect): Job {
     processedAt: row.processedAt,
     readyAt: row.readyAt,
     appliedAt: row.appliedAt,
+    viewedAt: row.viewedAt ?? null,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
@@ -983,4 +985,16 @@ function mapRowToJobNote(row: typeof jobNotes.$inferSelect): JobNote {
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
+}
+
+/**
+ * Records the first time a job was opened, so the list can stop calling it
+ * new. Leaves updatedAt alone: opening a job doesn't change it.
+ */
+export async function markJobViewed(id: string): Promise<boolean> {
+  const result = await db
+    .update(jobs)
+    .set({ viewedAt: sql`coalesce(${jobs.viewedAt}, ${new Date().toISOString()})` })
+    .where(and(eq(jobs.id, id), jobsScopeFilter()));
+  return result.changes > 0;
 }

@@ -20,8 +20,32 @@ function scheduleText(
   return `${days} ${time}`;
 }
 
-function when(iso: string): string {
-  return new Date(iso).toLocaleString(undefined, {
+function sameDay(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+
+/** "today at 6 AM", "yesterday at 6:15 AM", or "Nov 12, 8:00 AM". */
+export function when(iso: string, now: Date = new Date()): string {
+  const d = new Date(iso);
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  const day = sameDay(d, now)
+    ? "today"
+    : sameDay(d, yesterday)
+      ? "yesterday"
+      : null;
+  if (day) {
+    const time = d.toLocaleTimeString(undefined, {
+      hour: "numeric",
+      ...(d.getMinutes() === 0 ? {} : { minute: "2-digit" }),
+    });
+    return `${day} at ${time}`;
+  }
+  return d.toLocaleString(undefined, {
     month: "short",
     day: "numeric",
     hour: "numeric",

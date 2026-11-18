@@ -185,6 +185,24 @@ jobsMutationsRouter.patch("/:id", async (req: Request, res: Response) => {
   }
 });
 
+/** Marks a job as seen the first time it's opened. */
+jobsMutationsRouter.post("/:id/viewed", async (req: Request, res: Response) => {
+  try {
+    if (isDemoMode()) return ok(res, null);
+    const found = await jobsRepo.markJobViewed(req.params.id);
+    if (!found) throw notFound("Job not found");
+    ok(res, null);
+  } catch (error) {
+    const err = toJobsRouteError(error);
+    logger.warn("Marking job viewed failed", {
+      route: "POST /api/jobs/:id/viewed",
+      jobId: req.params.id,
+      status: err.status,
+    });
+    fail(res, err);
+  }
+});
+
 /** Fetches the full description for a job saved with only a summary. */
 jobsMutationsRouter.post(
   "/:id/refresh-description",

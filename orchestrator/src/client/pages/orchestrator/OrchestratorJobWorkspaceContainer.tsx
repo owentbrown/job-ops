@@ -22,6 +22,7 @@ import { getJobCounts, getSourcesWithJobs } from "./utils";
 
 interface OrchestratorJobWorkspaceContainerProps {
   jobs: JobListItem[];
+  markJobViewed: (jobId: string) => void;
   selectedJob: Job | null;
   selectedJobListItem: JobListItem | null;
   selectedJobLoadState: SelectedJobLoadState;
@@ -41,6 +42,7 @@ export const OrchestratorJobWorkspaceContainer: React.FC<
   OrchestratorJobWorkspaceContainerProps
 > = ({
   jobs,
+  markJobViewed,
   selectedJob,
   selectedJobListItem,
   selectedJobLoadState,
@@ -113,12 +115,27 @@ export const OrchestratorJobWorkspaceContainer: React.FC<
     }
   }, [filters, isLoading, sourcesWithJobs]);
 
+  // Desktop opens the first job on its own; that one isn't "seen" until
+  // it's clicked. Every other way of landing on a job counts.
+  const autoSelectedJobIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    const id = navigation.selectedJobId;
+    if (!id) return;
+    if (id === autoSelectedJobIdRef.current) {
+      autoSelectedJobIdRef.current = null;
+      return;
+    }
+    autoSelectedJobIdRef.current = null;
+    markJobViewed(id);
+  }, [markJobViewed, navigation.selectedJobId]);
+
   const handleSelectJob = useCallback(
     (id: string) => {
+      markJobViewed(id);
       navigation.handleSelectJobId(id);
       ui.openDetailDrawerForMobile();
     },
-    [navigation, ui],
+    [markJobViewed, navigation, ui],
   );
 
   const { requestScrollToJob } = useScrollToJobItem({
@@ -190,6 +207,7 @@ export const OrchestratorJobWorkspaceContainer: React.FC<
       return;
     }
     if (!navigation.selectedJobId && ui.isDesktop) {
+      autoSelectedJobIdRef.current = activeJobs[0].id;
       navigation.navigateWithContext(
         navigation.activeTab,
         activeJobs[0].id,

@@ -179,6 +179,9 @@ const pipelineRunsHasConfigSnapshot = tableHasColumn(
 const pipelineRunsHasTenantId = tableHasColumn("pipeline_runs", "tenant_id");
 const jobsHasPdfRegenerating = tableHasColumn("jobs", "pdf_regenerating");
 const jobsHasJobBrief = tableHasColumn("jobs", "job_brief");
+// Fork: first boot with viewed_at marks every existing job as seen, so only
+// jobs found after this ship show as new.
+const jobsHadViewedAt = tableHasColumn("jobs", "viewed_at");
 // Fork: the jobs rebuild below runs on every boot. Columns added to jobs after
 // it (by ALTER TABLE further down) must be carried through it, or every
 // restart empties them. Only the ones already present are carried; the ALTERs
@@ -193,6 +196,7 @@ const jobsCarriedColumns = [
   "role_category",
   "skip_category",
   "selected_experience_bullets",
+  "viewed_at",
 ].filter((column) => tableHasColumn("jobs", column));
 const jobsCarriedColumnDefs = jobsCarriedColumns
   .map((column) => `,\n    ${column} TEXT`)
@@ -1310,6 +1314,8 @@ const migrations = [
   // Per-job experience bullet selection for tailored PDFs (JSON object of
   // experience item id -> kept bullet indices). NULL keeps every bullet.
   `ALTER TABLE jobs ADD COLUMN selected_experience_bullets TEXT`,
+  // First time the job was opened in the UI; NULL shows it as new.
+  `ALTER TABLE jobs ADD COLUMN viewed_at TEXT`,
 
   // AI spend tracking (fork: spend). No FKs on job/run so spend outlives them.
   `CREATE TABLE IF NOT EXISTS llm_usage (
@@ -1393,6 +1399,13 @@ for (const migration of migrations) {
     console.error("❌ Migration failed:", error);
     process.exit(1);
   }
+}
+
+if (!jobsHadViewedAt) {
+  sqlite.exec(
+    `UPDATE jobs SET viewed_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now') WHERE viewed_at IS NULL`,
+  );
+  console.log("✅ Existing jobs marked as seen");
 }
 
 function ensureTenantColumns(): void {

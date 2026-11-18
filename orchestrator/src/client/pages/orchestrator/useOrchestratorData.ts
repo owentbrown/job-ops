@@ -216,6 +216,23 @@ export const useOrchestratorData = (selectedJobId: string | null) => {
     [applySelectedJobUpdate, queryClient],
   );
 
+  /** Clears a job's "new" badge, here and on other devices. */
+  const markJobViewed = useCallback((jobId: string) => {
+    let wasUnseen = false;
+    const viewedAt = new Date().toISOString();
+    setJobListItems((items) =>
+      items.map((job) => {
+        if (job.id !== jobId || job.viewedAt !== null) return job;
+        wasUnseen = true;
+        return { ...job, viewedAt };
+      }),
+    );
+    if (!wasUnseen) return;
+    void api.markJobViewed(jobId).catch(() => {
+      // Cosmetic only: the badge comes back on the next load.
+    });
+  }, []);
+
   const loadJobs = useCallback(async () => {
     const seq = ++requestSeqRef.current;
     pendingLoadCountRef.current += 1;
@@ -470,6 +487,7 @@ export const useOrchestratorData = (selectedJobId: string | null) => {
   const selectedJobListItem = selectedJobId
     ? (jobListItems.find((job) => job.id === selectedJobId) ?? null)
     : null;
+
   const cachedSelectedJob = selectedJobId
     ? selectedJobCacheRef.current.get(selectedJobId)
     : null;
@@ -509,6 +527,7 @@ export const useOrchestratorData = (selectedJobId: string | null) => {
     setIsRefreshPaused,
     loadJobs,
     applySelectedJobUpdate,
+    markJobViewed,
     checkForJobChanges,
     checkPipelineStatus,
   };

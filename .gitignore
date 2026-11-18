@@ -32,3 +32,8 @@ tmp/
 
 # Runtime storage artifacts
 orchestrator/storage
+
+# Local working files
+.claude/launch.json
+Overview-V2/
+signature.png

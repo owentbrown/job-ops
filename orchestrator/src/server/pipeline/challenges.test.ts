@@ -44,6 +44,10 @@ vi.mock("./steps", () => ({
   notifyPipelineWebhookStep: vi.fn(async () => undefined),
 }));
 
+vi.mock("@server/services/phone-alert", () => ({
+  sendPhoneAlert: vi.fn(async () => true),
+}));
+
 describe.sequential("pipeline challenge handling", () => {
   let tempDir: string;
 
@@ -58,6 +62,7 @@ describe.sequential("pipeline challenge handling", () => {
   });
 
   afterEach(async () => {
+    delete process.env.JOBOPS_CHALLENGE_WAIT_MS;
     const { closeDb } = await import("../db/index");
     closeDb();
     await rm(tempDir, { recursive: true, force: true });
@@ -503,5 +508,82 @@ describe.sequential("pipeline challenge handling", () => {
     expect(vi.mocked(steps.importJobsStep)).toHaveBeenCalledWith({
       discoveredJobs: [expect.objectContaining({ sourceJobId: "indeed-1" })],
     });
+  });
+
+  it("alerts the phone, then skips the site when nobody passes the check in time", async () => {
+    process.env.JOBOPS_CHALLENGE_WAIT_MS = "50";
+    const pipeline = await import("./orchestrator");
+    const steps = await import("./steps");
+    const { sendPhoneAlert } = await import("@server/services/phone-alert");
+    const indeedJob = {
+      source: "indeed",
+      sourceJobId: "indeed-2",
+      title: "Product Manager",
+      employer: "Acme",
+      jobUrl: "https://indeed.com/job/indeed-2",
+      jobDescription: "PM role",
+    };
+    vi.mocked(steps.discoverJobsStep)
+      .mockReset()
+      .mockResolvedValueOnce({
+        discoveredJobs: [indeedJob],
+        sourceErrors: [],
+        pendingChallenges: [
+          {
+            extractorId: "hiringcafe",
+            extractorName: "Hiring Cafe",
+            url: "https://hiringcafe.com/",
+            sources: ["hiringcafe" as const],
+          },
+        ],
+      });
+
+    const result = await pipeline.runPipeline({
+      sources: ["indeed", "hiringcafe"],
+    });
+
+    expect(result.success).toBe(true);
+    expect(vi.mocked(sendPhoneAlert)).toHaveBeenCalledWith(
+      expect.objectContaining({ title: "Hiring Cafe needs a quick check" }),
+    );
+    expect(vi.mocked(steps.discoverJobsStep)).toHaveBeenCalledTimes(1);
+    expect(vi.mocked(steps.importJobsStep)).toHaveBeenCalledWith({
+      discoveredJobs: [expect.objectContaining({ sourceJobId: "indeed-2" })],
+    });
+    expect(pipeline.getPendingChallenges()).toEqual([]);
+  });
+
+  it("waits for a solve that is under way when time runs out", async () => {
+    process.env.JOBOPS_CHALLENGE_WAIT_MS = "50";
+    const pipeline = await import("./orchestrator");
+    const steps = await import("./steps");
+    vi.mocked(steps.discoverJobsStep)
+      .mockReset()
+      .mockResolvedValueOnce({
+        discoveredJobs: [],
+        sourceErrors: [],
+        pendingChallenges: [challenge],
+      })
+      .mockResolvedValueOnce({
+        discoveredJobs: [],
+        sourceErrors: [],
+        pendingChallenges: [],
+      });
+
+    const runPromise = pipeline.runPipeline({ sources: ["gradcracker"] });
+    await vi.waitFor(() => {
+      expect(pipeline.getPendingChallenges()).toHaveLength(1);
+    });
+    const finishSolve = pipeline.beginPipelineChallengeSolve("gradcracker");
+    expect(finishSolve).not.toBeNull();
+    await new Promise((resolve) => setTimeout(resolve, 120));
+    expect(pipeline.getPendingChallenges()).toHaveLength(1);
+
+    pipeline.resolvePipelineChallenge("gradcracker");
+    finishSolve?.();
+    const result = await runPromise;
+
+    expect(result.success).toBe(true);
+    expect(vi.mocked(steps.discoverJobsStep)).toHaveBeenCalledTimes(2);
   });
 });

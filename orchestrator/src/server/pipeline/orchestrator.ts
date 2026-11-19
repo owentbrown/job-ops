@@ -14,6 +14,7 @@ import { trackServerProductEvent } from "@infra/product-analytics";
 import { runWithRequestContext } from "@infra/request-context";
 import { setCoverLetter } from "@server/repositories/cover-letter";
 import { isOnline, OFFLINE_RUN_MESSAGE } from "@server/services/connectivity";
+import { sendPhoneAlert } from "@server/services/phone-alert";
 import { generateCoverLetter } from "@server/services/cover-letter/generate";
 import { backfillHiringCafeDescriptions } from "@server/services/hiring-cafe-descriptions";
 import { getPrivateDataScope } from "@server/tenancy/private-scope";
@@ -190,6 +191,16 @@ async function resolveLocationIntent(
 }
 
 // ---------- Challenge pause/resume state ----------
+
+const DEFAULT_CHALLENGE_WAIT_MS = 5 * 60_000;
+
+/** How long a run waits for a person to pass a bot check before skipping. */
+function challengeWaitMs(): number {
+  const fromEnv = Number(process.env.JOBOPS_CHALLENGE_WAIT_MS);
+  return Number.isFinite(fromEnv) && fromEnv > 0
+    ? fromEnv
+    : DEFAULT_CHALLENGE_WAIT_MS;
+}
 
 // The pipeline async function stays alive in memory while paused — there's no
 // state serialization. A server restart kills a paused pipeline, same as it
@@ -368,8 +379,8 @@ export async function runPipeline(
     /** Scheduled runs: cap how many jobs get LLM-scored this run. */
     maxJobsToScore?: number;
     /**
-     * Scheduled runs: nobody is around to solve a bot challenge, so drop the
-     * challenged sources for this run instead of pausing forever.
+     * Drop challenged sources right away instead of alerting and waiting
+     * (see challengeWaitMs). Scheduled runs used this until 2026-11-18.
      */
     skipChallenges?: boolean;
   },
@@ -516,11 +527,68 @@ export async function runPipeline(
 
         progressHelpers.challengeRequired(pendingChallenges);
 
-        // Block until all challenges are resolved by the solve-challenge API.
-        // The Promise is resolved by `resolvePipelineChallenge()`, which is
-        // called from the POST /api/pipeline/solve-challenge endpoint (4d).
-        // Cancellation still works: the cancel endpoint sets cancelRequestedAt,
-        // and ensureNotCancelled() fires after the Promise resolves.
+        // Wait for a person to pass the check (solve-challenge API calls
+        // resolvePipelineChallenge). Their phone gets an alert; after
+        // challengeWaitMs() with nobody there, skip the challenged sites for
+        // this run. A solve already under way gets to finish first.
+        // Cancellation still works: the cancel endpoint sets cancelRequestedAt
+        // and resolves the wait, and ensureNotCancelled() fires after it.
+        const waitMs = challengeWaitMs();
+        const waitMinutes = Math.max(1, Math.round(waitMs / 60_000));
+        const siteNames = pendingChallenges
+          .map((challenge) => challenge.extractorName)
+          .join(", ");
+        void sendPhoneAlert({
+          title: `${siteNames} needs a quick check`,
+          message: `A job search is waiting for you to pass ${siteNames}'s "are you human" check. Open JobOps within ${waitMinutes} minute${waitMinutes === 1 ? "" : "s"}, or the search skips it this time.`,
+          path: "/jobs/ready",
+        });
+
+        const challengeState: ChallengeState = {
+          challenges: new Map(pendingChallenges.map((c) => [c.extractorId, c])),
+          solving: new Set(),
+          resolve: () => undefined,
+        };
+        const outcome = await new Promise<"resolved" | "timed_out">(
+          (resolve) => {
+            let timer: ReturnType<typeof setTimeout>;
+            const giveUp = () => {
+              if (challengeState.solving.size > 0) {
+                timer = setTimeout(giveUp, 5_000);
+                return;
+              }
+              resolve("timed_out");
+            };
+            timer = setTimeout(giveUp, waitMs);
+            challengeState.resolve = () => {
+              clearTimeout(timer);
+              resolve("resolved");
+            };
+            tenantState.activeChallengeState = challengeState;
+          },
+        );
+        tenantState.activeChallengeState = null;
+
+        ensureNotCancelled(scopeKey);
+
+        if (outcome === "timed_out") {
+          const unsolved = Array.from(challengeState.challenges.values());
+          const skippedSources = unsolved.flatMap((c) => c.sources);
+          pipelineLogger.warn("Nobody passed the bot check in time; skipping", {
+            sources: skippedSources,
+            waitMs,
+          });
+          sourceErrors = [
+            ...sourceErrors,
+            `Skipped ${unsolved.map((c) => c.extractorName).join(", ")}: bot check not passed within ${waitMinutes} minute${waitMinutes === 1 ? "" : "s"}`,
+          ];
+          // Sites whose check was passed before time ran out still retry.
+          pendingChallenges = pendingChallenges.filter(
+            (c) => !challengeState.challenges.has(c.extractorId),
+          );
+          if (pendingChallenges.length === 0) break;
+        }
+
         const challengedSources = pendingChallenges.flatMap((c) => c.sources);
         const retryChallengeUrls = Object.fromEntries(
           pendingChallenges.map((challenge) => [
@@ -535,19 +603,6 @@ export async function runPipeline(
               : [],
           ),
         );
-
-        await new Promise<void>((resolve) => {
-          tenantState.activeChallengeState = {
-            challenges: new Map(
-              pendingChallenges.map((c) => [c.extractorId, c]),
-            ),
-            solving: new Set(),
-            resolve,
-          };
-        });
-        tenantState.activeChallengeState = null;
-
-        ensureNotCancelled(scopeKey);
 
         // Re-run only the extractors that had challenges
         pipelineLogger.info("Challenges resolved, re-running extractors", {

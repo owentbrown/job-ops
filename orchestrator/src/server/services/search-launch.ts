@@ -198,7 +198,8 @@ export async function launchSearch(
         ...(options?.scheduled
           ? {
               nonInteractive: true,
-              skipChallenges: true,
+              // No skipChallenges: like manual runs, alert the phone and wait
+              // a few minutes for the bot check before skipping the site.
               maxJobsToScore: options.scheduled.maxJobsToScore,
             }
           : {}),

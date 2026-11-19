@@ -76,3 +76,12 @@ Rule changes only apply to new jobs during a run. To apply them to jobs that are
 ### Skip reasons
 
 Clicking Skip on a job (job page or the job panel) now asks for an optional reason. It is saved in the `skip_reason` column and shown next to the Skipped status. The keyboard shortcut and bulk skip still skip without asking.
+
+## Phone alerts
+
+When a job site asks for an "are you human" check, the run sends an alert to
+the ntfy app and waits 5 minutes, then skips that site for the run. Set
+`NTFY_TOPIC` (and `JOBOPS_PUBLIC_URL`, the link the alert opens) in `.env`,
+then subscribe to the same topic in the ntfy app. `JOBOPS_CHALLENGE_WAIT_MS`
+changes the wait.
+

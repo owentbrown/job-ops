@@ -217,17 +217,19 @@ export const useOrchestratorData = (selectedJobId: string | null) => {
   );
 
   /** Clears a job's "new" badge, here and on other devices. */
+  const jobListItemsRef = useRef(jobListItems);
+  jobListItemsRef.current = jobListItems;
   const markJobViewed = useCallback((jobId: string) => {
-    let wasUnseen = false;
+    const job = jobListItemsRef.current.find((item) => item.id === jobId);
+    if (!job || job.viewedAt !== null) return;
     const viewedAt = new Date().toISOString();
     setJobListItems((items) =>
-      items.map((job) => {
-        if (job.id !== jobId || job.viewedAt !== null) return job;
-        wasUnseen = true;
-        return { ...job, viewedAt };
-      }),
+      items.map((item) =>
+        item.id === jobId && item.viewedAt === null
+          ? { ...item, viewedAt }
+          : item,
+      ),
     );
-    if (!wasUnseen) return;
     void api.markJobViewed(jobId).catch(() => {
       // Cosmetic only: the badge comes back on the next load.
     });

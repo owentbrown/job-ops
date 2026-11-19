@@ -30,6 +30,7 @@ vi.mock("@client/api", () => ({
   getJobsRevision: vi.fn(),
   getJob: vi.fn(),
   getPipelineStatus: vi.fn(),
+  markJobViewed: vi.fn(),
 }));
 
 vi.mock("@client/lib/sse", () => ({
@@ -862,5 +863,24 @@ describe("useOrchestratorData", () => {
       expect(result.current.selectedJob?.id).toBe(job.id);
       expect(result.current.selectedJobLoadState).toBe("idle");
     });
+  });
+
+  it("saves the first open of an unseen job, once", async () => {
+    vi.mocked(api.markJobViewed).mockResolvedValue(undefined);
+    vi.mocked(api.getJobs).mockResolvedValue({
+      ...makeResponse("fresh"),
+      jobs: [{ id: "fresh", viewedAt: null }],
+    } as any);
+    const { result } = renderHook(() => useOrchestratorData(null));
+    await waitFor(() => expect(result.current.jobs).toHaveLength(1));
+
+    act(() => result.current.markJobViewed("fresh"));
+    expect(api.markJobViewed).toHaveBeenCalledWith("fresh");
+    await waitFor(() =>
+      expect(result.current.jobs[0]?.viewedAt).toEqual(expect.any(String)),
+    );
+
+    act(() => result.current.markJobViewed("fresh"));
+    expect(api.markJobViewed).toHaveBeenCalledTimes(1);
   });
 });

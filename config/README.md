@@ -15,7 +15,7 @@ run.
 
 - A normal run (Run button) pauses for review before scoring when
   `pauseBeforeScoring` is on. Resume it from the card on the Jobs page or from
-  the Rules tab.
+  the Rules tab. It's off since 2026-11-18, so runs filter and score unattended.
 - A missing or invalid file also pauses the run. Fix it, then Resume. The run
   never falls back to "score everything".
 - Webhook-triggered runs pause the same way. They stay "running" until resumed,

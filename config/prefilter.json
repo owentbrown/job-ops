@@ -1,7 +1,7 @@
 {
   "_comment": "Pre-score filter. Edit here or in the app (Filtered -> Rules). Re-read at the start of every pipeline run and after Resume. Keywords are case-insensitive whole-word matches (a trailing 's' is allowed). Bias: when unsure, let the job through.",
   "enabled": true,
-  "pauseBeforeScoring": true,
+  "pauseBeforeScoring": false,
   "title": {
     "_comment": "An include hit overrides excludes and skips the LLM check (goes straight to full scoring).",
     "include": [

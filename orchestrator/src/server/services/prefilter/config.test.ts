@@ -153,6 +153,7 @@ describe("readPrefilterConfig / writePrefilterConfig", () => {
     const load = await readPrefilterConfig();
     expect(load.status).toBe("ok");
     expect(load.status === "ok" && load.config.llm.enabled).toBe(true);
-    expect(load.status === "ok" && load.config.pauseBeforeScoring).toBe(true);
+    // Owen chose 2026-11-18 to let scheduled runs filter and score unattended.
+    expect(load.status === "ok" && load.config.pauseBeforeScoring).toBe(false);
   });
 });

@@ -104,6 +104,22 @@ describe("importJobsStep repost matching", () => {
     expect(result.repostsSkipped).toBe(1);
   });
 
+  it("matches a company saved with a foreign legal ending (AG, GmbH)", async () => {
+    const jobsRepo = await import("@server/repositories/jobs");
+    vi.mocked(jobsRepo.getTitleEmployerPairsSince).mockResolvedValue([
+      { title: "Sr Product Manager Digital Solutions", employer: "Sonova" },
+    ]);
+    const result = await importJobsStep({
+      discoveredJobs: [
+        job({
+          title: "Sr Product Manager Digital Solutions",
+          employer: "Sonova AG",
+        }),
+      ],
+    });
+    expect(result.repostsSkipped).toBe(1);
+  });
+
   it("leaves same-URL jobs to the normal URL check", async () => {
     const jobsRepo = await import("@server/repositories/jobs");
     vi.mocked(jobsRepo.getAllJobUrls).mockResolvedValue([

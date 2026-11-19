@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   deduplicateJobsByTitleAndEmployer,
   matchJobLocationIntent,
+  normalizeCompanyName,
 } from "./job-matching";
 
 describe("map-radius location matching", () => {
@@ -246,5 +247,30 @@ describe("deduplicateJobsByTitleAndEmployer", () => {
         employerThreshold: 100,
       }),
     ).toHaveLength(2);
+  });
+});
+
+describe("normalizeCompanyName", () => {
+  it("drops non-UK/US legal endings so the same company matches", () => {
+    expect(normalizeCompanyName("Sonova AG")).toBe(
+      normalizeCompanyName("Sonova"),
+    );
+    expect(normalizeCompanyName("Siemens GmbH")).toBe("siemens");
+    expect(normalizeCompanyName("ASML Holding N.V.")).toBe("asml holding");
+    expect(normalizeCompanyName("Spotify A.B.")).toBe("spotify");
+    expect(normalizeCompanyName("Nestle S.A.")).toBe("nestle");
+    expect(normalizeCompanyName("Shopify Inc.")).toBe("shopify");
+  });
+
+  it("only strips those endings at the end of the name", () => {
+    expect(normalizeCompanyName("SA Power Networks")).toBe(
+      "sa power networks",
+    );
+    expect(normalizeCompanyName("AB")).toBe("ab");
+    // Nevada and Alberta, not legal forms.
+    expect(normalizeCompanyName("Acme Corp, Las Vegas NV")).toBe(
+      "acme las vegas nv",
+    );
+    expect(normalizeCompanyName("Acme, Calgary AB")).toBe("acme calgary ab");
   });
 });

@@ -37,13 +37,64 @@ function normalizeMatchText(value: string): string {
   );
 }
 
+/**
+ * Legal-form endings from outside the UK/US ("Sonova AG", "Siemens GmbH").
+ * Several are short or real words ("as", "sa", "se"), so they are only
+ * stripped from the end of the name, never from the middle. "NV" and "AB"
+ * are left out because they are also Nevada and Alberta, which job boards
+ * tack onto employer names; see DOTTED_LEGAL_FORM.
+ */
+const TRAILING_LEGAL_FORMS = new Set([
+  "ag",
+  "gmbh",
+  "kg",
+  "kgaa",
+  "se",
+  "sa",
+  "sas",
+  "sarl",
+  "spa",
+  "srl",
+  "bv",
+  "as",
+  "asa",
+  "aps",
+  "oy",
+  "oyj",
+  "pty",
+  "pte",
+  "bhd",
+  "sdn",
+  "kk",
+  "ulc",
+  "lp",
+  "ltee",
+  "limitee",
+]);
+
+/** A dotted legal ending such as "N.V.", "B.V." or "S.A." at the very end. */
+const DOTTED_LEGAL_FORM = /(?:^|\s)((?:[a-z]\.){2,})\s*$/i;
+
 export function normalizeCompanyName(name: string): string {
-  let normalized = normalizeMatchText(name);
+  let raw = name ?? "";
+  const dotted = raw.match(DOTTED_LEGAL_FORM);
+  if (dotted) {
+    const letters = dotted[1].replace(/\./g, "").toLowerCase();
+    if (TRAILING_LEGAL_FORMS.has(letters) || letters === "nv" || letters === "ab") {
+      raw = raw.slice(0, dotted.index);
+    }
+  }
+  let normalized = normalizeMatchText(raw);
   for (const suffix of COMPANY_SUFFIXES) {
     const regex = new RegExp(`\\b${suffix}\\b`, "gi");
     normalized = normalized.replace(regex, " ");
   }
-  return normalizeWhitespace(normalized);
+  const words = normalizeWhitespace(normalized).split(" ");
+  // Keep at least one word: a company called "AB" is still a company.
+  while (words.length > 1 && TRAILING_LEGAL_FORMS.has(words.at(-1) ?? "")) {
+    words.pop();
+  }
+  return words.join(" ");
 }
 
 export function normalizeJobTitle(title: string): string {

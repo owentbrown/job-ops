@@ -33,6 +33,7 @@ import {
   lt,
   ne,
   notExists,
+  or,
   sql,
 } from "drizzle-orm";
 import { db, schema } from "../db/index";
@@ -558,7 +559,8 @@ async function tryInsertJob(input: CreateJobInput): Promise<Job | null> {
  */
 /**
  * Title + employer of every job discovered since `sinceIso`, for spotting
- * reposts of a job already saved under a different URL.
+ * reposts of a job already saved under a different URL. Jobs already applied
+ * to are always included.
  */
 export async function getTitleEmployerPairsSince(
   sinceIso: string,
@@ -566,7 +568,13 @@ export async function getTitleEmployerPairsSince(
   return db
     .select({ title: jobs.title, employer: jobs.employer })
     .from(jobs)
-    .where(and(jobsScopeFilter(), gte(jobs.discoveredAt, sinceIso)));
+    .where(
+      and(
+        jobsScopeFilter(),
+        // A job already applied to always counts, however long ago it was found.
+        or(gte(jobs.discoveredAt, sinceIso), isNotNull(jobs.appliedAt)),
+      ),
+    );
 }
 
 export async function createJobs(input: CreateJobInput): Promise<Job>;

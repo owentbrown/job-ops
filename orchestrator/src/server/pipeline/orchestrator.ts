@@ -14,9 +14,9 @@ import { trackServerProductEvent } from "@infra/product-analytics";
 import { runWithRequestContext } from "@infra/request-context";
 import { setCoverLetter } from "@server/repositories/cover-letter";
 import { isOnline, OFFLINE_RUN_MESSAGE } from "@server/services/connectivity";
-import { sendPhoneAlert } from "@server/services/phone-alert";
 import { generateCoverLetter } from "@server/services/cover-letter/generate";
 import { backfillHiringCafeDescriptions } from "@server/services/hiring-cafe-descriptions";
+import { sendPhoneAlert } from "@server/services/phone-alert";
 import { getPrivateDataScope } from "@server/tenancy/private-scope";
 import { createLocationIntentFromLegacyInputs } from "@shared/location-domain.js";
 import {

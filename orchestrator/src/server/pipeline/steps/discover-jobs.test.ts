@@ -393,13 +393,74 @@ describe("discoverJobsStep", () => {
       await vi.advanceTimersByTimeAsync(0);
 
       expect(hungContext?.shouldCancel?.()).toBe(false);
-      await vi.runOnlyPendingTimersAsync();
+      // 10-minute timeout, then the grace period for partial results.
+      await vi.advanceTimersByTimeAsync(10 * 60 * 1000 + 15 * 1000);
 
       await expect(resultPromise).resolves.toMatchObject({
         discoveredJobs: [expect.objectContaining({ title: "Engineer" })],
         sourceErrors: ["startupjobs: timed out after 10 minutes"],
       });
       expect(hungContext?.shouldCancel?.()).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("keeps the partial results of a source that stops when timed out", async () => {
+    vi.useFakeTimers();
+    try {
+      const settingsRepo = await import("@server/repositories/settings");
+      const registryModule = await import("@server/extractors/registry");
+      const slowManifest = {
+        id: "jobspy",
+        displayName: "JobSpy",
+        providesSources: ["linkedin"],
+        run: vi.fn(
+          (context: ExtractorRuntimeContext) =>
+            new Promise((resolve) => {
+              const poll = setInterval(() => {
+                if (!context.shouldCancel?.()) return;
+                clearInterval(poll);
+                resolve({
+                  success: true,
+                  jobs: [
+                    {
+                      source: "linkedin",
+                      title: "Product Operations Manager",
+                      employer: "ACME",
+                      jobUrl: "https://example.com/partial",
+                      location: "London, United Kingdom",
+                    },
+                  ],
+                });
+              }, 1000);
+            }),
+        ),
+      };
+
+      vi.mocked(settingsRepo.getAllSettings).mockResolvedValue({
+        searchTerms: JSON.stringify(["engineer"]),
+        jobspyCountryIndeed: "united kingdom",
+      } as any);
+      vi.mocked(registryModule.getExtractorRegistry).mockResolvedValue({
+        manifests: new Map([["jobspy", slowManifest as any]]),
+        manifestBySource: new Map([["linkedin", slowManifest as any]]),
+        availableSources: ["linkedin"],
+      } as any);
+
+      const resultPromise = discoverJobsStep({
+        mergedConfig: { ...baseConfig, sources: ["linkedin"] },
+      });
+      await vi.advanceTimersByTimeAsync(10 * 60 * 1000 + 2000);
+
+      await expect(resultPromise).resolves.toMatchObject({
+        discoveredJobs: [
+          expect.objectContaining({ title: "Product Operations Manager" }),
+        ],
+        sourceErrors: [
+          "JobSpy: timed out after 10 minutes; kept 1 jobs found before the cut-off",
+        ],
+      });
     } finally {
       vi.useRealTimers();
     }

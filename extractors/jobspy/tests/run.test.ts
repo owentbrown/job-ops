@@ -1,3 +1,6 @@
+import { chmod, mkdtemp, rm, writeFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { matchJobLocationIntent } from "@shared/job-matching.js";
 import { describe, expect, it } from "vitest";
 import {
@@ -7,7 +10,37 @@ import {
   resolveJobSpyCountryIndeed,
   resolveJobSpyLocations,
   resolveJobSpySiteLocations,
+  runJobSpy,
 } from "../src/run";
+
+describe("runJobSpy cancellation", () => {
+  it("kills a running scrape and skips the remaining searches when cancelled", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "jobspy-cancel-"));
+    const fakePython = join(dir, "fake-python");
+    // Stands in for python: hangs like a slow scrape. Without cancellation
+    // the four searches below would take four minutes.
+    await writeFile(fakePython, "#!/bin/sh\nexec sleep 60\n");
+    await chmod(fakePython, 0o755);
+    const previous = process.env.PYTHON_PATH;
+    process.env.PYTHON_PATH = fakePython;
+    const startedAt = Date.now();
+    try {
+      const result = await runJobSpy({
+        sites: ["linkedin"],
+        searchTerms: ["product manager", "product operations"],
+        locations: ["Kitchener", "Waterloo"],
+        countryIndeed: "canada",
+        shouldCancel: () => Date.now() - startedAt > 300,
+      });
+      expect(result).toMatchObject({ success: true, jobs: [] });
+      expect(Date.now() - startedAt).toBeLessThan(5000);
+    } finally {
+      if (previous === undefined) delete process.env.PYTHON_PATH;
+      else process.env.PYTHON_PATH = previous;
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+});
 
 describe("parseJobSpyProgressLine", () => {
   it("parses term_start progress lines", () => {

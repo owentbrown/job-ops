@@ -61,22 +61,50 @@ type DiscoverySourceTask = {
   run: () => Promise<DiscoveryTaskResult>;
 };
 
-async function withDiscoverySourceTimeout<T>(
+/**
+ * After the timeout fires, how long to wait for the source to stop and hand
+ * back what it found so far (sources poll shouldCancel about once a second).
+ */
+const DISCOVERY_TIMEOUT_GRACE_MS = 15 * 1000;
+
+const TIMEOUT_MESSAGE = "timed out after 10 minutes";
+
+/**
+ * Races a source run against the discovery timeout. When the timeout fires,
+ * onTimeout flips the source's shouldCancel; a source that stops promptly
+ * resolves with its partial results (timedOut: true). Only a source that
+ * ignores cancellation for the whole grace period is treated as failed.
+ */
+export async function withDiscoverySourceTimeout<T>(
   run: Promise<T>,
   onTimeout: () => void,
-): Promise<T> {
-  let timeout: ReturnType<typeof setTimeout> | undefined;
-  const timeoutPromise = new Promise<never>((_, reject) => {
-    timeout = setTimeout(() => {
-      onTimeout();
-      reject(new Error("timed out after 10 minutes"));
-    }, DISCOVERY_SOURCE_TIMEOUT_MS);
-  });
+  timings: { timeoutMs?: number; graceMs?: number } = {},
+): Promise<{ value: T; timedOut: boolean }> {
+  const timeoutMs = timings.timeoutMs ?? DISCOVERY_SOURCE_TIMEOUT_MS;
+  const graceMs = timings.graceMs ?? DISCOVERY_TIMEOUT_GRACE_MS;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const wait = (ms: number) =>
+    new Promise<"timeout">((resolve) => {
+      timer = setTimeout(() => resolve("timeout"), ms);
+    });
 
   try {
-    return await Promise.race([run, timeoutPromise]);
+    const first = await Promise.race([
+      run.then((value) => ({ value })),
+      wait(timeoutMs),
+    ]);
+    if (first !== "timeout") return { value: first.value, timedOut: false };
+
+    clearTimeout(timer);
+    onTimeout();
+    const late = await Promise.race([
+      run.then((value) => ({ value })),
+      wait(graceMs),
+    ]);
+    if (late === "timeout") throw new Error(TIMEOUT_MESSAGE);
+    return { value: late.value, timedOut: true };
   } finally {
-    if (timeout) clearTimeout(timeout);
+    if (timer) clearTimeout(timer);
   }
 }
 
@@ -419,10 +447,13 @@ export async function discoverJobsStep(args: {
           },
         });
         let result: Awaited<typeof run>;
+        let sourceTimedOut = false;
         try {
-          result = await withDiscoverySourceTimeout(run, () => {
+          const outcome = await withDiscoverySourceTimeout(run, () => {
             timedOut = true;
           });
+          result = outcome.value;
+          sourceTimedOut = outcome.timedOut;
         } catch (error) {
           if (browserScopeKey) await closeHiringCafeBrowser(browserScopeKey);
           throw error;
@@ -450,9 +481,21 @@ export async function discoverJobsStep(args: {
           };
         }
 
+        const sourceErrors = [...(result.sourceErrors ?? [])];
+        if (sourceTimedOut) {
+          const name = manifest.displayName || manifest.id;
+          logger.warn("Discovery source timed out; keeping partial results", {
+            sourceTask: manifest.id,
+            jobsKept: result.jobs.length,
+          });
+          sourceErrors.push(
+            `${name}: ${TIMEOUT_MESSAGE}; kept ${result.jobs.length} jobs found before the cut-off`,
+          );
+        }
+
         return {
           discoveredJobs: result.jobs,
-          sourceErrors: result.sourceErrors ?? [],
+          sourceErrors,
           challenge: result.challengeRequired
             ? {
                 extractorId: manifest.id,

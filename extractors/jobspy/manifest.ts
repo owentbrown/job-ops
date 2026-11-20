@@ -63,6 +63,7 @@ export const manifest: ExtractorManifest = {
       workplaceTypes: context.settings.workplaceTypes
         ? JSON.parse(context.settings.workplaceTypes)
         : undefined,
+      shouldCancel: context.shouldCancel,
       onProgress: (event) => {
         if (context.shouldCancel?.()) return;
 

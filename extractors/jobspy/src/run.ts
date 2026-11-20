@@ -187,7 +187,17 @@ export interface RunJobSpyOptions {
   linkedinFetchDescription?: boolean;
   isRemote?: boolean;
   onProgress?: (event: JobSpyProgressEvent) => void;
+  /**
+   * Polled before each search and while one runs. When it returns true the
+   * running scrape is killed and the jobs found so far are returned.
+   */
+  shouldCancel?: () => boolean;
 }
+
+/** How often a running scrape checks shouldCancel. */
+const CANCEL_POLL_MS = 1000;
+
+class JobSpyCancelledError extends Error {}
 
 export interface JobSpyResult {
   success: boolean;
@@ -286,8 +296,9 @@ export async function runJobSpy(
     const totalRuns = searchTerms.length * runLocations.length;
     let runIndex = 0;
 
-    for (const searchTerm of searchTerms) {
+    searchLoop: for (const searchTerm of searchTerms) {
       for (const location of runLocations) {
+        if (options.shouldCancel?.()) break searchLoop;
         runIndex += 1;
         const locationToken = location ?? countryIndeed ?? "anywhere";
         const suffix = `${runIndex}_${slugForFilename(searchTerm)}_${slugForFilename(locationToken)}`;
@@ -298,103 +309,131 @@ export async function runJobSpy(
           countryIndeed,
         });
 
-        await new Promise<void>((resolve, reject) => {
-          // Auto-detect venv if present, so contributors don't need to set
-          // PYTHON_PATH manually. The venv is created once with:
-          //   python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
-          // In Docker, PYTHON_PATH is set explicitly to /usr/bin/python3.
-          const venvPython = join(
-            EXTRACTOR_DIR,
-            ".venv",
-            process.platform === "win32" ? "Scripts/python.exe" : "bin/python3",
-          );
-          const pythonPath = process.env.PYTHON_PATH
-            ? process.env.PYTHON_PATH
-            : existsSync(venvPython)
-              ? venvPython
-              : process.platform === "win32"
-                ? "python"
-                : "python3";
+        try {
+          await new Promise<void>((resolve, reject) => {
+            // Auto-detect venv if present, so contributors don't need to set
+            // PYTHON_PATH manually. The venv is created once with:
+            //   python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
+            // In Docker, PYTHON_PATH is set explicitly to /usr/bin/python3.
+            const venvPython = join(
+              EXTRACTOR_DIR,
+              ".venv",
+              process.platform === "win32"
+                ? "Scripts/python.exe"
+                : "bin/python3",
+            );
+            const pythonPath = process.env.PYTHON_PATH
+              ? process.env.PYTHON_PATH
+              : existsSync(venvPython)
+                ? venvPython
+                : process.platform === "win32"
+                  ? "python"
+                  : "python3";
 
-          const child = spawn(pythonPath, [JOBSPY_SCRIPT], {
-            cwd: EXTRACTOR_DIR,
-            shell: false,
-            stdio: ["ignore", "pipe", "pipe"],
-            env: {
-              ...process.env,
-              JOBSPY_SITES: sites || "indeed,linkedin,glassdoor",
-              JOBSPY_SEARCH_TERM: searchTerm,
-              JOBSPY_TERM_INDEX: String(runIndex),
-              JOBSPY_TERM_TOTAL: String(totalRuns),
-              JOBSPY_RESULTS_WANTED: String(
-                options.resultsWanted ??
-                  process.env.JOBSPY_RESULTS_WANTED ??
-                  200,
-              ),
-              JOBSPY_HOURS_OLD: String(
-                options.hoursOld ?? process.env.JOBSPY_HOURS_OLD ?? 72,
-              ),
-              JOBSPY_LINKEDIN_FETCH_DESCRIPTION: String(
-                options.linkedinFetchDescription ??
-                  process.env.JOBSPY_LINKEDIN_FETCH_DESCRIPTION ??
-                  "1",
-              ),
-              JOBSPY_IS_REMOTE: String(
-                options.isRemote ??
-                  deriveIsRemoteFlag(options.workplaceTypes) ??
-                  process.env.JOBSPY_IS_REMOTE ??
-                  "0",
-              ),
-              JOBSPY_OUTPUT_CSV: outputCsv,
-              JOBSPY_OUTPUT_JSON: outputJson,
-              ...(location ? { JOBSPY_LOCATION: location } : {}),
-              ...(siteLocations.linkedinLocation
-                ? { JOBSPY_LINKEDIN_LOCATION: siteLocations.linkedinLocation }
-                : {}),
-              ...(siteLocations.indeedLocation
-                ? { JOBSPY_INDEED_LOCATION: siteLocations.indeedLocation }
-                : {}),
-              ...(siteLocations.glassdoorLocation
-                ? { JOBSPY_GLASSDOOR_LOCATION: siteLocations.glassdoorLocation }
-                : {}),
-              ...(countryIndeed
-                ? { JOBSPY_COUNTRY_INDEED: countryIndeed }
-                : {}),
-            },
-          });
+            const child = spawn(pythonPath, [JOBSPY_SCRIPT], {
+              cwd: EXTRACTOR_DIR,
+              shell: false,
+              stdio: ["ignore", "pipe", "pipe"],
+              env: {
+                ...process.env,
+                JOBSPY_SITES: sites || "indeed,linkedin,glassdoor",
+                JOBSPY_SEARCH_TERM: searchTerm,
+                JOBSPY_TERM_INDEX: String(runIndex),
+                JOBSPY_TERM_TOTAL: String(totalRuns),
+                JOBSPY_RESULTS_WANTED: String(
+                  options.resultsWanted ??
+                    process.env.JOBSPY_RESULTS_WANTED ??
+                    200,
+                ),
+                JOBSPY_HOURS_OLD: String(
+                  options.hoursOld ?? process.env.JOBSPY_HOURS_OLD ?? 72,
+                ),
+                JOBSPY_LINKEDIN_FETCH_DESCRIPTION: String(
+                  options.linkedinFetchDescription ??
+                    process.env.JOBSPY_LINKEDIN_FETCH_DESCRIPTION ??
+                    "1",
+                ),
+                JOBSPY_IS_REMOTE: String(
+                  options.isRemote ??
+                    deriveIsRemoteFlag(options.workplaceTypes) ??
+                    process.env.JOBSPY_IS_REMOTE ??
+                    "0",
+                ),
+                JOBSPY_OUTPUT_CSV: outputCsv,
+                JOBSPY_OUTPUT_JSON: outputJson,
+                ...(location ? { JOBSPY_LOCATION: location } : {}),
+                ...(siteLocations.linkedinLocation
+                  ? { JOBSPY_LINKEDIN_LOCATION: siteLocations.linkedinLocation }
+                  : {}),
+                ...(siteLocations.indeedLocation
+                  ? { JOBSPY_INDEED_LOCATION: siteLocations.indeedLocation }
+                  : {}),
+                ...(siteLocations.glassdoorLocation
+                  ? {
+                      JOBSPY_GLASSDOOR_LOCATION:
+                        siteLocations.glassdoorLocation,
+                    }
+                  : {}),
+                ...(countryIndeed
+                  ? { JOBSPY_COUNTRY_INDEED: countryIndeed }
+                  : {}),
+              },
+            });
 
-          const handleLine = (line: string, stream: NodeJS.WriteStream) => {
-            const event = parseJobSpyProgressLine(line);
-            if (event) {
-              if (event.type === "source_error") {
-                sourceErrors.push(
-                  `${event.source}: ${event.error} (term: ${event.searchTerm})`,
-                );
+            const handleLine = (line: string, stream: NodeJS.WriteStream) => {
+              const event = parseJobSpyProgressLine(line);
+              if (event) {
+                if (event.type === "source_error") {
+                  sourceErrors.push(
+                    `${event.source}: ${event.error} (term: ${event.searchTerm})`,
+                  );
+                }
+                options.onProgress?.(event);
+                return;
               }
-              options.onProgress?.(event);
-              return;
-            }
-            stream.write(`${line}\n`);
-          };
+              stream.write(`${line}\n`);
+            };
 
-          const stdoutRl = child.stdout
-            ? createInterface({ input: child.stdout })
-            : null;
-          const stderrRl = child.stderr
-            ? createInterface({ input: child.stderr })
-            : null;
+            const stdoutRl = child.stdout
+              ? createInterface({ input: child.stdout })
+              : null;
+            const stderrRl = child.stderr
+              ? createInterface({ input: child.stderr })
+              : null;
 
-          stdoutRl?.on("line", (line) => handleLine(line, process.stdout));
-          stderrRl?.on("line", (line) => handleLine(line, process.stderr));
+            stdoutRl?.on("line", (line) => handleLine(line, process.stdout));
+            stderrRl?.on("line", (line) => handleLine(line, process.stderr));
 
-          child.on("close", (code) => {
-            stdoutRl?.close();
-            stderrRl?.close();
-            if (code === 0) resolve();
-            else reject(new Error(`JobSpy exited with code ${code}`));
+            let cancelled = false;
+            const cancelPoll = options.shouldCancel
+              ? setInterval(() => {
+                  if (!cancelled && options.shouldCancel?.()) {
+                    cancelled = true;
+                    child.kill("SIGTERM");
+                  }
+                }, CANCEL_POLL_MS)
+              : null;
+
+            child.on("close", (code) => {
+              if (cancelPoll) clearInterval(cancelPoll);
+              stdoutRl?.close();
+              stderrRl?.close();
+              if (cancelled) reject(new JobSpyCancelledError());
+              else if (code === 0) resolve();
+              else reject(new Error(`JobSpy exited with code ${code}`));
+            });
+            child.on("error", (error) => {
+              if (cancelPoll) clearInterval(cancelPoll);
+              reject(error);
+            });
           });
-          child.on("error", reject);
-        });
+        } catch (error) {
+          if (error instanceof JobSpyCancelledError) {
+            await cleanupOutputs(outputJson, outputCsv);
+            break searchLoop;
+          }
+          throw error;
+        }
 
         const raw = await readFile(outputJson, "utf-8");
         const parsed = JSON.parse(raw) as Array<Record<string, unknown>>;
@@ -406,12 +445,7 @@ export async function runJobSpy(
           jobs.push(job);
         }
 
-        try {
-          await unlink(outputJson);
-          await unlink(outputCsv);
-        } catch {
-          // ignore cleanup errors
-        }
+        await cleanupOutputs(outputJson, outputCsv);
       }
     }
 
@@ -419,6 +453,16 @@ export async function runJobSpy(
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     return { success: false, jobs: [], error: message };
+  }
+}
+
+async function cleanupOutputs(...paths: string[]): Promise<void> {
+  for (const path of paths) {
+    try {
+      await unlink(path);
+    } catch {
+      // ignore cleanup errors (file may not exist)
+    }
   }
 }
 

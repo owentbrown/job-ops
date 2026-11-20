@@ -13,6 +13,7 @@ import {
   listJobPostApplicationEmails,
   MAX_JOB_EMAIL_LIMIT,
 } from "@server/services/post-application/job-emails";
+import { findRelatedJobs } from "@server/services/related-jobs";
 import { type Request, type Response, Router } from "express";
 import { z } from "zod";
 import {
@@ -178,6 +179,19 @@ jobsReadRouter.get("/:id", async (req: Request, res: Response) => {
       await jobsRepo.getAppliedDuplicateMatchCandidates(),
     );
     ok(res, await hydrateJobPdfFreshness(jobWithAppliedDuplicateMatch));
+  } catch (error) {
+    fail(res, toJobsRouteError(error));
+  }
+});
+
+jobsReadRouter.get("/:id/related", async (req: Request, res: Response) => {
+  try {
+    const job = await requireJob(req.params.id);
+    const items = findRelatedJobs(
+      job,
+      await jobsRepo.getRelatedJobCandidates(),
+    );
+    ok(res, { items });
   } catch (error) {
     fail(res, toJobsRouteError(error));
   }

@@ -79,6 +79,7 @@ export const queryKeys = {
     notes: (id: string) => [...queryKeys.jobs.all, "notes", id] as const,
     documents: (id: string) =>
       [...queryKeys.jobs.all, "documents", id] as const,
+    related: (id: string) => [...queryKeys.jobs.all, "related", id] as const,
     emails: (id: string, limit: number) =>
       [...queryKeys.jobs.all, "emails", id, { limit }] as const,
   },

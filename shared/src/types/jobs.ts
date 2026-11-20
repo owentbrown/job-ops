@@ -175,6 +175,25 @@ export interface AppliedDuplicateMatch {
   employerScore: number;
 }
 
+/** Another saved job at the same company (or with the same posting link). */
+export interface RelatedJob {
+  id: string;
+  title: string;
+  employer: string;
+  status: JobStatus;
+  outcome: string | null;
+  appliedAt: string | null;
+  discoveredAt: string;
+  /** The same posting link once tracking parameters are ignored. */
+  samePosting: boolean;
+  /** 0-100 similarity between this job's title and the related job's title. */
+  titleSimilarity: number;
+}
+
+export interface RelatedJobsResponse {
+  items: RelatedJob[];
+}
+
 export interface JobBrief {
   role_summary: string;
   they_want: string[];

@@ -13,6 +13,7 @@ import type {
   JobsRevisionResponse,
   JobTracerLinksResponse,
   PostApplicationJobEmailsResponse,
+  RelatedJobsResponse,
   StageEvent,
   StageEventMetadata,
   StageTransitionTarget,
@@ -162,6 +163,12 @@ export async function getJobEmails(
       limit: options?.limit,
     }),
   );
+}
+
+export async function getRelatedJobs(id: string): Promise<RelatedJobsResponse> {
+  return fetchApi<RelatedJobsResponse>(`/jobs/${id}/related`, {
+    cache: "no-store",
+  });
 }
 
 export async function createJobNote(

@@ -80,7 +80,11 @@ export function normalizeCompanyName(name: string): string {
   const dotted = raw.match(DOTTED_LEGAL_FORM);
   if (dotted) {
     const letters = dotted[1].replace(/\./g, "").toLowerCase();
-    if (TRAILING_LEGAL_FORMS.has(letters) || letters === "nv" || letters === "ab") {
+    if (
+      TRAILING_LEGAL_FORMS.has(letters) ||
+      letters === "nv" ||
+      letters === "ab"
+    ) {
       raw = raw.slice(0, dotted.index);
     }
   }
@@ -95,6 +99,50 @@ export function normalizeCompanyName(name: string): string {
     words.pop();
   }
   return words.join(" ");
+}
+
+/** Query parameters that only track where a click came from. */
+const TRACKING_PARAM =
+  /^(utm_.+|gh_src|gclid|fbclid|msclkid|mc_cid|mc_eid|trk|trackingid|refid|lipi)$/i;
+
+/**
+ * Removes click-tracking parameters (utm_source, gh_src, ...) from a job URL,
+ * so the same posting reached through two boards compares equal. Anything
+ * that isn't a parseable http(s) URL is returned unchanged.
+ */
+export function stripTrackingParams(url: string): string {
+  if (!url) return url;
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    return url;
+  }
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return url;
+  const keys = [...parsed.searchParams.keys()];
+  if (!keys.some((key) => TRACKING_PARAM.test(key))) return url;
+  for (const key of keys) {
+    if (TRACKING_PARAM.test(key)) parsed.searchParams.delete(key);
+  }
+  return parsed.toString();
+}
+
+/**
+ * A comparison key for "is this the same posting?": tracking parameters,
+ * the fragment, a trailing slash, "www." and letter case are ignored.
+ */
+export function canonicalJobUrl(url: string): string {
+  const stripped = stripTrackingParams(url ?? "");
+  let parsed: URL;
+  try {
+    parsed = new URL(stripped);
+  } catch {
+    return stripped.trim().toLowerCase();
+  }
+  parsed.hash = "";
+  const host = parsed.hostname.replace(/^www\./, "");
+  const path = parsed.pathname.replace(/\/+$/, "");
+  return `${host}${path}${parsed.search}`.toLowerCase();
 }
 
 export function normalizeJobTitle(title: string): string {

@@ -244,6 +244,43 @@ export async function getAppliedDuplicateMatchCandidates(): Promise<
   }));
 }
 
+export type RelatedJobCandidate = {
+  id: string;
+  title: string;
+  employer: string;
+  jobUrl: string;
+  status: JobStatus;
+  outcome: string | null;
+  appliedAt: string | null;
+  discoveredAt: string;
+};
+
+/** Light rows for every saved job, for same-company / same-posting lookups. */
+export async function getRelatedJobCandidates(): Promise<
+  RelatedJobCandidate[]
+> {
+  const rows = await db
+    .select({
+      id: jobs.id,
+      title: jobs.title,
+      employer: jobs.employer,
+      jobUrl: jobs.jobUrl,
+      status: jobs.status,
+      outcome: jobs.outcome,
+      appliedAt: jobs.appliedAt,
+      discoveredAt: jobs.discoveredAt,
+    })
+    .from(jobs)
+    .where(jobsScopeFilter());
+
+  return rows.map((row) => ({
+    ...row,
+    status: row.status as JobStatus,
+    outcome: row.outcome ?? null,
+    appliedAt: row.appliedAt ?? null,
+  }));
+}
+
 /**
  * Get a lightweight revision token for jobs list invalidation.
  */
@@ -1002,7 +1039,9 @@ function mapRowToJobNote(row: typeof jobNotes.$inferSelect): JobNote {
 export async function markJobViewed(id: string): Promise<boolean> {
   const result = await db
     .update(jobs)
-    .set({ viewedAt: sql`coalesce(${jobs.viewedAt}, ${new Date().toISOString()})` })
+    .set({
+      viewedAt: sql`coalesce(${jobs.viewedAt}, ${new Date().toISOString()})`,
+    })
     .where(and(eq(jobs.id, id), jobsScopeFilter()));
   return result.changes > 0;
 }

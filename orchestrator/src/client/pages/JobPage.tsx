@@ -99,6 +99,7 @@ import {
 } from "./job-page/JobPageLeftSidebar";
 import { JobPageRightSidebar } from "./job-page/JobPageRightSidebar";
 import { OverviewGhostwriterComposer } from "./job-page/OverviewGhostwriterComposer";
+import { RelatedJobsCard } from "./job-page/RelatedJobsCard";
 
 const normalizeMemoryView = (view: string | undefined): JobMemoryView => {
   if (view === "notes" || view === "note") return "note";
@@ -655,6 +656,12 @@ export const JobPage: React.FC = () => {
           <div className="space-y-4">
             {activeMemoryView === "overview" && (
               <section className="space-y-4">
+                <RelatedJobsCard
+                  key={job.id}
+                  jobId={job.id}
+                  employer={job.employer}
+                />
+
                 <OverviewGhostwriterComposer
                   job={job}
                   baseJobPath={baseJobPath}

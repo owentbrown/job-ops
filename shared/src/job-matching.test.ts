@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  canonicalJobUrl,
   deduplicateJobsByTitleAndEmployer,
   matchJobLocationIntent,
   normalizeCompanyName,
+  stripTrackingParams,
 } from "./job-matching";
 
 describe("map-radius location matching", () => {
@@ -263,14 +265,59 @@ describe("normalizeCompanyName", () => {
   });
 
   it("only strips those endings at the end of the name", () => {
-    expect(normalizeCompanyName("SA Power Networks")).toBe(
-      "sa power networks",
-    );
+    expect(normalizeCompanyName("SA Power Networks")).toBe("sa power networks");
     expect(normalizeCompanyName("AB")).toBe("ab");
     // Nevada and Alberta, not legal forms.
     expect(normalizeCompanyName("Acme Corp, Las Vegas NV")).toBe(
       "acme las vegas nv",
     );
     expect(normalizeCompanyName("Acme, Calgary AB")).toBe("acme calgary ab");
+  });
+});
+
+describe("job URL tracking parameters", () => {
+  it("strips utm and other click-tracking parameters", () => {
+    expect(
+      stripTrackingParams(
+        "https://job-boards.greenhouse.io/tailscale/jobs/4754039005?utm_source=freehire&utm_medium=feed",
+      ),
+    ).toBe("https://job-boards.greenhouse.io/tailscale/jobs/4754039005");
+    expect(
+      stripTrackingParams("https://example.com/job?id=7&gh_src=abc&trk=x"),
+    ).toBe("https://example.com/job?id=7");
+  });
+
+  it("keeps parameters that identify the job", () => {
+    const url = "https://ca.indeed.com/viewjob?jk=abc123";
+    expect(stripTrackingParams(url)).toBe(url);
+  });
+
+  it("returns non-URLs unchanged", () => {
+    expect(stripTrackingParams("not a url")).toBe("not a url");
+    expect(stripTrackingParams("")).toBe("");
+  });
+
+  it("treats tracking, www, trailing slashes and fragments as the same posting", () => {
+    expect(
+      canonicalJobUrl(
+        "https://www.job-boards.greenhouse.io/tailscale/jobs/4754039005/?utm_source=freehire#apply",
+      ),
+    ).toBe(
+      canonicalJobUrl(
+        "https://job-boards.greenhouse.io/tailscale/jobs/4754039005",
+      ),
+    );
+  });
+
+  it("keeps different postings different", () => {
+    expect(
+      canonicalJobUrl(
+        "https://job-boards.greenhouse.io/tailscale/jobs/4754039005",
+      ),
+    ).not.toBe(
+      canonicalJobUrl(
+        "https://job-boards.greenhouse.io/tailscale/jobs/4756307005",
+      ),
+    );
   });
 });

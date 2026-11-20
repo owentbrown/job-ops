@@ -1,9 +1,11 @@
 import { logger } from "@infra/logger";
 import * as jobsRepo from "@server/repositories/jobs";
 import {
+  canonicalJobUrl,
   deduplicateJobsByTitleAndEmployer,
   normalizeCompanyName,
   normalizeJobTitle,
+  stripTrackingParams,
 } from "@shared/job-matching.js";
 import type { CreateJobInput } from "@shared/types";
 import { progressHelpers } from "../progress";
@@ -18,10 +20,12 @@ function repostKey(title: string, employer: string): string | null {
 }
 
 /**
- * Drop discovered jobs whose normalised title + employer exactly match a job
- * already saved in the last REPOST_WINDOW_DAYS (a repost, or the same role on
- * another board). Exact match only: a wrongly dropped job costs more than a
- * duplicate, so near-misses still come through.
+ * Drop discovered jobs that are already saved under another URL:
+ * - the same posting link once tracking parameters are ignored (any age), or
+ * - the same normalised title + employer as a job saved in the last
+ *   REPOST_WINDOW_DAYS (a repost, or the same role on another board).
+ * Exact matches only: a wrongly dropped job costs more than a duplicate, so
+ * near-misses still come through.
  */
 async function dropReposts(
   discovered: CreateJobInput[],
@@ -36,15 +40,23 @@ async function dropReposts(
     const key = repostKey(row.title, row.employer);
     if (key) seen.add(key);
   }
-  if (seen.size === 0) return { kept: discovered, reposts: 0 };
 
-  // Same URL as a saved job is handled (and counted) by createJobs.
-  const savedUrls = new Set(await jobsRepo.getAllJobUrls());
+  // Same exact URL as a saved job is handled (and counted) by createJobs.
+  const savedUrlList = await jobsRepo.getAllJobUrls();
+  const savedUrls = new Set(savedUrlList);
+  const savedCanonical = new Set(savedUrlList.map(canonicalJobUrl));
   const kept: CreateJobInput[] = [];
   let reposts = 0;
   for (const job of discovered) {
+    if (savedUrls.has(job.jobUrl)) {
+      kept.push(job);
+      continue;
+    }
     const key = repostKey(job.title, job.employer);
-    if (key && seen.has(key) && !savedUrls.has(job.jobUrl)) {
+    if (
+      savedCanonical.has(canonicalJobUrl(job.jobUrl)) ||
+      (key && seen.has(key))
+    ) {
       reposts += 1;
       continue;
     }
@@ -65,7 +77,13 @@ export async function importJobsStep(args: {
     discovered: args.discoveredJobs.length,
   });
 
-  const dedupedJobs = deduplicateJobsByTitleAndEmployer(args.discoveredJobs);
+  // Store links without click-tracking parameters so the same posting from
+  // two boards has the same URL.
+  const cleanedJobs = args.discoveredJobs.map((job) => {
+    const jobUrl = stripTrackingParams(job.jobUrl);
+    return jobUrl === job.jobUrl ? job : { ...job, jobUrl };
+  });
+  const dedupedJobs = deduplicateJobsByTitleAndEmployer(cleanedJobs);
   const fuzzyMerged = args.discoveredJobs.length - dedupedJobs.length;
 
   if (fuzzyMerged > 0) {

@@ -87,6 +87,36 @@ describe("importJobsStep repost matching", () => {
     );
   });
 
+  it("drops the same posting reached through a tracking link, even renamed", async () => {
+    const jobsRepo = await import("@server/repositories/jobs");
+    // An older row saved before links were cleaned still has its tracking.
+    vi.mocked(jobsRepo.getAllJobUrls).mockResolvedValue([
+      "https://job-boards.greenhouse.io/tailscale/jobs/4754039005?utm_source=freehire&utm_medium=feed",
+    ]);
+    const result = await importJobsStep({
+      discoveredJobs: [
+        job({
+          title: "Product Manager, Strategic Projects",
+          employer: "tailscale",
+          jobUrl:
+            "https://job-boards.greenhouse.io/tailscale/jobs/4754039005?gh_src=hiringcafe",
+        }),
+        job({
+          title: "Senior Business Operations & Strategy Manager",
+          employer: "tailscale",
+          jobUrl:
+            "https://job-boards.greenhouse.io/tailscale/jobs/4756307005?utm_source=freehire",
+        }),
+      ],
+    });
+    expect(result.repostsSkipped).toBe(1);
+    const imported = vi.mocked(jobsRepo.createJobs).mock
+      .calls[0]?.[0] as CreateJobInput[];
+    expect(imported.map((j) => j.jobUrl)).toEqual([
+      "https://job-boards.greenhouse.io/tailscale/jobs/4756307005",
+    ]);
+  });
+
   it("matches case and punctuation but not near-miss titles", async () => {
     const result = await importJobsStep({
       discoveredJobs: [

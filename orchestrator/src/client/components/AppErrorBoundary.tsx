@@ -1,6 +1,7 @@
 import { AlertTriangle, ExternalLink, Home, RotateCcw } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+import { reportClientCrash } from "@/client/api/app-status";
 import { ApiClientError } from "@/client/api/core";
 import { showErrorToast } from "@/client/lib/error-toast";
 import { Button } from "@/components/ui/button";
@@ -248,12 +249,12 @@ class ReactCrashBoundary extends React.Component<
   state: { snapshot: FatalErrorSnapshot | null } = { snapshot: null };
 
   componentDidCatch(error: Error, info: React.ErrorInfo) {
-    this.setState({
-      snapshot: createFatalErrorSnapshot(error, "react", {
-        componentStack: info.componentStack,
-        route: this.props.route,
-      }),
+    const snapshot = createFatalErrorSnapshot(error, "react", {
+      componentStack: info.componentStack,
+      route: this.props.route,
     });
+    void reportClientCrash(snapshot);
+    this.setState({ snapshot });
   }
 
   componentDidUpdate(previousProps: { route: string }) {
@@ -332,6 +333,44 @@ export function isOpaqueCrossOriginError(event: ErrorEvent): boolean {
   return !event.filename || event.message === "Script error.";
 }
 
+/**
+ * True for an error thrown by a script from another site (analytics, a
+ * browser extension). Those can't break JobOps itself, so they stay in the
+ * console instead of replacing the whole app with the crash screen.
+ */
+export function isThirdPartyScriptError(event: ErrorEvent): boolean {
+  if (!event.filename || typeof window === "undefined") return false;
+  try {
+    return new URL(event.filename).origin !== window.location.origin;
+  } catch {
+    return false;
+  }
+}
+
+const NETWORK_FAILURE_MESSAGES = [
+  "load failed", // Safari, and every iPhone browser
+  "failed to fetch", // Chrome
+  "networkerror when attempting to fetch resource", // Firefox
+  "the network connection was lost",
+  "the internet connection appears to be offline",
+  "network request failed",
+];
+
+/**
+ * True for a request that never reached the server: the phone was offline,
+ * the page was waking from the background, or a blocker (Brave Shields)
+ * stopped it. The request's own code reports what failed; it is never a
+ * reason to tear down the app.
+ */
+export function isNetworkFailure(reason: unknown): boolean {
+  if (typeof reason !== "object" || reason === null) return false;
+  const { name, message } = reason as { name?: unknown; message?: unknown };
+  if (name === "AbortError" || name === "TimeoutError") return true;
+  if (name !== "TypeError" || typeof message !== "string") return false;
+  const normalized = message.trim().toLowerCase().replace(/\.$/, "");
+  return NETWORK_FAILURE_MESSAGES.some((text) => normalized.startsWith(text));
+}
+
 export function AppErrorBoundary({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const route = `${location.pathname}${location.search}${location.hash}`;
@@ -344,22 +383,24 @@ export function AppErrorBoundary({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const handleError = (event: ErrorEvent) => {
-      if (isOpaqueCrossOriginError(event)) {
+      if (isOpaqueCrossOriginError(event) || isThirdPartyScriptError(event)) {
         // Non-actionable third-party/extension noise — don't crash the app.
         return;
       }
       const reason = event.error ?? event.message;
+      if (isNetworkFailure(reason)) {
+        console.warn("Ignored a failed network request", reason);
+        return;
+      }
       if (isRecoverableApiError(reason)) {
         event.preventDefault();
         showErrorToast(reason, "API request failed");
         return;
       }
       event.preventDefault();
-      setGlobalSnapshot(
-        createFatalErrorSnapshot(reason, "runtime", {
-          route,
-        }),
-      );
+      const snapshot = createFatalErrorSnapshot(reason, "runtime", { route });
+      void reportClientCrash(snapshot);
+      setGlobalSnapshot(snapshot);
     };
     const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
       const reason = event.reason;
@@ -372,12 +413,16 @@ export function AppErrorBoundary({ children }: { children: React.ReactNode }) {
         // Keep browser diagnostics available for optional analytics failures.
         return;
       }
+      if (isNetworkFailure(reason)) {
+        console.warn("Ignored a failed network request", reason);
+        return;
+      }
       event.preventDefault();
-      setGlobalSnapshot(
-        createFatalErrorSnapshot(reason, "unhandledrejection", {
-          route,
-        }),
-      );
+      const snapshot = createFatalErrorSnapshot(reason, "unhandledrejection", {
+        route,
+      });
+      void reportClientCrash(snapshot);
+      setGlobalSnapshot(snapshot);
     };
 
     window.addEventListener("error", handleError);

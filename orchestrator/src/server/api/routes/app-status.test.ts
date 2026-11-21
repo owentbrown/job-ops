@@ -88,4 +88,21 @@ describe.sequential("App status routes", () => {
       expect(JSON.stringify(body)).not.toContain("tenant_hosted");
     });
   });
+
+  describe("POST /api/app/client-crash", () => {
+    beforeEach(async () => {
+      ({ server, baseUrl, closeDb, tempDir } = await startServer({
+        env: { JOBOPS_TEST_AUTH_BYPASS: "0" },
+      }));
+    });
+
+    it("needs a signed-in user", async () => {
+      const res = await fetch(`${baseUrl}/api/app/client-crash`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: "boom" }),
+      });
+      expect(res.status).toBe(401);
+    });
+  });
 });

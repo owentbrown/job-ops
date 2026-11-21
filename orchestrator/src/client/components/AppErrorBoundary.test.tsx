@@ -2,13 +2,16 @@ import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiClientError } from "@/client/api/core";
+import * as appStatusApi from "@/client/api/app-status";
 import * as errorToast from "@/client/lib/error-toast";
 import {
   AppErrorBoundary,
   buildFatalIssueUrl,
   createFatalErrorSnapshot,
   FatalErrorScreen,
+  isNetworkFailure,
   isOpaqueCrossOriginError,
+  isThirdPartyScriptError,
   sanitizeCrashText,
 } from "./AppErrorBoundary";
 
@@ -28,6 +31,7 @@ describe("AppErrorBoundary", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     vi.spyOn(errorToast, "showErrorToast").mockReturnValue("toast-id");
+    vi.spyOn(appStatusApi, "reportClientCrash").mockResolvedValue(undefined);
     (globalThis as { __APP_VERSION__?: string }).__APP_VERSION__ = "1.2.3";
   });
 
@@ -130,6 +134,72 @@ describe("AppErrorBoundary", () => {
     expect(
       screen.queryByRole("heading", { name: "Something went wrong" }),
     ).not.toBeInTheDocument();
+  });
+
+  it.each([
+    ["Safari", "Load failed"],
+    ["Chrome", "Failed to fetch"],
+    ["Firefox", "NetworkError when attempting to fetch resource."],
+  ])(
+    "keeps the app up when a request fails in %s (%s)",
+    async (_browser, message) => {
+      vi.spyOn(console, "warn").mockImplementation(() => undefined);
+      renderBoundary(<div>Healthy app</div>, "/jobs/ready");
+      const event = new Event("unhandledrejection", {
+        cancelable: true,
+      }) as PromiseRejectionEvent;
+      Object.defineProperty(event, "reason", {
+        value: new TypeError(message),
+      });
+
+      act(() => {
+        window.dispatchEvent(event);
+      });
+
+      expect(screen.getByText("Healthy app")).toBeInTheDocument();
+      expect(
+        screen.queryByRole("heading", { name: "Something went wrong" }),
+      ).not.toBeInTheDocument();
+      expect(appStatusApi.reportClientCrash).not.toHaveBeenCalled();
+    },
+  );
+
+  it("keeps the app up when another site's script throws", () => {
+    renderBoundary(<div>Healthy app</div>, "/jobs/ready");
+
+    act(() => {
+      window.dispatchEvent(
+        new ErrorEvent("error", {
+          error: new Error("tracker broke"),
+          message: "tracker broke",
+          filename: "https://openpanel.dev/op1.js",
+        }),
+      );
+    });
+
+    expect(screen.getByText("Healthy app")).toBeInTheDocument();
+  });
+
+  it("sends a real crash to the server log", async () => {
+    renderBoundary(<div>Healthy app</div>, "/overview");
+    const event = new Event("unhandledrejection", {
+      cancelable: true,
+    }) as PromiseRejectionEvent;
+    Object.defineProperty(event, "reason", {
+      value: new TypeError("Cannot read properties of undefined"),
+    });
+
+    act(() => {
+      window.dispatchEvent(event);
+    });
+
+    await screen.findByRole("heading", { name: "Something went wrong" });
+    expect(appStatusApi.reportClientCrash).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Cannot read properties of undefined",
+        route: "/overview",
+      }),
+    );
   });
 
   it("shows the fatal fallback for unhandled promise rejections", async () => {
@@ -269,8 +339,9 @@ describe("AppErrorBoundary", () => {
     ["a bare URL without a frame", "https://openpanel.dev/op1.js:1:2"],
   ])("keeps rejections fatal for %s", async (_description, frames) => {
     renderBoundary(<div>Healthy app</div>, "/overview");
-    const reason = new TypeError("Failed to fetch");
-    reason.stack = frames ? `TypeError: Failed to fetch\n${frames}` : frames;
+    // A real code error: network failures are never fatal (tested above).
+    const reason = new TypeError("x is not a function");
+    reason.stack = frames ? `TypeError: x is not a function\n${frames}` : frames;
     const event = new Event("unhandledrejection", {
       cancelable: true,
     }) as PromiseRejectionEvent;
@@ -291,7 +362,7 @@ describe("AppErrorBoundary", () => {
   it("does not use an OpenPanel URL in the error message as provenance", async () => {
     renderBoundary(<div>Healthy app</div>, "/overview");
     const reason = new TypeError(
-      "Failed to fetch https://openpanel.dev/op1.js",
+      "x is not a function https://openpanel.dev/op1.js",
     );
     reason.stack = `${reason.name}: ${reason.message}`;
     const event = new Event("unhandledrejection", {
@@ -441,5 +512,24 @@ describe("AppErrorBoundary", () => {
     expect(sanitizeCrashText(`value ${longSecret}`)).toContain(
       "[redacted-long-value]",
     );
+  });
+});
+
+describe("isNetworkFailure", () => {
+  it("only matches requests that never reached the server", () => {
+    expect(isNetworkFailure(new TypeError("Load failed"))).toBe(true);
+    expect(isNetworkFailure(new DOMException("x", "AbortError"))).toBe(true);
+    expect(isNetworkFailure(new TypeError("x is not a function"))).toBe(false);
+    expect(isNetworkFailure(new Error("Load failed"))).toBe(false);
+    expect(isNetworkFailure("Load failed")).toBe(false);
+  });
+});
+
+describe("isThirdPartyScriptError", () => {
+  it("is false for the app's own scripts", () => {
+    const own = new ErrorEvent("error", {
+      filename: `${window.location.origin}/assets/index.js`,
+    });
+    expect(isThirdPartyScriptError(own)).toBe(false);
   });
 });

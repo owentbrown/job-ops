@@ -163,7 +163,7 @@ export function SpendPage() {
             value={period}
             onValueChange={(value) => setPeriod(value as SpendPeriod)}
           >
-            <TabsList className="flex-wrap">
+            <TabsList className="h-auto flex-wrap">
               {(Object.keys(PERIOD_LABELS) as SpendPeriod[]).map((key) => (
                 <TabsTrigger key={key} value={key}>
                   {PERIOD_LABELS[key]}
@@ -290,7 +290,7 @@ export function SpendPage() {
 
             <SectionCard>
               <Tabs defaultValue="tasks" className="space-y-3">
-                <TabsList className="flex-wrap">
+                <TabsList className="h-auto flex-wrap">
                   <TabsTrigger value="tasks">By task</TabsTrigger>
                   <TabsTrigger value="runs">By run</TabsTrigger>
                   <TabsTrigger value="jobs">By job</TabsTrigger>

@@ -2019,7 +2019,7 @@ export const SettingsPage: React.FC = () => {
       />
 
       <main className="container mx-auto px-4 py-6 pb-12">
-        <div className="grid gap-6 lg:grid-cols-[300px_minmax(0,1fr)]">
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[300px_minmax(0,1fr)]">
           <SectionWorkspaceNav
             groups={filteredNavGroups}
             activeSectionId={activeSection}

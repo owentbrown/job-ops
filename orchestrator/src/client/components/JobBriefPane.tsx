@@ -126,7 +126,7 @@ const HighlightsSection: React.FC<{
       {items.map((item, index) => (
         <motion.span
           key={`${jobId}-highlight-${index}-${item}`}
-          className="inline-flex items-center whitespace-nowrap rounded-lg border border-border/45 bg-background px-2 py-1 text-foreground shadow-sm"
+          className="inline-flex max-w-full items-center break-words rounded-lg border border-border/45 bg-background px-2 py-1 text-foreground shadow-sm"
           initial={
             prefersReducedMotion ? false : { opacity: 0, x: HIGHLIGHT_X_OFFSET }
           }

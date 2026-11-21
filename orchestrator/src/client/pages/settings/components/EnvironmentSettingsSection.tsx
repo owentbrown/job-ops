@@ -1,3 +1,4 @@
+import { EXTRACTOR_SOURCE_METADATA } from "@shared/extractors";
 import * as api from "@client/api";
 import { ConnectedAccountsSection } from "@client/pages/settings/components/ConnectedAccountsSection";
 import { SettingsInput } from "@client/pages/settings/components/SettingsInput";
@@ -241,6 +242,10 @@ export const EnvironmentSettingsSection: React.FC<
     formState: { errors },
   } = useFormContext<UpdateSettingsInput>();
   const { private: privateValues } = values;
+  // UK Visa Jobs and Adzuna are hidden sources in this fork.
+  const showServiceAccounts =
+    !EXTRACTOR_SOURCE_METADATA.ukvisajobs.hidden ||
+    !EXTRACTOR_SOURCE_METADATA.adzuna.hidden;
 
   return (
     <SettingsSectionFrame
@@ -249,6 +254,8 @@ export const EnvironmentSettingsSection: React.FC<
       value="environment"
     >
       <div className="space-y-8">
+        {showServiceAccounts ? (
+          <>
         <div className="space-y-6">
           <div className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
             Service Accounts
@@ -298,6 +305,9 @@ export const EnvironmentSettingsSection: React.FC<
             </div>
           </div>
         </div>
+
+          </>
+        ) : null}
 
         <Separator />
 

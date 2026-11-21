@@ -1,6 +1,7 @@
 import type { TracerReadinessResponse } from "@shared/types";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryClient as appQueryClient } from "@/client/lib/queryClient";
+import { TRACER_LINKS_ENABLED } from "@/client/lib/fork-features";
 import { queryKeys } from "@/client/lib/queryKeys";
 import * as api from "../api";
 
@@ -15,6 +16,7 @@ export function useTracerReadiness() {
   } = useQuery<TracerReadinessResponse | null>({
     queryKey: queryKeys.tracer.readiness(false),
     queryFn: () => api.getTracerReadiness({ force: false }),
+    enabled: TRACER_LINKS_ENABLED,
   });
 
   const refreshReadiness = async (force = true) => {

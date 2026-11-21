@@ -94,21 +94,18 @@ describe("EnvironmentSettingsSection", () => {
     vi.mocked(api.listSsoIdentities).mockResolvedValue([]);
   });
 
-  it("renders values grouped logically and masks private secrets with hints", () => {
+  it("renders the Security group and leaves out hidden sources' accounts", () => {
     render(<EnvironmentSettingsHarness />);
 
-    expect(screen.getByDisplayValue("visa@example.com")).toBeInTheDocument();
-    expect(screen.getByDisplayValue("adzuna-id")).toBeInTheDocument();
-
-    expect(screen.getByText(/pass\*{8}/)).toBeInTheDocument();
-    expect(screen.getByText(/adzu\*{8}/)).toBeInTheDocument();
+    // UK Visa Jobs and Adzuna are hidden sources in this fork.
+    expect(screen.queryByDisplayValue("visa@example.com")).toBeNull();
+    expect(screen.queryByDisplayValue("adzuna-id")).toBeNull();
+    expect(screen.queryByText("Service Accounts")).toBeNull();
     expect(
       screen.queryByLabelText("Enable authentication"),
     ).not.toBeInTheDocument();
     expect(screen.queryByPlaceholderText("username")).not.toBeInTheDocument();
 
-    // Sections
-    expect(screen.getByText("Service Accounts")).toBeInTheDocument();
     expect(screen.getByText("Security")).toBeInTheDocument();
     expect(screen.queryByText("RxResume")).not.toBeInTheDocument();
   });

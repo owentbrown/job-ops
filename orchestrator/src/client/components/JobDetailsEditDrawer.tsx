@@ -1,4 +1,5 @@
 import type { Job } from "@shared/types.js";
+import { TRACER_LINKS_ENABLED } from "@/client/lib/fork-features";
 import { Loader2, Save } from "lucide-react";
 import type React from "react";
 import { useEffect, useMemo, useState } from "react";
@@ -300,6 +301,7 @@ export const JobDetailsEditDrawer: React.FC<JobDetailsEditDrawerProps> = ({
                   />
                 </div>
 
+                {TRACER_LINKS_ENABLED ? (
                 <div className="mt-3 rounded-lg border border-border/60 bg-muted/10 px-3 py-3">
                   <label
                     htmlFor="edit-tracer-links-enabled"
@@ -335,6 +337,7 @@ export const JobDetailsEditDrawer: React.FC<JobDetailsEditDrawerProps> = ({
                     anonymous.
                   </p>
                 </div>
+                ) : null}
 
                 <div className="mt-3 space-y-1">
                   <label

@@ -1,15 +1,16 @@
 import {
   EXTRACTOR_SOURCE_IDS,
   EXTRACTOR_SOURCE_METADATA,
-  PIPELINE_EXTRACTOR_SOURCE_IDS,
+  VISIBLE_PIPELINE_SOURCE_IDS,
 } from "@shared/extractors";
 import type { JobSource, JobStatus } from "@shared/types";
 
 export const DEFAULT_PIPELINE_SOURCES: JobSource[] = [
-  "gradcracker",
   "indeed",
   "linkedin",
-  "ukvisajobs",
+  "hiringcafe",
+  "startupjobs",
+  "freehire",
 ];
 export const PIPELINE_SOURCES_STORAGE_KEY = "jobops.pipeline.sources";
 export const PIPELINE_WATCHLIST_SOURCES_STORAGE_KEY =
@@ -17,7 +18,7 @@ export const PIPELINE_WATCHLIST_SOURCES_STORAGE_KEY =
 export const IN_PROGRESS_BOARD_APPLIED_COLLAPSED_STORAGE_KEY =
   "jobops.in-progress-board.applied-collapsed";
 
-export const orderedSources = [...PIPELINE_EXTRACTOR_SOURCE_IDS].sort(
+export const orderedSources = [...VISIBLE_PIPELINE_SOURCE_IDS].sort(
   (left, right) =>
     EXTRACTOR_SOURCE_METADATA[left].order -
     EXTRACTOR_SOURCE_METADATA[right].order,

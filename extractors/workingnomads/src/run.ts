@@ -588,6 +588,19 @@ function mapWorkingNomadsJob(
   };
 }
 
+/** True when a job's location names one of the country/region tokens. */
+function matchesRegionToken(
+  jobLocation: string | undefined,
+  tokens: string[],
+): boolean {
+  if (!jobLocation || tokens.length === 0) return false;
+  const normalized = jobLocation.toLowerCase();
+  return tokens.some((token) => {
+    const escaped = token.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return new RegExp(`(^|[^a-z])${escaped}([^a-z]|$)`).test(normalized);
+  });
+}
+
 function matchesWorkplaceTypes(
   workplaceTypes: WorkingNomadsWorkplaceType[] | undefined,
 ): boolean {
@@ -608,10 +621,11 @@ export async function runWorkingNomads(
     options.locations,
     options.selectedCountry,
   );
-  const locationTokens =
-    explicitLocations.length > 0
-      ? []
-      : getCountrySearchTokens(options.selectedCountry);
+  // Working Nomads lists remote jobs by country or region ("Canada",
+  // "North America", "Anywhere"), almost never by city. Always filter by the
+  // selected country's tokens; with cities chosen, a job still counts when it
+  // is open to the whole country or region (see matchesRegionToken below).
+  const locationTokens = getCountrySearchTokens(options.selectedCountry);
 
   if (!matchesWorkplaceTypes(options.workplaceTypes)) {
     return { success: true, jobs: [] };
@@ -658,7 +672,8 @@ export async function runWorkingNomads(
           explicitLocations.length > 0 &&
           !explicitLocations.some((location) =>
             matchesRequestedLocation(mapped.location, location),
-          )
+          ) &&
+          !matchesRegionToken(mapped.location, locationTokens)
         ) {
           continue;
         }

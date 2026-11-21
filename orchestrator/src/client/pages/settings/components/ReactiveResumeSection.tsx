@@ -90,7 +90,7 @@ export const ReactiveResumeSection: React.FC<ReactiveResumeSectionProps> = ({
   return (
     <SettingsSectionFrame
       mode={layoutMode}
-      title="Reactive Resume"
+      title="Resume & PDF"
       value="reactive-resume"
     >
       <ReactiveResumeConfigPanel

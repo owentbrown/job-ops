@@ -1,3 +1,4 @@
+import { TRACER_LINKS_ENABLED } from "@/client/lib/fork-features";
 import { createJob } from "@shared/testing/factories.js";
 import type { Job } from "@shared/types.js";
 import { fireEvent, screen, waitFor } from "@testing-library/react";
@@ -156,7 +157,8 @@ describe("JobDetailsEditDrawer", () => {
     expect(onJobUpdated).toHaveBeenCalledTimes(2);
   });
 
-  it("persists tracer-links toggle with job updates", async () => {
+  it.skipIf(!TRACER_LINKS_ENABLED)(
+    "persists tracer-links toggle with job updates", async () => {
     const onJobUpdated = vi.fn().mockResolvedValue(undefined);
     const onOpenChange = vi.fn();
     vi.mocked(api.updateJob).mockResolvedValue({} as Job);

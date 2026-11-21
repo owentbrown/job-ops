@@ -151,6 +151,9 @@ export const ReactiveResumeConfigPanel: React.FC<
   const canShowProjectSelection = Boolean(
     projectSelection && (hasRxResumeAccess || hasProjectCatalog),
   );
+  // The Reactive Resume connection only matters for its renderer (or once it
+  // is set up); otherwise its URL and key fields stay out of the way.
+  const showRxResumeConnection = pdfRenderer === "rxresume" || hasRxResumeAccess;
   const selectedValidationStatus = validationStatus;
   const showInlineValidationAlert = Boolean(
     selectedValidationStatus?.checked &&
@@ -277,13 +280,17 @@ export const ReactiveResumeConfigPanel: React.FC<
         </p>
       </div>
 
-      {showValidationStatus && selectedValidationStatus ? (
+      {showRxResumeConnection &&
+      showValidationStatus &&
+      selectedValidationStatus ? (
         <div className="flex flex-wrap items-center gap-2 text-xs w-full justify-between">
           {renderStatusPill("v5 status", selectedValidationStatus)}
         </div>
       ) : null}
 
-      {showInlineValidationAlert && selectedValidationStatus?.message ? (
+      {showRxResumeConnection &&
+      showInlineValidationAlert &&
+      selectedValidationStatus?.message ? (
         <Alert
           variant={selectedValidationIsWarning ? "warning" : "destructive"}
         >
@@ -302,7 +309,7 @@ export const ReactiveResumeConfigPanel: React.FC<
         </Alert>
       ) : null}
 
-      {
+      {showRxResumeConnection ? (
         <div className="grid gap-4">
           <SettingsInput
             label="RxResume URL"
@@ -337,7 +344,7 @@ export const ReactiveResumeConfigPanel: React.FC<
             error={v5.error}
           />
         </div>
-      }
+      ) : null}
 
       {projectSelection ? (
         <>

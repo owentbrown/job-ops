@@ -1,6 +1,7 @@
 import { getDefaultPromptTemplate } from "@shared/prompt-template-definitions.js";
 import { createAppSettings } from "@shared/testing/factories.js";
 import { fireEvent, screen, waitFor } from "@testing-library/react";
+import { TRACER_LINKS_ENABLED } from "@/client/lib/fork-features";
 import { MemoryRouter } from "react-router-dom";
 import { toast } from "sonner";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -205,7 +206,7 @@ const openPromptTemplatesSection = async () => {
 
 const openReactiveResumeSection = async () => {
   await openNavGroup(/^integrations$/i);
-  await clickLastButtonByName(/reactive resume/i);
+  await clickLastButtonByName(/resume & pdf/i);
 };
 
 const openDisplaySection = async () => {
@@ -1235,11 +1236,11 @@ describe("SettingsPage", () => {
     renderPage();
 
     const search = await screen.findByLabelText(/search settings/i);
-    // "analytics" only appears in the Tracer Links section's own text.
-    fireEvent.change(search, { target: { value: "anal" } });
+    // "tectonic" only appears in the Resume & PDF section's own help text.
+    fireEvent.change(search, { target: { value: "tecto" } });
 
     expect(
-      await screen.findAllByRole("button", { name: /tracer links/i }),
+      await screen.findAllByRole("button", { name: /resume & pdf/i }),
     ).not.toHaveLength(0);
     expect(
       screen.queryAllByRole("button", { name: /backups/i }),
@@ -1420,7 +1421,8 @@ describe("absorbed sections", () => {
     expect(screen.queryByRole("button", { name: /save changes/i })).toBeNull();
   });
 
-  it("shows tracer analytics under the tracer links setup", async () => {
+  // Tracer Links are hidden in this fork (see fork-features.ts).
+  it.skipIf(!TRACER_LINKS_ENABLED)("shows tracer analytics under the tracer links setup", async () => {
     render(
       <MemoryRouter initialEntries={["/settings#tracer-links"]}>
         <SettingsPage />

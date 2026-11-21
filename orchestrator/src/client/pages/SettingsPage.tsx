@@ -58,6 +58,7 @@ import { Settings } from "lucide-react";
 import type React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import settingsSearchIndex from "virtual:settings-search-index";
+import { HIDDEN_SETTINGS_SECTIONS } from "@/client/lib/fork-features";
 import {
   FormProvider,
   type Resolver,
@@ -278,9 +279,21 @@ const SETTINGS_NAV_GROUPS: SettingsNavGroup[] = [
     items: [
       {
         id: "reactive-resume",
-        label: "Reactive Resume",
-        description: "Resume sync, templates, and project selection.",
-        searchTerms: ["rxresume", "resume", "projects", "template"],
+        label: "Resume & PDF",
+        description: "PDF renderer, theme, paper size and resume projects.",
+        searchTerms: [
+          "rxresume",
+          "reactive resume",
+          "resume",
+          "projects",
+          "template",
+          "pdf",
+          "renderer",
+          "typst",
+          "latex",
+          "theme",
+          "paper",
+        ],
       },
       {
         id: "webhooks",
@@ -1608,7 +1621,8 @@ export const SettingsPage: React.FC = () => {
             (item.id !== "billing" || isHostedMode) &&
             (canEditLlmSettings || item.id !== "model") &&
             // The sponsor lists aren't downloaded while sponsor info is off.
-            (item.id !== "visa-sponsors" || showSponsorInfo),
+            (item.id !== "visa-sponsors" || showSponsorInfo) &&
+            !HIDDEN_SETTINGS_SECTIONS.has(item.id),
         ),
       })).filter((group) => group.items.length > 0),
     [canEditLlmSettings, isHostedMode, showSponsorInfo],

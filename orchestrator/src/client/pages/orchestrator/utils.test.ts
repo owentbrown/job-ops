@@ -1,6 +1,6 @@
 import {
   EXTRACTOR_SOURCE_METADATA,
-  PIPELINE_EXTRACTOR_SOURCE_IDS,
+  VISIBLE_PIPELINE_SOURCE_IDS,
 } from "@shared/extractors";
 import { createAppSettings, createJob } from "@shared/testing/factories.js";
 import { describe, expect, it } from "vitest";
@@ -14,34 +14,37 @@ import {
 } from "./utils";
 
 describe("orchestrator utils", () => {
-  it("enables adzuna only when both app id and key are configured", () => {
-    const withCreds = createAppSettings({
-      adzunaAppId: "app-id",
-      adzunaAppKeyHint: "key-",
-    });
-    const withoutKey = createAppSettings({
-      adzunaAppId: "app-id",
-      adzunaAppKeyHint: null,
-    });
+  it("never enables a source this fork hides, even with credentials", () => {
+    const enabled = getEnabledSources(
+      createAppSettings({
+        adzunaAppId: "app-id",
+        adzunaAppKeyHint: "key-",
+        apifyTokenHint: "sk-",
+      }),
+    );
 
-    expect(getEnabledSources(withCreds)).toContain("adzuna");
-    expect(getEnabledSources(withoutKey)).not.toContain("adzuna");
+    expect(enabled).not.toContain("adzuna");
+    expect(enabled).not.toContain("seek");
+    expect(enabled).not.toContain("gradcracker");
   });
 
-  it("enables every credential-free pipeline source", () => {
+  it("enables every visible credential-free pipeline source", () => {
     const enabled = getEnabledSources(createAppSettings());
-    const credentialFree = PIPELINE_EXTRACTOR_SOURCE_IDS.filter(
+    const credentialFree = VISIBLE_PIPELINE_SOURCE_IDS.filter(
       (source) => !EXTRACTOR_SOURCE_METADATA[source].requiresCredentials,
     );
 
     expect(enabled).toEqual(expect.arrayContaining(credentialFree));
-  });
-
-  it("enables seek only when apify token is configured", () => {
-    const withToken = createAppSettings({ apifyTokenHint: "sk-" });
-    const withoutToken = createAppSettings({ apifyTokenHint: null });
-    expect(getEnabledSources(withToken)).toContain("seek");
-    expect(getEnabledSources(withoutToken)).not.toContain("seek");
+    expect(enabled).toEqual(
+      expect.arrayContaining([
+        "indeed",
+        "linkedin",
+        "hiringcafe",
+        "startupjobs",
+        "workingnomads",
+        "freehire",
+      ]),
+    );
   });
 
   it("counts processing jobs in ready and discovered tabs", () => {

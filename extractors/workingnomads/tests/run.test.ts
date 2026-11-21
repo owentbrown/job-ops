@@ -94,6 +94,61 @@ describe("runWorkingNomads", () => {
     expect(result.jobs[0]?.employer).toBe("Acme");
   });
 
+  it("keeps country-wide remote jobs when cities are chosen", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      createResponse([
+        {
+          url: "https://www.workingnomads.com/job/go/201/",
+          title: "Product Manager",
+          description: "<p>Remote in Canada.</p>",
+          company_name: "Maple",
+          category_name: "Management",
+          tags: "product",
+          location: "Canada",
+          pub_date: "2026-03-20T10:00:00-04:00",
+        },
+        {
+          url: "https://www.workingnomads.com/job/go/202/",
+          title: "Product Manager",
+          description: "<p>Remote in North America.</p>",
+          company_name: "Northwind",
+          category_name: "Management",
+          tags: "product",
+          location: "North America",
+          pub_date: "2026-03-20T10:00:00-04:00",
+        },
+        {
+          url: "https://www.workingnomads.com/job/go/203/",
+          title: "Product Manager",
+          description: "<p>Remote in Poland.</p>",
+          company_name: "Wisla",
+          category_name: "Management",
+          tags: "product",
+          location: "Poland",
+          pub_date: "2026-03-20T10:00:00-04:00",
+        },
+      ]),
+    );
+
+    const result = await runWorkingNomads({
+      searchTerms: ["product manager"],
+      selectedCountry: "canada",
+      locations: ["Kitchener", "Waterloo"],
+      fetchImpl: fetchMock,
+    });
+
+    expect(result.jobs.map((job) => job.employer)).toEqual([
+      "Maple",
+      "Northwind",
+    ]);
+    const body = JSON.parse(String(fetchMock.mock.calls[0]?.[1]?.body)) as {
+      query?: { bool?: { filter?: Array<{ terms?: { locations?: string[] } }> } };
+    };
+    expect(body.query?.bool?.filter?.[0]?.terms?.locations).toEqual(
+      expect.arrayContaining(["Canada", "North America", "Anywhere"]),
+    );
+  });
+
   it("returns no jobs when remote is not an allowed workplace type", async () => {
     const fetchMock = vi.fn();
 

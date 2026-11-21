@@ -1,4 +1,5 @@
 import { TokenizedInput } from "@client/pages/orchestrator/TokenizedInput";
+import { TRACER_LINKS_ENABLED } from "@/client/lib/fork-features";
 import type {
   ExperienceBulletCatalogItem,
   ExperienceBulletSelection,
@@ -928,6 +929,7 @@ export const TailoringSections: React.FC<TailoringSectionsProps> = ({
         </AccordionItem>
       )}
 
+      {TRACER_LINKS_ENABLED ? (
       <AccordionItem value="tracer-links" className={sectionClass}>
         <AccordionTrigger className={triggerClass} aria-label="Tracer Links">
           <SectionTriggerLabel
@@ -966,6 +968,7 @@ export const TailoringSections: React.FC<TailoringSectionsProps> = ({
           </div>
         </AccordionContent>
       </AccordionItem>
+      ) : null}
 
       <AccordionItem value="job-description" className={sectionClass}>
         <AccordionTrigger className={triggerClass} aria-label="Job Description">

@@ -23,6 +23,9 @@ vi.mock("./about/PitchSheet", () => ({ PitchSheet: stub("pitch-sheet") }));
 vi.mock("./about/StorySheet", () => ({ StorySheet: stub("story-sheet") }));
 vi.mock("./about/ValuesSheet", () => ({ ValuesSheet: stub("values-sheet") }));
 vi.mock("./about/SkillsSheet", () => ({ SkillsSheet: stub("skills-sheet") }));
+vi.mock("./about/ProofPointsCard", () => ({
+  ProofPointsCard: stub("proof-points-card"),
+}));
 vi.mock("@client/components/layout", () => ({
   PageHeader: ({ title }: { title: string }) => <header>{title}</header>,
   PageMain: ({ children }: { children: React.ReactNode }) => (

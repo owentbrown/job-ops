@@ -14,6 +14,7 @@ import { DocumentsBanner } from "./about/DocumentsBanner";
 import { LandingCard } from "./about/LandingCard";
 import { PitchCard } from "./about/PitchCard";
 import { PitchSheet } from "./about/PitchSheet";
+import { ProofPointsCard } from "./about/ProofPointsCard";
 import type { AboutPanel } from "./about/parts";
 import { RolesCard } from "./about/RolesCard";
 import { SkillMapCard } from "./about/SkillMapCard";
@@ -97,6 +98,7 @@ export const AboutYouPage: React.FC = () => {
                 onOpenStrength={() => setStrengthOpen(true)}
               />
             )}
+            <ProofPointsCard />
             <div
               data-testid="pitch-skills-row"
               className="grid gap-4 lg:grid-cols-2 lg:items-stretch"

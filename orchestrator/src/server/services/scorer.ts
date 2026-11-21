@@ -25,6 +25,7 @@ import { createConfiguredLlmService, resolveLlmModel } from "./modelSelection";
 import { parsePrefilterConfig, readPrefilterConfig } from "./prefilter/config";
 import { evaluateLanguageRequirement } from "./prefilter/language";
 import { renderPromptTemplate } from "./prompt-templates";
+import { proofPointsForJob } from "./profile/proof-points";
 import { filterProfileProjectsForAi } from "./resumeProjects";
 import { getEffectiveSettings } from "./settings";
 
@@ -371,10 +372,11 @@ export async function scoreJobSuitability(
     }));
   }
 
-  const [model, settings, aiProfile] = await Promise.all([
+  const [model, settings, aiProfile, proofPoints] = await Promise.all([
     resolveLlmModel("scoring"),
     getEffectiveSettings(),
     filterProfileProjectsForAi(profile),
+    proofPointsForJob(job),
   ]);
   const scoringInstructions = Object.hasOwn(options, "scoringInstructions")
     ? (options.scoringInstructions ?? "")
@@ -383,7 +385,7 @@ export async function scoreJobSuitability(
   const roleOptions = roleCategoryOptions(settings.searchTerms?.value ?? []);
   const prompt = `${buildScoringPrompt(
     job,
-    sanitizeProfileForPrompt(aiProfile),
+    withProofPoints(sanitizeProfileForPrompt(aiProfile), proofPoints),
     {
       instructions: scoringInstructions,
       promptTemplate:
@@ -632,6 +634,17 @@ function buildScoringPrompt(
       ? preferences.instructions
       : "No additional custom scoring instructions.",
   })}\n\nJOB DATA (JSON):\n${jobJson}\n\n${SCORING_OUTPUT_INSTRUCTIONS}`;
+}
+
+/**
+ * Adds the user's saved proof points that match this job (About you). They
+ * are first-hand accomplishments, so they count as evidence like resume text.
+ */
+function withProofPoints(
+  profile: Record<string, unknown>,
+  proofPoints: string[],
+): Record<string, unknown> {
+  return proofPoints.length > 0 ? { ...profile, proofPoints } : profile;
 }
 
 function sanitizeProfileForPrompt(

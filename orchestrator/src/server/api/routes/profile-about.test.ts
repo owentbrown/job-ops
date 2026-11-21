@@ -202,6 +202,7 @@ describe.sequential("Profile About you API routes", () => {
       values: null,
       skills: null,
       stories: [],
+      proofPoints: [],
     });
 
     const put = await fetch(`${baseUrl}/api/profile/entries/brand`, {

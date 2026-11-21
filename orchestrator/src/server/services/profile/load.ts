@@ -15,6 +15,8 @@ import {
   type JobStatus,
   PitchEntrySchema,
   type ProfileEntryRow,
+  type ProofPointEntry,
+  ProofPointEntrySchema,
   SkillsEntrySchema,
   type StoryEntry,
   StoryEntrySchema,
@@ -203,13 +205,22 @@ function parseOrNull<T>(
 export async function loadProfileEntries(): Promise<ProfileEntriesInput> {
   const rows = await listEntries();
   const singleton = (kind: string) => rows.find((r) => r.kind === kind);
-  const singletonRows = rows.filter((r) => r.kind !== "story");
+  const singletonRows = rows.filter(
+    (r) => r.kind !== "story" && r.kind !== "proof",
+  );
 
   const stories: ProfileEntryRow<StoryEntry>[] = [];
   for (const row of rows) {
     if (row.kind !== "story") continue;
     const data = parseOrNull<StoryEntry>(StoryEntrySchema, row.data);
     if (data) stories.push({ ...row, data });
+  }
+
+  const proofPoints: ProfileEntryRow<ProofPointEntry>[] = [];
+  for (const row of rows) {
+    if (row.kind !== "proof") continue;
+    const data = parseOrNull<ProofPointEntry>(ProofPointEntrySchema, row.data);
+    if (data) proofPoints.push({ ...row, data });
   }
 
   const singletonsUpdatedAt =
@@ -223,6 +234,7 @@ export async function loadProfileEntries(): Promise<ProfileEntriesInput> {
     values: parseOrNull(ValuesEntrySchema, singleton("values")?.data),
     skills: parseOrNull(SkillsEntrySchema, singleton("skills")?.data),
     stories,
+    proofPoints,
     singletonsUpdatedAt,
   };
 }

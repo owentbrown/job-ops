@@ -7,6 +7,7 @@ import { stripHtmlTags } from "@shared/utils/string";
 import type { JsonSchemaDefinition } from "../llm/types";
 import { createConfiguredLlmService, resolveLlmModel } from "../modelSelection";
 import { getProfile } from "../profile";
+import { proofPointsForJob } from "../profile/proof-points";
 import { filterProfileProjectsForAi } from "../resumeProjects";
 import { getWritingStyle } from "../writing-style";
 
@@ -96,11 +97,12 @@ export async function generateCoverLetter(
   job: Pick<Job, "id" | "title" | "employer" | "location" | "jobDescription">,
   instructions?: string | null,
 ): Promise<string> {
-  const [model, style, profile, example] = await Promise.all([
+  const [model, style, profile, example, proofPoints] = await Promise.all([
     resolveLlmModel("tailoring"),
     getWritingStyle(),
     getProfile().then(filterProfileProjectsForAi),
     loadExampleLetter(),
+    proofPointsForJob(job, 6),
   ]);
 
   const profileJson = JSON.stringify({
@@ -122,6 +124,9 @@ export async function generateCoverLetter(
       name: item.name,
       keywords: item.keywords,
     })),
+    // First-hand accomplishments from About you that match this job. They are
+    // facts from the candidate, so the letter may use them like resume text.
+    ...(proofPoints.length > 0 ? { proofPoints } : {}),
   });
 
   const prompt = buildCoverLetterPrompt({

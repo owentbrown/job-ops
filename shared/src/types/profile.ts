@@ -18,6 +18,7 @@ export const PROFILE_ENTRY_KINDS = [
   "values",
   "story",
   "skills",
+  "proof",
 ] as const;
 export const ProfileEntryKindSchema = z.enum(PROFILE_ENTRY_KINDS);
 export type ProfileEntryKind = z.infer<typeof ProfileEntryKindSchema>;
@@ -102,6 +103,53 @@ export const SkillsEntrySchema = z.object({
 });
 export type SkillsEntry = z.infer<typeof SkillsEntrySchema>;
 
+// ---------------------------------------------------------------------------
+// Proof points: one thing the user did, in their own words, structured so
+// scoring, cover letters and Ghostwriter can pick it for a matching job.
+// ---------------------------------------------------------------------------
+
+export const PROOF_POINT_TEXT_MAX = 2000;
+export const PROOF_POINT_DRAFT_INPUT_MAX = 6000;
+
+export const ProofPointSkillSchema = z.object({
+  label: z.string().min(1).max(120),
+  /** Plain terms a job description would use for this skill. */
+  keywords: z.array(z.string().min(1).max(80)).max(12),
+});
+export type ProofPointSkill = z.infer<typeof ProofPointSkillSchema>;
+
+export const ProofPointEntrySchema = z.object({
+  /** Short headline, e.g. "Governance partner to Legal, Risk & Compliance". */
+  title: z.string().min(1).max(200),
+  /** The point in the user's own words, lightly tidied. */
+  text: z.string().min(1).max(PROOF_POINT_TEXT_MAX),
+  /** Where it happened, e.g. "Product Manager at Acme", or null. */
+  role: z.string().max(200).nullable(),
+  /** Skills it proves; merged into the skill map on save. */
+  skills: z.array(ProofPointSkillSchema).max(8),
+  /** Terms a matching job description would use (synonyms included). */
+  keywords: z.array(z.string().min(1).max(80)).max(24),
+  /** Headline number, e.g. "40+ reviews a year", or null. */
+  metric: z.string().max(200).nullable(),
+  /** Questions that would make it stronger; shown, never sent to jobs. */
+  followUps: z.array(z.string().min(1).max(300)).max(5),
+  source: z.enum(["ai", "manual"]),
+});
+export type ProofPointEntry = z.infer<typeof ProofPointEntrySchema>;
+
+export const ProofPointDraftRequestSchema = z.object({
+  text: z.string().trim().min(1).max(PROOF_POINT_DRAFT_INPUT_MAX),
+});
+export type ProofPointDraftRequest = z.infer<
+  typeof ProofPointDraftRequestSchema
+>;
+
+export interface ProofPointDraftResponse {
+  drafts: ProofPointEntry[];
+  /** Roles from the resume, for the role picker. */
+  roles: string[];
+}
+
 /** Stored row, as returned by the entries routes. */
 export interface ProfileEntryRow<TData = unknown> {
   id: string;
@@ -128,6 +176,7 @@ export interface ProfileEntriesResponse {
   values: ValuesEntry | null;
   skills: SkillsEntry | null;
   stories: ProfileEntryRow<StoryEntry>[];
+  proofPoints?: ProfileEntryRow<ProofPointEntry>[];
 }
 
 // ---------------------------------------------------------------------------

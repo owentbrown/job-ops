@@ -23,6 +23,7 @@ import {
   type ProfileSkillInsight,
   type ProfileStoriesInsight,
   type ProfileStrengthCheck,
+  type ProofPointEntry,
   type RoleTag,
   type SkillProofLevel,
   type SkillQuadrant,
@@ -78,6 +79,8 @@ export type ProfileEntriesInput = {
   values: ValuesEntry | null;
   skills: SkillsEntry | null;
   stories: ProfileEntryRow<StoryEntry>[];
+  /** Saved proof points; they count as resume-bullet evidence. */
+  proofPoints?: ProfileEntryRow<ProofPointEntry>[];
   /** Latest updatedAt across the singleton rows, null when none exist. */
   singletonsUpdatedAt: string | null;
 };
@@ -273,9 +276,26 @@ type ProofSources = {
   core: string;
 };
 
+/**
+ * A proof point reads like a resume bullet: its title, text, skills and
+ * keywords, plus the metric (so a number lifts it to proof level 2).
+ */
+export function proofPointEvidenceText(point: ProofPointEntry): string {
+  return [
+    point.title,
+    point.text,
+    ...point.skills.map((s) => [s.label, ...s.keywords].join(" ")),
+    point.keywords.join(", "),
+    point.metric ?? "",
+  ]
+    .join(" \n ")
+    .trim();
+}
+
 function proofSources(
   resume: ProfileResumeInput | null,
   stories: ProfileEntryRow<StoryEntry>[],
+  proofPoints: ProfileEntryRow<ProofPointEntry>[] = [],
 ): ProofSources {
   const storyTexts = stories.map((row) => {
     const s = row.data;
@@ -283,10 +303,12 @@ function proofSources(
       .join(" \n ")
       .trim();
   });
-  if (!resume) return { stories: storyTexts, bullets: [], core: "" };
+  const proofTexts = proofPoints.map((row) => proofPointEvidenceText(row.data));
+  if (!resume) return { stories: storyTexts, bullets: proofTexts, core: "" };
   const bullets = [
     ...resume.experience.flatMap((e) => splitBullets(e.description)),
     ...resume.projects.flatMap((p) => splitBullets(p.description)),
+    ...proofTexts,
   ];
   const core = [...resume.skills, htmlToText(resume.summary)].join(" \n ");
   return { stories: storyTexts, bullets, core };
@@ -778,7 +800,11 @@ export function computeProfileInsights(
     return text;
   };
   const defs = skillDefs(entries.skills);
-  const sources = proofSources(resume, entries.stories);
+  const sources = proofSources(
+    resume,
+    entries.stories,
+    entries.proofPoints ?? [],
+  );
   const proofById = new Map<string, SkillProofLevel>();
   const skills: ProfileSkillInsight[] = defs
     .map((def) => {

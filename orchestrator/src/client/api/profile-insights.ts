@@ -8,6 +8,8 @@ import type {
   ProfileInsightsResponse,
   ProfileSingletonKind,
   ProfileSkillsRefreshResponse,
+  ProofPointDraftResponse,
+  ProofPointEntry,
   SkillsEntry,
   StoryEntry,
   ValuesEntry,
@@ -84,4 +86,42 @@ export async function writeProfileDraft<R extends ProfileAiWriteRequest>(
     method: "POST",
     body: JSON.stringify(request),
   });
+}
+
+/** AI drafts of proof points from the user's own words. Nothing is saved. */
+export async function draftProofPoints(
+  text: string,
+): Promise<ProofPointDraftResponse> {
+  return fetchApi<ProofPointDraftResponse>("/profile/proof-points/draft", {
+    method: "POST",
+    body: JSON.stringify({ text }),
+  });
+}
+
+export async function createProofPoint(
+  data: ProofPointEntry,
+): Promise<ProfileEntryRow<ProofPointEntry>> {
+  return fetchApi<ProfileEntryRow<ProofPointEntry>>("/profile/proof-points", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateProofPoint(
+  id: string,
+  data: ProofPointEntry,
+): Promise<ProfileEntryRow<ProofPointEntry>> {
+  return fetchApi<ProfileEntryRow<ProofPointEntry>>(
+    `/profile/proof-points/${encodeURIComponent(id)}`,
+    { method: "PUT", body: JSON.stringify(data) },
+  );
+}
+
+export async function deleteProofPoint(
+  id: string,
+): Promise<{ deleted: true }> {
+  return fetchApi<{ deleted: true }>(
+    `/profile/proof-points/${encodeURIComponent(id)}`,
+    { method: "DELETE" },
+  );
 }

@@ -36,6 +36,7 @@ import {
   getEffectivePromptTemplate,
   renderPromptTemplate,
 } from "./prompt-templates";
+import { proofPointsForJob } from "./profile/proof-points";
 import { filterProfileProjectsForAi } from "./resumeProjects";
 import {
   getWritingStyle,
@@ -123,7 +124,10 @@ function buildJobSnapshot(job: Job): string {
   return JSON.stringify(snapshot);
 }
 
-function buildProfileSnapshot(profile: ResumeProfile): string {
+function buildProfileSnapshot(
+  profile: ResumeProfile,
+  proofPoints: string[] = [],
+): string {
   const summary =
     truncate(profile?.sections?.summary?.content, MAX_PROFILE_SUMMARY) ||
     truncate(profile?.basics?.summary, MAX_PROFILE_SUMMARY);
@@ -158,6 +162,9 @@ function buildProfileSnapshot(profile: ResumeProfile): string {
     skills.length > 0 ? `Skills:\n- ${skills.join("\n- ")}` : null,
     projects.length > 0 ? `Projects:\n- ${projects.join("\n- ")}` : null,
     experience.length > 0 ? `Experience:\n- ${experience.join("\n- ")}` : null,
+    proofPoints.length > 0
+      ? `Proof points (the candidate's own accomplishments that fit this job):\n- ${proofPoints.join("\n- ")}`
+      : null,
   ]);
 }
 
@@ -401,7 +408,10 @@ export async function buildJobChatPromptContext(
     });
   }
 
-  const profileSnapshot = buildProfileSnapshot(profile);
+  const profileSnapshot = buildProfileSnapshot(
+    profile,
+    await proofPointsForJob(job, 6),
+  );
   const [
     baseSystemPrompt,
     stopSlopEnabled,

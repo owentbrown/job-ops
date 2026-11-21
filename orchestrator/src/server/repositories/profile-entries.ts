@@ -6,6 +6,8 @@ import {
   ProfileEntryKindSchema,
   type ProfileEntryRow,
   type ProfileSingletonKind,
+  type ProofPointEntry,
+  ProofPointEntrySchema,
   SkillsEntrySchema,
   type StoryEntry,
   StoryEntrySchema,
@@ -27,6 +29,7 @@ const KIND_SCHEMAS: Record<ProfileEntryKind, z.ZodTypeAny> = {
   values: ValuesEntrySchema,
   story: StoryEntrySchema,
   skills: SkillsEntrySchema,
+  proof: ProofPointEntrySchema,
 };
 
 /**
@@ -166,6 +169,73 @@ export async function deleteStory(
         scopeFilter(scope),
         eq(profileEntries.id, id),
         eq(profileEntries.kind, "story"),
+      ),
+    );
+  return result.changes > 0;
+}
+
+// ---------------------------------------------------------------------------
+// Proof points (many per user, like stories)
+// ---------------------------------------------------------------------------
+
+export async function createProofPoint(
+  data: unknown,
+  scope: PrivateDataScope = getPrivateDataScope(),
+): Promise<ProfileEntryRow<ProofPointEntry>> {
+  const parsed = ProofPointEntrySchema.parse(data);
+  const now = new Date().toISOString();
+  const id = randomUUID();
+  await db.insert(profileEntries).values({
+    id,
+    tenantId: scope.tenantId,
+    userId: scope.userId,
+    kind: "proof",
+    data: parsed,
+    createdAt: now,
+    updatedAt: now,
+  });
+  return { id, kind: "proof", data: parsed, createdAt: now, updatedAt: now };
+}
+
+/** Returns null when the proof point does not exist in this scope. */
+export async function updateProofPoint(
+  id: string,
+  data: unknown,
+  scope: PrivateDataScope = getPrivateDataScope(),
+): Promise<ProfileEntryRow<ProofPointEntry> | null> {
+  const parsed = ProofPointEntrySchema.parse(data);
+  const now = new Date().toISOString();
+  const result = await db
+    .update(profileEntries)
+    .set({ data: parsed, updatedAt: now })
+    .where(
+      and(
+        scopeFilter(scope),
+        eq(profileEntries.id, id),
+        eq(profileEntries.kind, "proof"),
+      ),
+    );
+  if (result.changes === 0) return null;
+  const [row] = await db
+    .select()
+    .from(profileEntries)
+    .where(and(scopeFilter(scope), eq(profileEntries.id, id)))
+    .limit(1);
+  return row ? toRow<ProofPointEntry>(row) : null;
+}
+
+/** Returns false when the proof point does not exist in this scope. */
+export async function deleteProofPoint(
+  id: string,
+  scope: PrivateDataScope = getPrivateDataScope(),
+): Promise<boolean> {
+  const result = await db
+    .delete(profileEntries)
+    .where(
+      and(
+        scopeFilter(scope),
+        eq(profileEntries.id, id),
+        eq(profileEntries.kind, "proof"),
       ),
     );
   return result.changes > 0;

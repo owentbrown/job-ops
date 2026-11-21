@@ -5,6 +5,7 @@ import { isDemoMode } from "@server/config/demo";
 import { DEMO_PROJECT_CATALOG } from "@server/config/demo-defaults";
 import {
   createStory,
+  deleteProofPoint,
   deleteStory,
   updateStory,
   upsertSingleton,
@@ -13,6 +14,11 @@ import { getDesignResumeStatus } from "@server/services/design-resume";
 import { clearProfileCache, getProfile } from "@server/services/profile";
 import { writeProfileDraft } from "@server/services/profile/ai-write";
 import { computeProfileInsights } from "@server/services/profile/compute";
+import {
+  draftProofPoints,
+  saveProofPoint,
+  updateSavedProofPoint,
+} from "@server/services/profile/proof-points";
 import {
   loadProfileEntries,
   loadProfileInsightsInput,
@@ -29,6 +35,8 @@ import {
   ProfileAiWriteRequestSchema,
   type ProfileEntriesResponse,
   ProfileSingletonKindSchema,
+  type ProofPointDraftResponse,
+  ProofPointDraftRequestSchema,
 } from "@shared/types";
 import { type Request, type Response, Router } from "express";
 import { z } from "zod";
@@ -239,6 +247,66 @@ profileRouter.delete("/stories/:id", async (req: Request, res: Response) => {
     fail(res, profileError(error, "Profile story delete failed"));
   }
 });
+
+/**
+ * POST /api/profile/proof-points/draft - AI drafts from the user's own words.
+ * Nothing is saved. 400 on a bad body, 502 when the model fails.
+ */
+profileRouter.post(
+  "/proof-points/draft",
+  async (req: Request, res: Response) => {
+    try {
+      const { text } = ProofPointDraftRequestSchema.parse(req.body ?? {});
+      const body: ProofPointDraftResponse = await draftProofPoints(text);
+      ok(res, body);
+    } catch (error) {
+      fail(res, profileError(error, "Proof point drafting failed"));
+    }
+  },
+);
+
+/**
+ * POST /api/profile/proof-points - save a proof point; its skills are merged
+ * into the skill map.
+ */
+profileRouter.post("/proof-points", async (req: Request, res: Response) => {
+  try {
+    ok(res, await saveProofPoint(req.body), 201);
+  } catch (error) {
+    fail(res, profileError(error, "Proof point save failed"));
+  }
+});
+
+/**
+ * PUT /api/profile/proof-points/:id - replace a proof point
+ */
+profileRouter.put("/proof-points/:id", async (req: Request, res: Response) => {
+  try {
+    const row = await updateSavedProofPoint(req.params.id, req.body);
+    if (!row) throw notFound("Proof point not found");
+    ok(res, row);
+  } catch (error) {
+    fail(res, profileError(error, "Proof point update failed"));
+  }
+});
+
+/**
+ * DELETE /api/profile/proof-points/:id - delete a proof point. Skills it added
+ * to the skill map stay (they may have been edited since).
+ */
+profileRouter.delete(
+  "/proof-points/:id",
+  async (req: Request, res: Response) => {
+    try {
+      if (!(await deleteProofPoint(req.params.id))) {
+        throw notFound("Proof point not found");
+      }
+      ok(res, { deleted: true });
+    } catch (error) {
+      fail(res, profileError(error, "Proof point delete failed"));
+    }
+  },
+)
 
 /**
  * POST /api/profile/skills/refresh - AI skill extraction from best-fit jobs.

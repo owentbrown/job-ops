@@ -5,9 +5,6 @@
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { dirname, extname, join } from "node:path";
-import { Readable } from "node:stream";
-import { pipeline } from "node:stream/promises";
-import type { ReadableStream as NodeReadableStream } from "node:stream/web";
 import { fileURLToPath } from "node:url";
 import { unauthorized } from "@infra/errors";
 import {
@@ -32,132 +29,6 @@ import { ojcpManifestHandler, ojcpMcpHandler } from "./ojcp";
 import { resolveTracerRedirect } from "./services/tracer-links";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const UMAMI_UPSTREAM_ORIGIN = "https://umami.dakheera47.com";
-const UMAMI_PROXY_TIMEOUT_MS = 5_000;
-const HOP_BY_HOP_RESPONSE_HEADERS = new Set([
-  "connection",
-  "content-length",
-  "keep-alive",
-  "proxy-authenticate",
-  "proxy-authorization",
-  "te",
-  "trailer",
-  "transfer-encoding",
-  "upgrade",
-]);
-const REQUEST_HEADERS_TO_SKIP = new Set([
-  "authorization",
-  "connection",
-  "content-length",
-  "cookie",
-  "host",
-  "transfer-encoding",
-  "x-forwarded-for",
-  "x-forwarded-host",
-  "x-forwarded-port",
-  "x-forwarded-proto",
-  "x-forwarded-server",
-]);
-const ALLOWED_UMAMI_PROXY_PATHS = new Set(["/script.js", "/api/send"]);
-const ALLOWED_UMAMI_PROXY_METHODS = new Map<string, string[]>([
-  ["/script.js", ["GET", "HEAD"]],
-  ["/api/send", ["POST"]],
-]);
-const ANALYTICS_DISABLED_TRUTHY_VALUES = new Set(["1", "true", "yes", "on"]);
-const UMAMI_SCRIPT_PATTERN =
-  /\s*<script\b[^>]*\ssrc\s*=\s*["']https:\/\/umami\.dakheera47\.com\/script\.js["'][^>]*>\s*<\/script>/gi;
-const OPENPANEL_SCRIPT_PATTERN =
-  /\s*<script>\s*window\.op =[\s\S]*?window\.op\("init", \{[\s\S]*?\n\s*}\);\s*<\/script>\s*<script src="https:\/\/openpanel\.dev\/op1\.js" defer async><\/script>/;
-
-function isStatsRoute(path: string): boolean {
-  return path === "/stats" || path.startsWith("/stats/");
-}
-
-function isAnalyticsDisabled(): boolean {
-  const normalized = process.env.JOBOPS_DISABLE_ANALYTICS?.trim().toLowerCase();
-  return normalized ? ANALYTICS_DISABLED_TRUTHY_VALUES.has(normalized) : false;
-}
-
-function renderHtmlWithAnalyticsConfig(html: string): string {
-  if (!isAnalyticsDisabled()) return html;
-  const withoutAnalytics = html
-    .replace(UMAMI_SCRIPT_PATTERN, "")
-    .replace(OPENPANEL_SCRIPT_PATTERN, "");
-  if (!withoutAnalytics.includes("</head>")) return withoutAnalytics;
-  return withoutAnalytics.replace(
-    "</head>",
-    "    <script>window.__JOBOPS_ANALYTICS_DISABLED__=true;</script>\n  </head>",
-  );
-}
-
-function getUmamiUpstreamUrl(originalUrl: string): URL {
-  const incomingUrl = new URL(originalUrl, "http://localhost");
-  const upstreamUrl = new URL(UMAMI_UPSTREAM_ORIGIN);
-  upstreamUrl.pathname = incomingUrl.pathname.replace(/^\/stats/, "") || "/";
-  upstreamUrl.search = incomingUrl.search;
-  return upstreamUrl;
-}
-
-function isAllowedUmamiProxyPath(pathname: string): boolean {
-  return ALLOWED_UMAMI_PROXY_PATHS.has(pathname);
-}
-
-function getAllowedUmamiMethods(pathname: string): string[] {
-  return ALLOWED_UMAMI_PROXY_METHODS.get(pathname) ?? [];
-}
-
-function isAllowedUmamiMethod(method: string, pathname: string): boolean {
-  return getAllowedUmamiMethods(pathname).includes(method.toUpperCase());
-}
-
-function isUmamiProxyTimeoutError(error: unknown): boolean {
-  if (
-    typeof error === "object" &&
-    error !== null &&
-    "name" in error &&
-    (error.name === "AbortError" || error.name === "TimeoutError")
-  ) {
-    return true;
-  }
-  return (
-    error instanceof Error &&
-    (error.name === "AbortError" || error.name === "TimeoutError")
-  );
-}
-
-function buildUmamiProxyBody(req: express.Request): BodyInit | undefined {
-  if (req.method === "GET" || req.method === "HEAD") return undefined;
-  if (Buffer.isBuffer(req.body)) return new Uint8Array(req.body);
-  if (typeof req.body === "string") return req.body;
-  if (req.body === undefined || req.body === null) return undefined;
-  if (
-    typeof req.body === "object" &&
-    Object.keys(req.body as Record<string, unknown>).length === 0
-  ) {
-    return undefined;
-  }
-  return JSON.stringify(req.body);
-}
-
-function copyUmamiResponseHeaders(
-  upstreamResponse: Response,
-  res: express.Response,
-): void {
-  for (const [key, value] of upstreamResponse.headers.entries()) {
-    if (HOP_BY_HOP_RESPONSE_HEADERS.has(key.toLowerCase())) continue;
-    res.setHeader(key, value);
-  }
-}
-
-function buildUmamiProxyHeaders(req: express.Request): Headers {
-  const headers = new Headers();
-  for (const [key, value] of Object.entries(req.headers)) {
-    if (!value || REQUEST_HEADERS_TO_SKIP.has(key.toLowerCase())) continue;
-    headers.set(key, Array.isArray(value) ? value.join(", ") : value);
-  }
-  return headers;
-}
-
 export function createAuthGuard() {
   const testAuthBypassEnabled =
     process.env.NODE_ENV === "test" &&
@@ -296,10 +167,6 @@ export function createAuthGuard() {
     // OPTIONS is always exempt for CORS preflight.
     if (method.toUpperCase() === "OPTIONS") return false;
 
-    // Umami's public script posts browser beacons to /stats/api/send. The
-    // proxy route still validates method/path before forwarding.
-    if (isStatsRoute(path)) return false;
-
     // Analytics and per-job tracer details are workspace-private.
     if (path.startsWith("/api/tracer-links/analytics")) return true;
     if (path.startsWith("/api/tracer-links/jobs")) return true;
@@ -419,13 +286,7 @@ export function createApp() {
     }
   };
 
-  app.use((req, res, next) => {
-    if (isStatsRoute(req.path)) {
-      next();
-      return;
-    }
-    corsMiddleware(req, res, next);
-  });
+  app.use(corsMiddleware);
   app.use(requestContextMiddleware());
   if (getJobOpsAppConfig().appMode === "hosted") {
     app.use(
@@ -433,7 +294,6 @@ export function createApp() {
       express.raw({ limit: "1mb", type: "application/json" }),
     );
   }
-  app.use("/stats", express.raw({ limit: "1mb", type: "*/*" }));
   app.use(
     "/api/design-resume/assets",
     express.raw({
@@ -504,82 +364,6 @@ export function createApp() {
     await handleTracerRedirect(req, res, slug, "GET /cv/:slug");
   });
 
-  app.all(/^\/stats(?:\/.*)?$/, async (req, res) => {
-    if (isAnalyticsDisabled()) {
-      res.status(404).type("text/plain; charset=utf-8").send("Not found");
-      return;
-    }
-
-    const upstreamUrl = getUmamiUpstreamUrl(req.originalUrl);
-    if (!isAllowedUmamiProxyPath(upstreamUrl.pathname)) {
-      res.status(404).type("text/plain; charset=utf-8").send("Not found");
-      return;
-    }
-    if (!isAllowedUmamiMethod(req.method, upstreamUrl.pathname)) {
-      res
-        .setHeader(
-          "Allow",
-          getAllowedUmamiMethods(upstreamUrl.pathname).join(", "),
-        )
-        .status(405)
-        .type("text/plain; charset=utf-8")
-        .send("Method not allowed");
-      return;
-    }
-
-    try {
-      const upstreamResponse = await fetch(upstreamUrl, {
-        method: req.method,
-        headers: buildUmamiProxyHeaders(req),
-        body: buildUmamiProxyBody(req),
-        redirect: "manual",
-        signal: AbortSignal.timeout(UMAMI_PROXY_TIMEOUT_MS),
-      });
-
-      res.status(upstreamResponse.status);
-      copyUmamiResponseHeaders(upstreamResponse, res);
-
-      if (req.method === "HEAD") {
-        res.end();
-        return;
-      }
-      if (!upstreamResponse.body) {
-        res.end();
-        return;
-      }
-
-      await pipeline(
-        Readable.fromWeb(upstreamResponse.body as NodeReadableStream),
-        res,
-      );
-    } catch (error) {
-      if (isUmamiProxyTimeoutError(error)) {
-        logger.warn("Umami proxy timed out", {
-          route: req.path,
-          method: req.method,
-          upstreamUrl: upstreamUrl.toString(),
-          requestId:
-            (res.getHeader("x-request-id") as string | undefined) ?? undefined,
-        });
-        res
-          .status(504)
-          .type("text/plain; charset=utf-8")
-          .send("Upstream timeout");
-        return;
-      }
-
-      logger.error("Umami proxy failed", {
-        route: req.path,
-        method: req.method,
-        upstreamUrl: upstreamUrl.toString(),
-        requestId:
-          (res.getHeader("x-request-id") as string | undefined) ?? undefined,
-        error: sanitizeUnknown(error),
-      });
-      res.status(502).type("text/plain; charset=utf-8").send("Upstream error");
-    }
-  });
-
   // Health check
   app.get("/health", (_req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
@@ -610,7 +394,7 @@ export function createApp() {
           cachedDocsIndexHtml = await readFile(docsIndexPath, "utf-8");
         }
         res.setHeader("Content-Type", "text/html; charset=utf-8");
-        res.send(renderHtmlWithAnalyticsConfig(cachedDocsIndexHtml));
+        res.send(cachedDocsIndexHtml);
       });
     }
 
@@ -629,7 +413,7 @@ export function createApp() {
         cachedIndexHtml = await readFile(indexPath, "utf-8");
       }
       res.setHeader("Content-Type", "text/html; charset=utf-8");
-      res.send(renderHtmlWithAnalyticsConfig(cachedIndexHtml));
+      res.send(cachedIndexHtml);
     };
 
     // Entry HTML must be rewritten before static middleware can serve it.

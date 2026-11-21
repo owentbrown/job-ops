@@ -1227,6 +1227,22 @@ describe("SettingsPage", () => {
     ).toHaveLength(0);
   });
 
+  it("finds a section by any word shown on it, even part of a word", async () => {
+    vi.mocked(api.getSettings).mockResolvedValue(baseSettings);
+    renderPage();
+
+    const search = await screen.findByLabelText(/search settings/i);
+    // "analytics" only appears in the Tracer Links section's own text.
+    fireEvent.change(search, { target: { value: "anal" } });
+
+    expect(
+      await screen.findAllByRole("button", { name: /tracer links/i }),
+    ).not.toHaveLength(0);
+    expect(
+      screen.queryAllByRole("button", { name: /backups/i }),
+    ).toHaveLength(0);
+  });
+
   it("saves blocked company keywords from scoring settings", async () => {
     vi.mocked(api.getSettings).mockResolvedValue(baseSettings);
     vi.mocked(api.updateSettings).mockResolvedValue({

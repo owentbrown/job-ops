@@ -50,16 +50,6 @@ const config: Config = {
     defaultLocale: "en",
     locales: ["en"],
   },
-  customFields: {
-    umami: {
-      docsBuildDemoMode,
-      defaultWebsiteId: "a3d08b50-443f-4d21-8ebb-9355ba67578b",
-      demoWebsiteId: "7956a54d-63f5-4528-af0f-f823dd421752",
-      proxyBasePath: "/stats",
-      upstreamOrigin: "https://umami.dakheera47.com",
-      standaloneDevPort: "3006",
-    },
-  },
   themes: [
     [
       require.resolve("@easyops-cn/docusaurus-search-local"),

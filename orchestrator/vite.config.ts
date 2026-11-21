@@ -5,6 +5,7 @@ import path from "node:path";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
+import { settingsSearchIndexPlugin } from "./scripts/settings-search-index";
 
 function readAppVersion(): string {
   const packageJsonPath = new URL("./package.json", import.meta.url);
@@ -32,7 +33,20 @@ declare global {
 }
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    settingsSearchIndexPlugin({
+      settingsPageFile: path.resolve(
+        __dirname,
+        "./src/client/pages/SettingsPage.tsx",
+      ),
+      aliases: {
+        "@client": path.resolve(__dirname, "./src/client"),
+        "@": path.resolve(__dirname, "./src"),
+      },
+    }),
+  ],
   test: {
     globals: true,
     environment: "jsdom",

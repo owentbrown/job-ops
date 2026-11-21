@@ -267,23 +267,6 @@ describe.sequential("Auth read-only enforcement", () => {
     expect(res.statusCode).toBe(401);
   });
 
-  it("allows Umami stats beacons without JWT auth", async () => {
-    const { middleware } = createAuthGuard();
-    const req = createMockRequest({
-      method: "POST",
-      path: "/stats/api/send",
-    });
-    const res = createMockResponse();
-    const next = vi.fn() as NextFunction;
-
-    middleware(req, res, next);
-    await new Promise((resolve) => setTimeout(resolve, 0));
-
-    expect(next).toHaveBeenCalledOnce();
-    expect(countUsers).not.toHaveBeenCalled();
-    expect(res.status).not.toHaveBeenCalled();
-  });
-
   it("blocks POST/PATCH/DELETE without auth when authentication is enabled", async () => {
     vi.mocked(countUsers).mockResolvedValue(1);
 

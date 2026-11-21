@@ -57,6 +57,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Settings } from "lucide-react";
 import type React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import settingsSearchIndex from "virtual:settings-search-index";
 import {
   FormProvider,
   type Resolver,
@@ -461,11 +462,29 @@ const SECTION_FIELD_MAP: Record<
   "danger-zone": [],
 };
 
+/**
+ * Matches the section's name, description and keywords, or any text shown on
+ * the section itself (built from the source at build time). Every typed word
+ * must appear somewhere, in any order, and partial words count: "anal" finds
+ * "analytics".
+ */
 function matchesSettingsSearch(
   searchTerm: string,
   item: SettingsSectionDescriptor,
+  pageText: Record<string, string> = settingsSearchIndex,
 ): boolean {
-  return sectionWorkspaceItemMatchesSearch(searchTerm, item);
+  if (sectionWorkspaceItemMatchesSearch(searchTerm, item)) return true;
+  const words = searchTerm.toLowerCase().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return true;
+  const haystack = [
+    item.label,
+    item.description,
+    ...item.searchTerms,
+    pageText[item.id] ?? "",
+  ]
+    .join(" ")
+    .toLowerCase();
+  return words.every((word) => haystack.includes(word));
 }
 
 const getRxResumeValidationFields = (): Array<keyof UpdateSettingsInput> => [

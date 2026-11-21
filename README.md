@@ -194,7 +194,7 @@ Open-source tools and communities that make JobOps possible:
 
 ## Analytics
 
-JobOps includes anonymous usage analytics (Umami) to help improve the product. To opt out, block `umami.dakheera47.com` in your firewall or DNS.
+This fork has no usage analytics: nothing about your use of JobOps is sent to the original author (Umami and OpenPanel were removed).
 
 ## License
 

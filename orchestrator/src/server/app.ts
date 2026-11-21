@@ -379,7 +379,12 @@ export function createApp() {
     const docsIndexPath = join(docsDir, "index.html");
     let cachedDocsIndexHtml: string | null = null;
 
-    if (existsSync(docsIndexPath)) {
+    if (!existsSync(docsIndexPath)) {
+      // This fork doesn't bundle the docs site; send /docs to the online copy.
+      app.get(/^\/docs(?:\/.*)?$/, (_req, res) => {
+        res.redirect(302, "https://jobops.dakheera47.com/docs/");
+      });
+    } else {
       app.use("/docs", express.static(docsDir));
       app.get("/docs/*", async (req, res, next) => {
         if (!req.accepts("html")) {

@@ -61,7 +61,7 @@ describe("AppErrorBoundary", () => {
     expect(issueLink).toHaveAttribute(
       "href",
       expect.stringContaining(
-        "https://github.com/DaKheera47/job-ops/issues/new",
+        "https://github.com/owentbrown/job-ops/issues/new",
       ),
     );
     expect(decodeURIComponent(issueLink.getAttribute("href") ?? "")).toContain(
@@ -470,7 +470,7 @@ describe("AppErrorBoundary", () => {
     const decodedBody = issue.searchParams.get("body") ?? "";
     const decoded = `${decodedTitle}\n${decodedBody}`;
 
-    expect(url).toContain("https://github.com/DaKheera47/job-ops/issues/new");
+    expect(url).toContain("https://github.com/owentbrown/job-ops/issues/new");
     expect(decoded).toContain("apiKey='[redacted]");
     expect(decoded).toContain("password: [redacted]");
     expect(decoded).toContain("token=[redacted]");

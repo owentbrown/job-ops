@@ -742,7 +742,10 @@ describe("SettingsPage", () => {
     expect(await screen.findByText("1.2.3")).toBeInTheDocument();
     expect(screen.getByText(/Update available: 1\.3\.0/)).toBeInTheDocument();
     const docs = screen.getByRole("link", { name: /open documentation/i });
-    expect(docs).toHaveAttribute("href", "/docs");
+    expect(docs).toHaveAttribute(
+      "href",
+      "https://jobops.dakheera47.com/docs/",
+    );
     expect(docs).toHaveAttribute("target", "_blank");
     expect(docs).toHaveAttribute("rel", "noopener noreferrer");
   });

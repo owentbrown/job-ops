@@ -75,9 +75,17 @@ async function startServer() {
 ╚═══════════════════════════════════════════════════════════╝
   `);
 
-    // Initialize visa sponsors service (downloads data if needed, starts scheduler)
+    // Initialize visa sponsors service (downloads data if needed, starts
+    // scheduler). Skipped while "Show visa sponsor information" is off: the
+    // nightly downloads of four countries' registers serve nothing then.
+    // Turning the setting back on takes effect at the next restart.
     try {
-      await initializeVisaSponsors();
+      const showSponsorInfo = await settingsRepo.getSetting("showSponsorInfo");
+      if (showSponsorInfo === "0" || showSponsorInfo === "false") {
+        logger.info("Visa sponsor lists are off; skipping their downloads");
+      } else {
+        await initializeVisaSponsors();
+      }
     } catch (error) {
       logger.warn("Failed to initialize visa sponsors service", {
         error: sanitizeUnknown(error),

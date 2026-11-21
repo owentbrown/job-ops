@@ -1598,6 +1598,7 @@ export const SettingsPage: React.FC = () => {
     toast.success("Discarded unsaved changes");
   };
 
+  const showSponsorInfo = settings?.showSponsorInfo?.value ?? true;
   const visibleNavGroups = useMemo(
     () =>
       SETTINGS_NAV_GROUPS.map((group) => ({
@@ -1605,10 +1606,12 @@ export const SettingsPage: React.FC = () => {
         items: group.items.filter(
           (item) =>
             (item.id !== "billing" || isHostedMode) &&
-            (canEditLlmSettings || item.id !== "model"),
+            (canEditLlmSettings || item.id !== "model") &&
+            // The sponsor lists aren't downloaded while sponsor info is off.
+            (item.id !== "visa-sponsors" || showSponsorInfo),
         ),
       })).filter((group) => group.items.length > 0),
-    [canEditLlmSettings, isHostedMode],
+    [canEditLlmSettings, isHostedMode, showSponsorInfo],
   );
 
   const filteredNavGroups = useMemo(

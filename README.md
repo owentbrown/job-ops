@@ -1,213 +1,57 @@
-<div align="center">
+# JobOps (personal fork)
 
-# Job<span>Ops</span>
+A personal, self-hosted fork of [JobOps](https://github.com/DaKheera47/job-ops) by Shaheer Sarfaraz. It searches job boards every morning, filters and scores what it finds against a profile, writes tailored CVs and cover letters, and tracks applications through to replies.
 
-**One search across every board. One click to tailor your CV. One place to track it all.**
+This fork runs on one Mac in Docker and is used from a laptop and an iPhone. It is not a distribution: there are no published images or releases, and nothing is sent to the original author.
 
-Your ironman suit for job hunting. You still apply to every job yourself. JobOps just makes you ten times faster.
+## What's different from upstream
 
-<br>
+- **Search runs:** a daily schedule that retries when the Mac wakes offline, phone alerts (ntfy) when a site asks for a human check, a 5-minute wait before skipping that site, and per-source timeouts that keep partial results.
+- **Filtering before scoring:** pre-score rules, a real "Filtered out" list with counts, and reason chips for skips.
+- **Duplicates:** tracking parameters are stripped from job links, reposts are dropped on import, and employer names are matched loosely ("Sonova AG" = "Sonova").
+- **Job page:** "Other roles at this company", and a company panel with the Indeed rating, review links and an optional AI company check.
+- **Documents:** per-job experience bullets in tailored CVs, one-page cover letters, and sent CVs and letters kept exactly as sent.
+- **Profile:** About you (pitch, stories, values, brand) with AI drafts, and a skill map.
+- **Phones:** swipe between job lists, and layouts that fit a phone screen.
+- **Spend:** estimated AI cost per run, task and job.
+- **Settings search:** finds any word shown on a settings page.
+- **Privacy:** Umami and OpenPanel analytics are removed, and the update check no longer calls GitHub.
 
-<a href="https://trendshift.io/repositories/22756" target="_blank"><img src="https://trendshift.io/api/badge/repositories/22756" alt="DaKheera47%2Fjob-ops | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/></a>
+## Running it
 
-[![Stars](https://img.shields.io/github/stars/DaKheera47/job-ops?style=social)](https://github.com/DaKheera47/job-ops)
-[![GHCR](https://img.shields.io/badge/docker-ghcr.io-blue?logo=docker&logoColor=white)](https://github.com/DaKheera47/job-ops/pkgs/container/job-ops)
-[![Release](https://github.com/DaKheera47/job-ops/actions/workflows/ghcr.yml/badge.svg)](https://github.com/DaKheera47/job-ops/actions/workflows/ghcr.yml)
-[![Contributors](https://img.shields.io/github/contributors-anon/dakheera47/job-ops)](https://github.com/DaKheera47/job-ops/graphs/contributors)
-
-<br>
-
-800+ users · 4,000+ job searches run · #3 on GitHub Trending for TypeScript
-
-<br>
-
-<img width="1200" height="600" alt="JobOps Dashboard" src="https://github.com/user-attachments/assets/14fdc392-0e96-43be-bc1f-cf819ab2afc4" />
-
-</div>
-
----
-
-## What is JobOps?
-
-JobOps searches LinkedIn, Indeed, Glassdoor and 10+ job boards from one screen, rewrites your CV for each role, scores your fit, checks visa sponsorship status, and tracks every application in one place.
-
-It does not auto-apply. Recruiters can tell when applications are automated and it gets you blacklisted. JobOps gives you the speed without sacrificing quality.
-
-<div align="center">
-
-https://github.com/user-attachments/assets/ec5bc249-aad5-41f2-b1ff-f7b3b6e6f7b8
-
-</div>
-
----
-
-## Quick Start
-
-Prefer a guided walkthrough? Follow the [Self-Hosting Guide](https://jobops.dakheera47.com/docs/getting-started/self-hosting).
+Requirements: Docker (OrbStack on macOS) and an API key for an AI provider.
 
 ```bash
-git clone https://github.com/DaKheera47/job-ops.git
-cd job-ops
-docker compose up -d
+GITHUB_TOKEN=unused docker compose up -d --build
 ```
 
-Open `http://localhost:3005` and follow the onboarding wizard. You'll be searching in under 10 minutes.
+The app is served at `http://localhost:3005`. `docker-compose.override.yml` builds the image as `job-ops:local`, keeps the SQLite database on the `jobops-db` Docker volume and mounts `./config` for the pre-score rules. Files such as PDFs and daily backups go in `./data`.
 
-Sign-in uses JobOps accounts by default, and can also use Google, GitHub, or any OpenID Connect provider — see the [SSO Setup Guide](https://jobops.dakheera47.com/docs/next/getting-started/sso-setup).
+Optional settings in `.env`:
 
----
+- `NTFY_TOPIC`: the ntfy topic for phone alerts (`NTFY_SERVER` overrides ntfy.sh).
+- `JOBOPS_PUBLIC_URL`: the address the phone opens when an alert is tapped.
 
-## How It Works
+### Deploying a change
 
-| Step | What happens |
-|------|-------------|
-| **Search** | Scrapes 10+ job boards for roles matching your criteria |
-| **Score** | AI ranks each job 0-100 against your profile |
-| **Tailor** | Generates a rewritten CV matched to each job description |
-| **Export** | Creates a polished PDF locally, or via [Reactive Resume](https://rxresu.me) |
-| **Track** | Connects to Gmail and auto-detects interviews, offers, and rejections |
+1. Check that no search run is in progress (`docker logs --since 10m job-ops | grep "Starting pipeline run"`).
+2. Build: `GITHUB_TOKEN=unused docker compose build`.
+3. Stop with `docker stop -t 30 job-ops`, then back up `jobs.db`, `jobs.db-wal` and `jobs.db-shm` from the `jobops-db` volume.
+4. Start: `docker rm -f job-ops && GITHUB_TOKEN=unused docker compose up -d --no-build`.
 
----
+## Development
 
-## Supported Job Boards
+Node 22 or later (24 works). From the repo root:
 
-| Platform | Focus |
-|----------|-------|
-| LinkedIn | Global |
-| Indeed | Global |
-| Glassdoor | Global |
-| Adzuna | Multi-country API |
-| Hiring Cafe | Global |
-| startup.jobs | Startup/remote roles |
-| Working Nomads | Remote-only |
-| Gradcracker | STEM/Grads (UK) |
-| UK Visa Jobs | Sponsorship (UK) |
-| Golang Jobs | Go developers |
-| Seek | Australia/NZ (via Apify) |
-| WUZZUF | Egypt (Job Board) |
-| Khamsat | Egypt (Freelance) |
+```bash
+npm ci
+npm --workspace orchestrator run dev
+```
 
-Custom extractors can be added via TypeScript. See the [extractor docs](https://jobops.dakheera47.com/docs/extractors/overview).
-
----
-
-## Post-Application Tracking
-
-Connect your Gmail and JobOps watches for recruiter replies automatically.
-
-- *"We'd like to invite you to interview..."* → Status updates to **Interviewing**
-- *"Unfortunately we won't be progressing..."* → Status updates to **Rejected**
-
-No manual updates. No spreadsheets. See the [tracking docs](https://jobops.dakheera47.com/docs/features/post-application-tracking) for setup.
-
----
-
-## AI Providers
-
-JobOps works with the model provider you already use:
-
-- Atlas Cloud
-- LiteLLM (self-hosted gateway to 100+ providers: Bedrock, Azure, Vertex AI, and more)
-- Codex (local app-server in Docker, authenticated with `codex login`)
-- OpenAI
-- Claude (Anthropic)
-- GLM / Zhipu AI
-- Google Gemini
-- OpenRouter
-- Requesty
-- [API Route](https://www.api-route.com/)
-- Any OpenAI-compatible endpoint (Ollama, LM Studio, etc.)
-
----
-
-## Cloud
-
-Don't want to self-host? JobOps Cloud gives you your own hosted instance with nothing to install.
-
-<div align="center">
-
-| | BYOK | Zero Setup |
-|---|:---:|:---:|
-| **Price** | £20/month | £30/month |
-| **All features** | ✓ | ✓ |
-| **Your own instance** | ✓ | ✓ |
-| **Managed updates** | ✓ | ✓ |
-| **AI provider** | Bring your own key | Included, no config needed |
-| | [Get Started](https://buy.stripe.com/bJeeVc67v9S42AFeWj4c800) | [Get Started](https://buy.stripe.com/dRmbJ0cvT2pC2AF6pN4c801) |
-
-</div>
-
-Hosted instances may enforce per-user monthly quotas for expensive actions
-such as searches, AI tailoring, Ghostwriter generations, and PDF exports. When a
-hosted quota is exhausted, the action is blocked with a clear API error; local
-self-hosted/default mode is unaffected unless hosted quotas are explicitly
-enabled.
-
-Self-hosted will always be free and open source.
-
----
-
-## Documentation
-
-- [Documentation Home](https://jobops.dakheera47.com/docs/)
-- [Self-Hosting Guide](https://jobops.dakheera47.com/docs/getting-started/self-hosting)
-- [Feature Overview](https://jobops.dakheera47.com/docs/features/overview)
-- [Orchestrator Pipeline](https://jobops.dakheera47.com/docs/features/orchestrator)
-- [Extractor System](https://jobops.dakheera47.com/docs/extractors/overview)
-- [Troubleshooting](https://jobops.dakheera47.com/docs/troubleshooting/common-problems)
-
----
-
-## Contributing
-
-Contributions are welcome. Whether it's code, docs, or new extractors, start with [`CONTRIBUTING.md`](./CONTRIBUTING.md).
-
-<a href="https://github.com/DaKheera47/job-ops/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=DaKheera47/job-ops" />
-</a>
-
----
-
-## Special Thanks
-
-Open-source tools and communities that make JobOps possible:
-
-- [jobspy](https://github.com/Bunsly/JobSpy) — Python-based multi-source job scraping library powering the jobspy extractor
-
----
-
-## Star History
-
-<div align="center">
-
-<a href="https://star-history.dera.page/#DaKheera47/job-ops&type=date&legend=top-left">
-<picture>
-<source media="(prefers-color-scheme: dark)" srcset="https://star-history.dera.page/svg?repos=DaKheera47/job-ops&type=date&theme=dark&legend=top-left" />
-<source media="(prefers-color-scheme: light)" srcset="https://star-history.dera.page/svg?repos=DaKheera47/job-ops&type=date&legend=top-left" />
-<img alt="Star History Chart" src="https://star-history.dera.page/svg?repos=DaKheera47/job-ops&type=date&legend=top-left" />
-</picture>
-</a>
-
-</div>
-
----
-
-## Analytics
-
-This fork has no usage analytics: nothing about your use of JobOps is sent to the original author (Umami and OpenPanel were removed).
+Tests: `npm --workspace orchestrator test`. Upstream's documentation still applies to most features: [jobops.dakheera47.com/docs](https://jobops.dakheera47.com/docs/).
 
 ## License
 
-**AGPLv3 + Commons Clause**
+**AGPLv3 + Commons Clause**, inherited from upstream. You can self-host, use and modify JobOps freely. You cannot sell the software itself or offer paid hosted services whose value substantially comes from JobOps. See [LICENSE](LICENSE).
 
-You can self-host, use, and modify JobOps freely. You cannot sell the software itself or offer paid hosted services whose value substantially comes from JobOps. See [LICENSE](LICENSE).
-
----
-
-<div align="center">
-
-Built by [Shaheer Sarfaraz](https://github.com/DaKheera47)
-
-[Website](https://jobops.app) · [Cloud](https://jobops.app) · [Documentation](https://jobops.dakheera47.com/docs/) · [Ko-fi](https://ko-fi.com/shaheersarfaraz)
-
-</div>
+Original project built by [Shaheer Sarfaraz](https://github.com/DaKheera47/job-ops).

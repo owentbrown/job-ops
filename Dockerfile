@@ -130,11 +130,6 @@ COPY extractors/browser-utils ./extractors/browser-utils
 # ============================================================================
 # PARALLEL BUILD STAGES
 # ============================================================================
-FROM build-sources AS docs-build
-
-WORKDIR /app/docs-site
-RUN npm run build
-
 FROM build-sources AS client-build
 
 WORKDIR /app/orchestrator
@@ -247,7 +242,6 @@ COPY --from=camoufox-cache /root/.cache/camoufox /root/.cache/camoufox
 
 # Copy built assets and runtime source code.
 COPY --from=client-build /app/orchestrator/dist ./orchestrator/dist
-COPY --from=docs-build /app/docs-site/build ./orchestrator/dist/docs
 COPY shared ./shared
 COPY orchestrator ./orchestrator
 COPY career-boards/bamboohr ./career-boards/bamboohr

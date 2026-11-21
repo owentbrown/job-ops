@@ -1,17 +1,7 @@
 declare const __APP_VERSION__: string;
 
-export const GITHUB_REPO = "DaKheera47/job-ops";
-const STORAGE_KEY = "jobops_version_check";
-const CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000; // 24 hours
-
-function canUseStorage(): boolean {
-  return (
-    typeof localStorage !== "undefined" &&
-    typeof localStorage.getItem === "function" &&
-    typeof localStorage.setItem === "function"
-  );
-}
-
+/** This fork. Crash reports and version links point here, not upstream. */
+export const GITHUB_REPO = "owentbrown/job-ops";
 export interface VersionCheckResult {
   currentVersion: string;
   latestVersion: string | null;
@@ -42,64 +32,16 @@ export function getCurrentAppVersion(): string {
 }
 
 /**
- * Check for updates against GitHub releases API.
- * Results are cached for 24 hours to avoid rate limits.
+ * Update check. This fork is deployed from its own main branch and publishes
+ * no GitHub releases, so comparing against upstream's releases would only nag
+ * about versions that aren't in the fork. It reports the running version and
+ * never calls GitHub.
  */
 export async function checkForUpdate(): Promise<VersionCheckResult> {
-  const currentVersion = getCurrentAppVersion();
-
-  // Check cached result
-  const cached = canUseStorage() ? localStorage.getItem(STORAGE_KEY) : null;
-  if (cached) {
-    try {
-      const parsed: VersionCheckResult = JSON.parse(cached);
-      const timeSinceCheck = Date.now() - parsed.lastChecked;
-      if (timeSinceCheck < CHECK_INTERVAL_MS) {
-        return { ...parsed, currentVersion };
-      }
-    } catch {
-      // Invalid cache, continue to fetch
-    }
-  }
-
-  try {
-    const response = await fetch(
-      `https://api.github.com/repos/${GITHUB_REPO}/releases/latest`,
-    );
-    if (!response.ok) throw new Error("Failed to fetch");
-
-    const data: unknown = await response.json();
-    if (
-      !data ||
-      typeof data !== "object" ||
-      typeof (data as { tag_name?: unknown }).tag_name !== "string" ||
-      !(data as { tag_name: string }).tag_name.trim()
-    ) {
-      throw new Error("Invalid response format");
-    }
-    const latestVersion = parseVersion((data as { tag_name: string }).tag_name);
-
-    const updateAvailable =
-      currentVersion !== "unknown" && latestVersion !== currentVersion;
-
-    const result: VersionCheckResult = {
-      currentVersion,
-      latestVersion,
-      updateAvailable,
-      lastChecked: Date.now(),
-    };
-
-    if (canUseStorage()) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(result));
-    }
-    return result;
-  } catch {
-    // On error, return current version with no update info
-    return {
-      currentVersion,
-      latestVersion: null,
-      updateAvailable: false,
-      lastChecked: Date.now(),
-    };
-  }
+  return {
+    currentVersion: getCurrentAppVersion(),
+    latestVersion: null,
+    updateAvailable: false,
+    lastChecked: Date.now(),
+  };
 }

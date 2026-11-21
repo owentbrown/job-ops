@@ -9,7 +9,9 @@ services:
       dockerfile: Dockerfile
       secrets:
         - github_token
-    image: ghcr.io/dakheera47/job-ops:latest
+    # This fork is always built locally; never pull the upstream image.
+    image: job-ops:local
+    pull_policy: build
     container_name: job-ops
     ports:
       - "3005:3001"

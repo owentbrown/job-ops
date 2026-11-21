@@ -26,7 +26,7 @@ export const AboutSettingsSection: React.FC<AboutSettingsSectionProps> = ({
           <p className="text-xs text-muted-foreground">
             Update available{latestVersion ? `: ${latestVersion}` : ""}.{" "}
             <a
-              href="https://github.com/DaKheera47/job-ops/releases"
+              href="https://github.com/owentbrown/job-ops/commits/main"
               target="_blank"
               rel="noopener noreferrer"
               className="underline underline-offset-2 hover:text-foreground"
@@ -40,7 +40,11 @@ export const AboutSettingsSection: React.FC<AboutSettingsSectionProps> = ({
       <div className="space-y-2">
         <div className="text-sm font-medium">Documentation</div>
         <Button asChild variant="outline" size="sm" className="gap-1.5">
-          <a href="/docs" target="_blank" rel="noopener noreferrer">
+          <a
+            href="https://jobops.dakheera47.com/docs/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             Open documentation
             <ExternalLink className="h-3.5 w-3.5" />
           </a>

@@ -80,6 +80,7 @@ export const queryKeys = {
     documents: (id: string) =>
       [...queryKeys.jobs.all, "documents", id] as const,
     related: (id: string) => [...queryKeys.jobs.all, "related", id] as const,
+    company: (id: string) => [...queryKeys.jobs.all, "company", id] as const,
     emails: (id: string, limit: number) =>
       [...queryKeys.jobs.all, "emails", id, { limit }] as const,
   },

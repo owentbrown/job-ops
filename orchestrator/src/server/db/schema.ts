@@ -1238,6 +1238,7 @@ export const llmUsage = sqliteTable(
     outputTokens: integer("output_tokens").notNull().default(0),
     cacheWriteTokens: integer("cache_write_tokens").notNull().default(0),
     cacheReadTokens: integer("cache_read_tokens").notNull().default(0),
+    extraCostUsd: real("extra_cost_usd").notNull().default(0),
     success: integer("success", { mode: "boolean" }).notNull().default(true),
   },
   (table) => ({
@@ -1247,5 +1248,23 @@ export const llmUsage = sqliteTable(
     ),
     jobIndex: index("idx_llm_usage_job").on(table.jobId),
     runIndex: index("idx_llm_usage_run").on(table.pipelineRunId),
+  }),
+);
+
+/** Cached AI "Company check" results, one per normalised employer name. */
+export const companyChecks = sqliteTable(
+  "company_checks",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id").notNull().default("tenant_default"),
+    employerKey: text("employer_key").notNull(),
+    payload: text("payload").notNull(),
+    createdAt: text("created_at").notNull(),
+  },
+  (table) => ({
+    tenantEmployerIndex: uniqueIndex("idx_company_checks_tenant_employer").on(
+      table.tenantId,
+      table.employerKey,
+    ),
   }),
 );

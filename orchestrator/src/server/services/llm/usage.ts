@@ -27,6 +27,7 @@ export const LLM_FEATURES = [
   "email_triage",
   "profile_skills",
   "profile_writing",
+  "company_check",
   "other",
 ] as const;
 
@@ -105,6 +106,8 @@ export function recordLlmUsage(args: {
   jobId?: string;
   usage: TokenUsage;
   success: boolean;
+  /** Fees charged per call rather than per token (e.g. web search), USD. */
+  extraCostUsd?: number;
 }): void {
   try {
     const ctx = getRequestContext();
@@ -123,6 +126,7 @@ export function recordLlmUsage(args: {
         outputTokens: args.usage.outputTokens,
         cacheWriteTokens: args.usage.cacheWriteTokens,
         cacheReadTokens: args.usage.cacheReadTokens,
+        extraCostUsd: args.extraCostUsd ?? 0,
         success: args.success,
       })
       .run();

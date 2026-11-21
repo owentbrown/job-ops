@@ -194,6 +194,58 @@ export interface RelatedJobsResponse {
   items: RelatedJob[];
 }
 
+/** Facts about the employer taken from an Indeed listing we already saved. */
+export interface CompanyIndeedFacts {
+  rating: number;
+  reviewsCount: number | null;
+  /** The company's Indeed page (reviews live there). */
+  indeedUrl: string | null;
+  website: string | null;
+  employees: string | null;
+  industry: string | null;
+}
+
+export interface CompanyReviewLink {
+  label: string;
+  url: string;
+}
+
+export interface CompanyCheckRating {
+  /** e.g. "Glassdoor", "Indeed". */
+  source: string;
+  /** Out of 5. */
+  rating: number | null;
+  reviewCount: number | null;
+  url: string | null;
+}
+
+/** AI web-search summary of what employees and the news say about a company. */
+export interface CompanyCheck {
+  employer: string;
+  summary: string;
+  ratings: CompanyCheckRating[];
+  pros: string[];
+  cons: string[];
+  /** Recent layoffs, reorgs, lawsuits and similar, with rough dates. */
+  redFlags: string[];
+  /** Pages the web search actually returned. */
+  sources: CompanyReviewLink[];
+  checkedAt: string;
+  model: string;
+  searches: number;
+  /** Rough cost of this check in USD (tokens + search fees). */
+  costUsd: number;
+}
+
+export interface CompanyInfoResponse {
+  employer: string;
+  indeed: CompanyIndeedFacts | null;
+  links: CompanyReviewLink[];
+  check: CompanyCheck | null;
+  /** Why "Company check" can't run (e.g. no Anthropic key); null when it can. */
+  checkUnavailableReason: string | null;
+}
+
 export interface JobBrief {
   role_summary: string;
   they_want: string[];

@@ -105,7 +105,7 @@ export async function buildSpendReport(args: {
   for (const row of rows) {
     const price = findModelPrice(row.model, prices);
     if (!price) unpriced.add(row.model);
-    const cost = price ? costOf(row, price) : 0;
+    const cost = (price ? costOf(row, price) : 0) + (row.extraCostUsd ?? 0);
 
     add(totals, row, cost);
 
@@ -239,7 +239,9 @@ export async function getRunCosts(
       if (!row.pipelineRunId) continue;
       const price = findModelPrice(row.model, prices);
       out[row.pipelineRunId] =
-        (out[row.pipelineRunId] ?? 0) + (price ? costOf(row, price) : 0);
+        (out[row.pipelineRunId] ?? 0) +
+        (price ? costOf(row, price) : 0) +
+        (row.extraCostUsd ?? 0);
     }
   }
   return out;

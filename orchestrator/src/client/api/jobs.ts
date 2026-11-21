@@ -1,6 +1,7 @@
 import type {
   ApplicationStage,
   ApplicationTask,
+  CompanyInfoResponse,
   Job,
   JobActionRequest,
   JobActionResponse,
@@ -163,6 +164,21 @@ export async function getJobEmails(
       limit: options?.limit,
     }),
   );
+}
+
+export async function getCompanyInfo(id: string): Promise<CompanyInfoResponse> {
+  return fetchApi<CompanyInfoResponse>(`/jobs/${id}/company`, {
+    cache: "no-store",
+  });
+}
+
+/** Runs the paid AI company check (a few cents) and returns fresh info. */
+export async function runCompanyCheck(
+  id: string,
+): Promise<CompanyInfoResponse> {
+  return fetchApi<CompanyInfoResponse>(`/jobs/${id}/company/check`, {
+    method: "POST",
+  });
 }
 
 export async function getRelatedJobs(id: string): Promise<RelatedJobsResponse> {

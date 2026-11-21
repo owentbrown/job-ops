@@ -89,6 +89,7 @@ import {
 } from "../components/LogEventModal";
 import { getDeleteEventDescription } from "./job/deleteEventDescription";
 import { JobTimeline } from "./job/Timeline";
+import { CompanyCard } from "./job-page/CompanyCard";
 import { CoverLetterPanel } from "./job-page/CoverLetterPanel";
 import { JobDocumentsPanel } from "./job-page/JobDocumentsPanel";
 import { JobEmailsPanel } from "./job-page/JobEmailsPanel";
@@ -656,6 +657,8 @@ export const JobPage: React.FC = () => {
           <div className="space-y-4">
             {activeMemoryView === "overview" && (
               <section className="space-y-4">
+                <CompanyCard jobId={job.id} />
+
                 <RelatedJobsCard
                   key={job.id}
                   jobId={job.id}

@@ -29,6 +29,7 @@
     "appearance:css": "tsx scripts/generate-appearance-css.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "1.6.0",
     "@hookform/resolvers": "^5.4.0",
     "@iconify-json/tabler": "^1.2.35",
     "@iconify/react": "^6.0.2",

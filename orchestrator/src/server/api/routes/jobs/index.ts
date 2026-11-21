@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { jobsActionsRouter } from "./actions";
 import { jobsApplicationRouter } from "./application";
+import { jobsCompanyRouter } from "./company";
 import { jobsCoverLetterRouter } from "./cover-letter";
 import { jobsDocumentsRouter } from "./documents";
 import { jobsMaintenanceRouter } from "./maintenance";
@@ -14,6 +15,7 @@ export const jobsRouter = Router();
 jobsRouter.use(jobsReadRouter);
 jobsRouter.use(jobsActionsRouter);
 jobsRouter.use(jobsNotesRouter);
+jobsRouter.use(jobsCompanyRouter);
 jobsRouter.use(jobsStagesRouter);
 jobsRouter.use(jobsDocumentsRouter);
 jobsRouter.use(jobsCoverLetterRouter);

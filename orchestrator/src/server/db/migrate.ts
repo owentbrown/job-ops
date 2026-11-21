@@ -1337,6 +1337,19 @@ const migrations = [
   `CREATE INDEX IF NOT EXISTS idx_llm_usage_tenant_created ON llm_usage(tenant_id, created_at)`,
   `CREATE INDEX IF NOT EXISTS idx_llm_usage_job ON llm_usage(job_id)`,
   `CREATE INDEX IF NOT EXISTS idx_llm_usage_run ON llm_usage(pipeline_run_id)`,
+  // Fees charged per call rather than per token (e.g. web search), in USD.
+  `ALTER TABLE llm_usage ADD COLUMN extra_cost_usd REAL NOT NULL DEFAULT 0`,
+
+  // Cached "Company check" results (AI web-search review summaries), one per
+  // normalised employer name.
+  `CREATE TABLE IF NOT EXISTS company_checks (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL DEFAULT 'tenant_default',
+    employer_key TEXT NOT NULL,
+    payload TEXT NOT NULL,
+    created_at TEXT NOT NULL
+  )`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS idx_company_checks_tenant_employer ON company_checks(tenant_id, employer_key)`,
 ];
 
 console.log("🔧 Running database migrations...");
@@ -1370,7 +1383,8 @@ for (const migration of migrations) {
           .includes("alter table job_chat_threads add column") ||
         migration
           .toLowerCase()
-          .includes("alter table analytics_install_state add column")) &&
+          .includes("alter table analytics_install_state add column") ||
+        migration.toLowerCase().includes("alter table llm_usage add column")) &&
       message.toLowerCase().includes("duplicate column name");
 
     if (isDuplicateColumn) {

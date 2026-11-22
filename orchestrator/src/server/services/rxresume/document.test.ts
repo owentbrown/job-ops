@@ -91,7 +91,7 @@ describe("prepareReactiveResumeV5DocumentForExternalUse", () => {
     ).toThrow();
   });
 
-  it("preserves current inline links and migrates the legacy JobOps option", () => {
+  it("preserves current inline links and migrates the legacy Offerloop option", () => {
     const document = buildDefaultReactiveResumeDocument();
     document.sections = {
       ...(document.sections as Record<string, unknown>),

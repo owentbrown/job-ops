@@ -837,7 +837,7 @@ export const AutomaticRunTab: React.FC<AutomaticRunTabProps> = ({
                   Configure your search
                 </h1>
                 <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-                  Tell Job Ops what matters, review the plan, then search your
+                  Tell Offerloop what matters, review the plan, then search your
                   selected sources.
                 </p>
               </div>

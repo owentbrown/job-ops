@@ -64,7 +64,7 @@ async function startServer() {
     console.log(`
 ╔═══════════════════════════════════════════════════════════╗
 ║                                                           ║
-║   🚀 Job Ops Orchestrator                                 ║
+║   🚀 Offerloop                                            ║
 ║                                                           ║
 ║   Server running at: http://localhost:${PORT}               ║
 ║                                                           ║
@@ -159,7 +159,6 @@ async function startServer() {
         error: sanitizeUnknown(error),
       });
     }
-
   });
   attachChallengeViewerUpgradeProxy(server);
 }

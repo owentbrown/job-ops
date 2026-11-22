@@ -142,7 +142,9 @@ describe("PersistentSidebar", () => {
       "text-sidebar-foreground",
       "border-r-(length:--sidebar-border-width)",
     );
-    expect(screen.getByText("JobOps")).toHaveAttribute("data-sidebar-brand");
+    expect(
+      screen.getByText("Offerloop").closest("[data-sidebar-brand]"),
+    ).not.toBeNull();
 
     const active = within(nav).getByRole("button", { name: "Overview" });
     expect(active).toHaveAttribute("data-sidebar-item");

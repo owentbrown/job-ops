@@ -240,7 +240,7 @@ export const emptyStateCopy: Record<FilterTab, string> = {
   ready: "Run a search to discover and process new jobs.",
   discovered: "All discovered jobs have been processed.",
   filtered: "Nothing has been filtered out.",
-  all: "No jobs in the system yet. Run a search to get started.",
+  all: "Tailored job search and matching, from first search to signed offer. Run a search to get started.",
 };
 
 export const dateFilterDimensionLabels: Record<DateFilterDimension, string> = {

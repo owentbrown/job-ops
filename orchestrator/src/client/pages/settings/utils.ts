@@ -124,9 +124,9 @@ const PROVIDER_HINTS: Record<LlmProviderId, string> = {
   glm: "GLM uses the Z.AI chat completions API (OpenAI-compatible) with your API key.",
   gemini: "Gemini uses the native AI Studio API and requires a key.",
   gemini_cli:
-    "Gemini (CLI) runs the official Google Gemini CLI on this host using your OAuth session or CLI API key — no JobOps LLM key.",
+    "Gemini (CLI) runs the official Google Gemini CLI on this host using your OAuth session or CLI API key — no Offerloop LLM key.",
   claude_cli:
-    "Claude (CLI) runs the official Claude Code CLI on this host using your subscription token or API key — no JobOps LLM key.",
+    "Claude (CLI) runs the official Claude Code CLI on this host using your subscription token or API key — no Offerloop LLM key.",
   codex:
     "Codex runs through a local app-server process and uses your Codex login session.",
 };

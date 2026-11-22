@@ -1,3 +1,4 @@
+import settingsSearchIndex from "virtual:settings-search-index";
 import * as api from "@client/api";
 import { AppearanceControls } from "@client/components/appearance/AppearanceControls";
 import { PageHeader } from "@client/components/layout";
@@ -57,8 +58,6 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Settings } from "lucide-react";
 import type React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import settingsSearchIndex from "virtual:settings-search-index";
-import { HIDDEN_SETTINGS_SECTIONS } from "@/client/lib/fork-features";
 import {
   FormProvider,
   type Resolver,
@@ -70,6 +69,7 @@ import { toast } from "sonner";
 import { useQueryErrorToast } from "@/client/hooks/useQueryErrorToast";
 import { formatUserFacingError } from "@/client/lib/error-format";
 import { showErrorToast } from "@/client/lib/error-toast";
+import { HIDDEN_SETTINGS_SECTIONS } from "@/client/lib/fork-features";
 import { queryKeys } from "@/client/lib/queryKeys";
 import { Button } from "@/components/ui/button";
 import { FilteredJobsPage } from "./FilteredJobsPage";
@@ -377,7 +377,7 @@ const SETTINGS_NAV_GROUPS: SettingsNavGroup[] = [
     items: [
       {
         id: "about",
-        label: "About JobOps",
+        label: "About Offerloop",
         description: "Version, updates and documentation.",
         searchTerms: ["version", "update", "docs", "documentation", "about"],
       },
@@ -1494,7 +1494,7 @@ export const SettingsPage: React.FC = () => {
           clearErrors(getRxResumeValidationFields());
           if (isRxResumeAvailabilityValidationFailure(validation)) {
             rxResumeSaveWarningMessage =
-              "Settings saved, but JobOps could not verify Reactive Resume because the instance is unavailable.";
+              "Settings saved, but Offerloop could not verify Reactive Resume because the instance is unavailable.";
           }
         }
       }

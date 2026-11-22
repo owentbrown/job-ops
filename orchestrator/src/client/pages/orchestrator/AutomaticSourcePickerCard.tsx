@@ -86,7 +86,7 @@ export function AutomaticSourcePickerCard({
             4
           </span>
           <div className="flex min-w-0 flex-col gap-1">
-            <CardTitle>Where should Job Ops search?</CardTitle>
+            <CardTitle>Where should Offerloop search?</CardTitle>
             <CardDescription>
               Review the sources that are ready for this location and search.
             </CardDescription>

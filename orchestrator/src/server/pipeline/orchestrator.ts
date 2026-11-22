@@ -540,7 +540,7 @@ export async function runPipeline(
           .join(", ");
         void sendPhoneAlert({
           title: `${siteNames} needs a quick check`,
-          message: `A job search is waiting for you to pass ${siteNames}'s "are you human" check. Open JobOps within ${waitMinutes} minute${waitMinutes === 1 ? "" : "s"}, or the search skips it this time.`,
+          message: `A job search is waiting for you to pass ${siteNames}'s "are you human" check. Open Offerloop within ${waitMinutes} minute${waitMinutes === 1 ? "" : "s"}, or the search skips it this time.`,
           path: "/jobs/ready",
         });
 

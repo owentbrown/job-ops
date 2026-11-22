@@ -177,7 +177,7 @@ describe("normalizeResumeJsonToLatexDocument", () => {
             {
               id: "pub-1",
               hidden: false,
-              title: "Scaling JobOps",
+              title: "Scaling Offerloop",
               publisher: "InfoQ",
               date: "2022",
               description: "Architecture write-up",

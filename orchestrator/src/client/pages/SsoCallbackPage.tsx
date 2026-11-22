@@ -115,7 +115,7 @@ export const SsoCallbackPage: React.FC = () => {
             </CardTitle>
             <CardDescription>
               {errorMessage
-                ? "JobOps could not finish the handover from your identity provider."
+                ? "Offerloop could not finish the handover from your identity provider."
                 : "Completing the handover from your identity provider."}
             </CardDescription>
           </CardHeader>

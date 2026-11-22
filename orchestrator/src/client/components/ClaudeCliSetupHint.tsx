@@ -5,7 +5,7 @@ const AUTH_DOC = "https://code.claude.com/docs/en/authentication";
 
 /**
  * Explains how to authenticate the Claude Code CLI (subscription token or API
- * key), which JobOps uses when LLM_PROVIDER is `claude_cli`.
+ * key), which Offerloop uses when LLM_PROVIDER is `claude_cli`.
  */
 export const ClaudeCliSetupHint: React.FC = () => {
   return (
@@ -30,8 +30,8 @@ export const ClaudeCliSetupHint: React.FC = () => {
         </code>
         , or set{" "}
         <code className="rounded bg-muted px-1 py-0.5">ANTHROPIC_API_KEY</code>{" "}
-        instead. JobOps spawns the CLI in headless mode and reuses that
-        authentication — no JobOps API key field.
+        instead. Offerloop spawns the CLI in headless mode and reuses that
+        authentication — no Offerloop API key field.
       </p>
       <p className="mt-2">
         <a

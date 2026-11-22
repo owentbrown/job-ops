@@ -422,7 +422,7 @@ describe.sequential("Settings API routes", () => {
       mode: "v5",
       status: 0,
       message:
-        "JobOps could not verify Reactive Resume because the instance is unavailable.",
+        "Offerloop could not verify Reactive Resume because the instance is unavailable.",
     });
 
     const res = await fetch(`${baseUrl}/api/settings`, {

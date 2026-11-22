@@ -1,4 +1,8 @@
-# JobOps (personal fork)
+# Offerloop (personal fork)
+
+<img src="orchestrator/public/offerloop-mark.svg" alt="Offerloop" width="64" />
+
+**Tailor your search. Close the loop. Land the offer.**
 
 A personal, self-hosted fork of [JobOps](https://github.com/DaKheera47/job-ops) by Shaheer Sarfaraz. It searches job boards every morning, filters and scores what it finds against a profile, writes tailored CVs and cover letters, and tracks applications through to replies.
 

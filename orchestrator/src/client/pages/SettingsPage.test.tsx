@@ -1,10 +1,10 @@
 import { getDefaultPromptTemplate } from "@shared/prompt-template-definitions.js";
 import { createAppSettings } from "@shared/testing/factories.js";
 import { fireEvent, screen, waitFor } from "@testing-library/react";
-import { TRACER_LINKS_ENABLED } from "@/client/lib/fork-features";
 import { MemoryRouter } from "react-router-dom";
 import { toast } from "sonner";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { TRACER_LINKS_ENABLED } from "@/client/lib/fork-features";
 import * as api from "../api";
 import { _resetTracerReadinessCache } from "../hooks/useTracerReadiness";
 import { AppearanceProvider } from "../lib/appearance/AppearanceProvider";
@@ -75,7 +75,7 @@ vi.mock("../api", () => ({
     isSystemAdmin: false,
     isDisabled: false,
     workspaceId: "tenant_default",
-    workspaceName: "JobOps",
+    workspaceName: "Offerloop",
     createdAt: "2026-04-27T00:00:00.000Z",
     updatedAt: "2026-04-27T00:00:00.000Z",
   }),
@@ -743,10 +743,7 @@ describe("SettingsPage", () => {
     expect(await screen.findByText("1.2.3")).toBeInTheDocument();
     expect(screen.getByText(/Update available: 1\.3\.0/)).toBeInTheDocument();
     const docs = screen.getByRole("link", { name: /open documentation/i });
-    expect(docs).toHaveAttribute(
-      "href",
-      "https://jobops.dakheera47.com/docs/",
-    );
+    expect(docs).toHaveAttribute("href", "https://jobops.dakheera47.com/docs/");
     expect(docs).toHaveAttribute("target", "_blank");
     expect(docs).toHaveAttribute("rel", "noopener noreferrer");
   });
@@ -1026,7 +1023,7 @@ describe("SettingsPage", () => {
     vi.mocked(api.validateRxresume).mockResolvedValue({
       valid: false,
       message:
-        "JobOps could not verify Reactive Resume because the instance is unavailable right now.",
+        "Offerloop could not verify Reactive Resume because the instance is unavailable right now.",
       status: 0,
     });
 
@@ -1044,7 +1041,7 @@ describe("SettingsPage", () => {
     ).toBeInTheDocument();
     expect(toast.success).toHaveBeenCalledWith("Settings saved");
     expect(toast.info).toHaveBeenCalledWith(
-      "Settings saved, but JobOps could not verify Reactive Resume because the instance is unavailable.",
+      "Settings saved, but Offerloop could not verify Reactive Resume because the instance is unavailable.",
     );
   });
 
@@ -1081,7 +1078,7 @@ describe("SettingsPage", () => {
     vi.mocked(api.validateRxresume).mockResolvedValue({
       valid: false,
       message:
-        "JobOps could not verify Reactive Resume because the instance is unavailable right now.",
+        "Offerloop could not verify Reactive Resume because the instance is unavailable right now.",
       status: 0,
     });
 
@@ -1242,9 +1239,9 @@ describe("SettingsPage", () => {
     expect(
       await screen.findAllByRole("button", { name: /resume & pdf/i }),
     ).not.toHaveLength(0);
-    expect(
-      screen.queryAllByRole("button", { name: /backups/i }),
-    ).toHaveLength(0);
+    expect(screen.queryAllByRole("button", { name: /backups/i })).toHaveLength(
+      0,
+    );
   });
 
   it("saves blocked company keywords from scoring settings", async () => {
@@ -1422,16 +1419,19 @@ describe("absorbed sections", () => {
   });
 
   // Tracer Links are hidden in this fork (see fork-features.ts).
-  it.skipIf(!TRACER_LINKS_ENABLED)("shows tracer analytics under the tracer links setup", async () => {
-    render(
-      <MemoryRouter initialEntries={["/settings#tracer-links"]}>
-        <SettingsPage />
-      </MemoryRouter>,
-    );
-    expect(
-      await screen.findByText("tracer-analytics-body"),
-    ).toBeInTheDocument();
-  });
+  it.skipIf(!TRACER_LINKS_ENABLED)(
+    "shows tracer analytics under the tracer links setup",
+    async () => {
+      render(
+        <MemoryRouter initialEntries={["/settings#tracer-links"]}>
+          <SettingsPage />
+        </MemoryRouter>,
+      );
+      expect(
+        await screen.findByText("tracer-analytics-body"),
+      ).toBeInTheDocument();
+    },
+  );
 
   it("hides the save bar for embedded sections", async () => {
     render(

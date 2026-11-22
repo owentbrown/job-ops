@@ -25,7 +25,7 @@ describe("sendPhoneAlert", () => {
     expect(
       await sendPhoneAlert({
         title: "Hiring Cafe needs a quick check",
-        message: "Open JobOps",
+        message: "Open Offerloop",
         path: "/jobs/ready",
       }),
     ).toBe(true);
@@ -33,7 +33,7 @@ describe("sendPhoneAlert", () => {
       "https://ntfy.sh/jobops-abc",
       expect.objectContaining({
         method: "POST",
-        body: "Open JobOps",
+        body: "Open Offerloop",
         headers: expect.objectContaining({
           Title: "Hiring Cafe needs a quick check",
           Click: "http://100.1.2.3:3005/jobs/ready",

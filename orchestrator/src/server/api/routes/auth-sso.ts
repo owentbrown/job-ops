@@ -103,7 +103,7 @@ async function startSsoFlow(args: {
     fail(
       args.res,
       serviceUnavailable(
-        "Set SSO_REDIRECT_BASE_URL (or JOBOPS_PUBLIC_BASE_URL) to the public URL of this JobOps instance",
+        "Set SSO_REDIRECT_BASE_URL (or JOBOPS_PUBLIC_BASE_URL) to the public URL of this Offerloop instance",
       ),
     );
     return;

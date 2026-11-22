@@ -352,7 +352,7 @@ export const CodexAuthPanel: React.FC<CodexAuthPanelProps> = ({
         <StepRow
           isComplete={false}
           isLoading={isWaitingForApproval}
-          label="Approve and return to JobOps"
+          label="Approve and return to Offerloop"
           step={3}
         />
       </div>

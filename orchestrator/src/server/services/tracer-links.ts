@@ -410,7 +410,7 @@ export async function getJobOpsPublicAvailability(
       baseUrl: null,
       checkedAt,
       reason:
-        "No public JobOps base URL is configured. Set JOBOPS_PUBLIC_BASE_URL.",
+        "No public Offerloop base URL is configured. Set JOBOPS_PUBLIC_BASE_URL.",
     });
   } else {
     let hostname: string | null = null;

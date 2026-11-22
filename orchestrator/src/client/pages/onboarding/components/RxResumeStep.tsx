@@ -40,7 +40,7 @@ export const RxResumeStep: React.FC<{
     <div className="space-y-5">
       <div className="rounded-lg border border-border/60 bg-muted/10 px-4 py-3 text-sm text-muted-foreground">
         Use Reactive Resume if your current resume already lives there. Once
-        connected, Job Ops can use that resume for matching, fit assessment,
+        connected, Offerloop can use that resume for matching, fit assessment,
         tailoring, and application workflows.
       </div>
 
@@ -109,7 +109,7 @@ export const RxResumeStep: React.FC<{
           <div className="space-y-1">
             <div className="text-sm font-medium">Template resume</div>
             <p className="text-xs text-muted-foreground">
-              Choose the resume Job Ops should use as the source for matching,
+              Choose the resume Offerloop should use as the source for matching,
               fit assessment, and tailored applications.
             </p>
           </div>

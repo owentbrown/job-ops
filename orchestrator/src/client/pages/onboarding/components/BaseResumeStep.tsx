@@ -165,8 +165,8 @@ export const BaseResumeStep: React.FC<{
     ? "Upload a resume file"
     : "Upload your existing resume, PDF or DOCX";
   const uploadDescription = allowReactiveResume
-    ? "Job Ops imports Reactive Resume JSON directly. PDF and DOCX files are sent to your configured AI model and stored as a local Design Resume. That resume drives job matching, fit assessment, search terms, and application workflows."
-    : "Upload your existing resume as a PDF or DOCX. Job Ops will import it and use it as the baseline for matching, fit assessment, search terms, and application workflows.";
+    ? "Offerloop imports Reactive Resume JSON directly. PDF and DOCX files are sent to your configured AI model and stored as a local Design Resume. That resume drives job matching, fit assessment, search terms, and application workflows."
+    : "Upload your existing resume as a PDF or DOCX. Offerloop will import it and use it as the baseline for matching, fit assessment, search terms, and application workflows.";
   const supportedFormats = allowReactiveResume
     ? "Supported formats: PDF, DOCX, and Reactive Resume JSON."
     : "Supported formats: PDF and DOCX.";
@@ -202,13 +202,13 @@ export const BaseResumeStep: React.FC<{
               value: "upload",
               title: "Upload a file",
               description:
-                "Turn a PDF, DOCX, or Reactive Resume JSON into the baseline Job Ops uses for matching and tailoring.",
+                "Turn a PDF, DOCX, or Reactive Resume JSON into the baseline Offerloop uses for matching and tailoring.",
             },
             {
               value: "rxresume",
               title: "Use Reactive Resume",
               description:
-                "Connect an existing Reactive Resume so Job Ops can assess fit and build applications from it.",
+                "Connect an existing Reactive Resume so Offerloop can assess fit and build applications from it.",
             },
           ].map((option) => {
             const checked = resumeSetupMode === option.value;

@@ -137,7 +137,7 @@ export function PictureSection({
         <Alert>
           <AlertDescription>
             {pictureDisabledReason ??
-              "Pictures require JobOps to be reachable at a public URL."}
+              "Pictures require Offerloop to be reachable at a public URL."}
           </AlertDescription>
         </Alert>
       ) : null}

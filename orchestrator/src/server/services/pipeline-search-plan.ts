@@ -430,7 +430,7 @@ function buildPrompt(args: {
   }));
 
   return [
-    "Convert the user's natural-language job search request into Job Ops search settings.",
+    "Convert the user's natural-language job search request into Offerloop search settings.",
     "Return only values that match the schema. Prefer current settings when the user did not specify a change.",
     "Do not start a run. Fill settings for user review.",
     "",

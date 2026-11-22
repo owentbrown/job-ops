@@ -134,7 +134,7 @@ export const JobTimeline: React.FC<JobTimelineProps> = ({
               isLast={entryIndex === entries.length - 1}
             >
               <div className="text-sm text-muted-foreground">
-                Job Ops discovered this job and added it to your pipeline.
+                Offerloop discovered this job and added it to your pipeline.
               </div>
             </TimelineRow>
           );

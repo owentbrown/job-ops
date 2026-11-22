@@ -203,9 +203,9 @@ export function FatalErrorScreen({
               Something went wrong
             </h1>
             <p className="max-w-prose text-sm leading-6 text-muted-foreground">
-              JobOps hit an unexpected client error. Your data should still be
-              safe; reload the app or open a GitHub issue with the diagnostics
-              below.
+              Offerloop hit an unexpected client error. Your data should still
+              be safe; reload the app or open a GitHub issue with the
+              diagnostics below.
             </p>
           </div>
         </div>
@@ -335,7 +335,7 @@ export function isOpaqueCrossOriginError(event: ErrorEvent): boolean {
 
 /**
  * True for an error thrown by a script from another site (analytics, a
- * browser extension). Those can't break JobOps itself, so they stay in the
+ * browser extension). Those can't break Offerloop itself, so they stay in the
  * console instead of replacing the whole app with the crash screen.
  */
 export function isThirdPartyScriptError(event: ErrorEvent): boolean {

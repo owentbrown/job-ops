@@ -19,7 +19,7 @@ if (!existsSync(dataDir)) {
 
 const sqlite = new Database(DB_PATH);
 const DEFAULT_TENANT_ID = "tenant_default";
-const DEFAULT_TENANT_NAME = "JobOps";
+const DEFAULT_TENANT_NAME = "Offerloop";
 const DEFAULT_TENANT_SLUG = "default";
 
 function sqlString(value: string): string {

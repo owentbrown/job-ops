@@ -14,7 +14,7 @@ function asRecord(value: unknown): RecordLike {
 
 /**
  * Decides which page format Reactive Resume should print with, given the
- * JobOps paper size setting and the format stored on the resume itself.
+ * Offerloop paper size setting and the format stored on the resume itself.
  *
  * `free-form` is Reactive Resume's single continuous page. It can only be
  * chosen deliberately inside Reactive Resume and has no A4/Letter equivalent,

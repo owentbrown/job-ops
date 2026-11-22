@@ -777,7 +777,7 @@ describe("PDF Service Tailoring Logic", () => {
 
       expect(mockResumeRenderer.renderResumePdf).not.toHaveBeenCalled();
       expect(rxresume.importResume).toHaveBeenCalledWith({
-        name: "JobOps Tailored Resume job-rxresume",
+        name: "Offerloop Tailored Resume job-rxresume",
         data: expect.any(Object),
       });
       expect(rxresume.exportResumePdf).toHaveBeenCalledWith("temp-resume-id");
@@ -794,7 +794,7 @@ describe("PDF Service Tailoring Logic", () => {
     }
   });
 
-  it("strips Resume Studio pictures from RxResume export when JobOps is not hosted", async () => {
+  it("strips Resume Studio pictures from RxResume export when Offerloop is not hosted", async () => {
     currentPdfRenderer.value = "rxresume";
     mockTracerLinks.resolveTracerPublicBaseUrl.mockReturnValue(
       "http://localhost:3005",
@@ -866,7 +866,7 @@ describe("PDF Service Tailoring Logic", () => {
     }
   });
 
-  it("keeps externally hosted pictures in RxResume export when JobOps is not hosted", async () => {
+  it("keeps externally hosted pictures in RxResume export when Offerloop is not hosted", async () => {
     currentPdfRenderer.value = "rxresume";
     mockTracerLinks.getJobOpsPublicAvailability.mockResolvedValue({
       status: "unavailable",

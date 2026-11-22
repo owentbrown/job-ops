@@ -1,5 +1,4 @@
 import { TokenizedInput } from "@client/pages/orchestrator/TokenizedInput";
-import { TRACER_LINKS_ENABLED } from "@/client/lib/fork-features";
 import type {
   ExperienceBulletCatalogItem,
   ExperienceBulletSelection,
@@ -23,6 +22,7 @@ import {
 import type React from "react";
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Tip } from "@/client/components/Tip";
+import { TRACER_LINKS_ENABLED } from "@/client/lib/fork-features";
 import {
   Accordion,
   AccordionContent,
@@ -930,44 +930,44 @@ export const TailoringSections: React.FC<TailoringSectionsProps> = ({
       )}
 
       {TRACER_LINKS_ENABLED ? (
-      <AccordionItem value="tracer-links" className={sectionClass}>
-        <AccordionTrigger className={triggerClass} aria-label="Tracer Links">
-          <SectionTriggerLabel
-            title="Tracer Links"
-            state={tracerLinksEnabled ? "ready" : "optional"}
-          />
-        </AccordionTrigger>
-        <AccordionContent className="px-3 pb-3 pt-3">
-          <div className="rounded-md border border-border/60 bg-background/55 p-3">
-            <label
-              htmlFor="tailor-tracer-links-enabled"
-              className="flex cursor-pointer items-center gap-3"
-            >
-              <Checkbox
-                id="tailor-tracer-links-enabled"
-                checked={tracerLinksEnabled}
-                onCheckedChange={(checked) =>
-                  onTracerLinksEnabledChange(Boolean(checked))
-                }
-                disabled={tracerToggleDisabled}
-              />
-              <span className="text-sm font-medium text-foreground">
-                Enable tracer links for this job
-              </span>
-            </label>
-            <p className="mt-2 text-xs text-muted-foreground">
-              {tracerReadinessChecking
-                ? "Checking tracer-link readiness..."
-                : "When enabled, outgoing resume links are rewritten to JobOps tracer links on the next PDF generation. Existing PDFs are unchanged."}
-            </p>
-            {tracerEnableBlockedReason && !tracerLinksEnabled ? (
-              <p className="mt-2 text-xs text-destructive">
-                Tracer links are unavailable: {tracerEnableBlockedReason}
+        <AccordionItem value="tracer-links" className={sectionClass}>
+          <AccordionTrigger className={triggerClass} aria-label="Tracer Links">
+            <SectionTriggerLabel
+              title="Tracer Links"
+              state={tracerLinksEnabled ? "ready" : "optional"}
+            />
+          </AccordionTrigger>
+          <AccordionContent className="px-3 pb-3 pt-3">
+            <div className="rounded-md border border-border/60 bg-background/55 p-3">
+              <label
+                htmlFor="tailor-tracer-links-enabled"
+                className="flex cursor-pointer items-center gap-3"
+              >
+                <Checkbox
+                  id="tailor-tracer-links-enabled"
+                  checked={tracerLinksEnabled}
+                  onCheckedChange={(checked) =>
+                    onTracerLinksEnabledChange(Boolean(checked))
+                  }
+                  disabled={tracerToggleDisabled}
+                />
+                <span className="text-sm font-medium text-foreground">
+                  Enable tracer links for this job
+                </span>
+              </label>
+              <p className="mt-2 text-xs text-muted-foreground">
+                {tracerReadinessChecking
+                  ? "Checking tracer-link readiness..."
+                  : "When enabled, outgoing resume links are rewritten to Offerloop tracer links on the next PDF generation. Existing PDFs are unchanged."}
               </p>
-            ) : null}
-          </div>
-        </AccordionContent>
-      </AccordionItem>
+              {tracerEnableBlockedReason && !tracerLinksEnabled ? (
+                <p className="mt-2 text-xs text-destructive">
+                  Tracer links are unavailable: {tracerEnableBlockedReason}
+                </p>
+              ) : null}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
       ) : null}
 
       <AccordionItem value="job-description" className={sectionClass}>

@@ -50,7 +50,7 @@ export function AutomaticRunFooter({
           </Badge>
         </div>
         <CardDescription>
-          A plain-English preview of what Job Ops will do.
+          A plain-English preview of what Offerloop will do.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-0">

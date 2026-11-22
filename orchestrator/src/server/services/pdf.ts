@@ -182,7 +182,7 @@ async function renderRxResumePdf(args: {
 
   try {
     importedResumeId = await importRxResume({
-      name: args.name?.trim() || `JobOps Tailored Resume ${jobId}`,
+      name: args.name?.trim() || `Offerloop Tailored Resume ${jobId}`,
       data: importData,
     });
 

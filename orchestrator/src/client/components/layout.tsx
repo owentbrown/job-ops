@@ -49,6 +49,7 @@ import {
   AppearanceControls,
   describeAppearance,
 } from "./appearance/AppearanceControls";
+import { OfferloopLogo } from "./brand/OfferloopMark";
 import { isNavActive, NAV_LINKS } from "./navigation";
 import { StatusBadgeIndicator } from "./StatusIndicator";
 
@@ -428,9 +429,9 @@ export const PersistentSidebar: React.FC = () => (
   >
     <div
       data-sidebar-brand=""
-      className="px-3 pb-4.5 font-heading text-(length:--app-sidebar-brand-size) font-(weight:--heading-weight) leading-tight text-(--sidebar-brand)"
+      className="px-3 pb-4.5 text-(length:--app-sidebar-brand-size) leading-tight text-(--sidebar-brand)"
     >
-      JobOps
+      <OfferloopLogo />
     </div>
     <SidebarNav />
   </aside>
@@ -440,10 +441,7 @@ export const PersistentSidebar: React.FC = () => (
 // Page Header
 // ============================================================================
 
-interface PageHeaderProps {
-  icon: LucideIcon | React.FC<{ className?: string }>;
-  title: string;
-  subtitle: string;
+interface PageHeaderBaseProps {
   badge?: string;
   statusIndicator?: React.ReactNode;
   actions?: React.ReactNode;
@@ -451,10 +449,32 @@ interface PageHeaderProps {
   onNavOpenChange?: (open: boolean) => void;
 }
 
+type PageHeaderProps = PageHeaderBaseProps &
+  (
+    | {
+        icon: LucideIcon | React.FC<{ className?: string }>;
+        title: string;
+        subtitle: string;
+        brand?: never;
+      }
+    | {
+        /**
+         * Brand header (home page): the slogan where the page title goes when
+         * the sidebar already shows the logo (lg+), and the logo itself when
+         * there is no persistent sidebar (phones, tablets).
+         */
+        brand: true;
+        icon?: never;
+        title?: never;
+        subtitle?: never;
+      }
+  );
+
 export const PageHeader: React.FC<PageHeaderProps> = ({
   icon: Icon,
   title,
   subtitle,
+  brand,
   badge,
   statusIndicator,
   actions,
@@ -487,8 +507,8 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
               className="flex w-64 flex-col border-sidebar-border bg-sidebar text-sidebar-foreground"
             >
               <SheetHeader>
-                <SheetTitle className="font-heading font-(weight:--heading-weight) text-(--sidebar-brand)">
-                  JobOps
+                <SheetTitle className="text-xl text-(--sidebar-brand)">
+                  <OfferloopLogo />
                 </SheetTitle>
               </SheetHeader>
               <SidebarNav
@@ -498,18 +518,46 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
             </SheetContent>
           </Sheet>
 
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-border/60 bg-muted/30">
-            <Icon className="h-4 w-4 text-muted-foreground" />
-          </div>
-          <div className="min-w-0 leading-tight">
-            <div
-              data-page-title=""
-              className="font-heading text-lg font-(weight:--heading-weight) tracking-(--heading-tracking)"
-            >
-              {title}
+          {brand ? (
+            <div className="shrink-0 leading-tight lg:min-w-0 lg:shrink">
+              {/* Phones: full logo (actions wrap below). Tablets: the mark
+                  only, so the actions row fits. Desktop: the sidebar shows
+                  the logo, so only the slogan sits here. */}
+              <OfferloopLogo
+                className={cn(
+                  "text-xl text-foreground",
+                  hasPersistentSidebar && "lg:hidden",
+                )}
+                wordmarkClassName={
+                  hasPersistentSidebar ? "sm:max-lg:hidden" : undefined
+                }
+              />
+              <div
+                data-page-title=""
+                className={cn(
+                  "hidden font-heading text-lg font-(weight:--heading-weight) tracking-(--heading-tracking)",
+                  hasPersistentSidebar && "lg:block",
+                )}
+              >
+                Tailor your search. Close the loop. Land the offer.
+              </div>
             </div>
-            <div className="text-xs text-muted-foreground">{subtitle}</div>
-          </div>
+          ) : (
+            <>
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-border/60 bg-muted/30">
+                {Icon && <Icon className="h-4 w-4 text-muted-foreground" />}
+              </div>
+              <div className="min-w-0 leading-tight">
+                <div
+                  data-page-title=""
+                  className="font-heading text-lg font-(weight:--heading-weight) tracking-(--heading-tracking)"
+                >
+                  {title}
+                </div>
+                <div className="text-xs text-muted-foreground">{subtitle}</div>
+              </div>
+            </>
+          )}
           {badge && (
             <Badge variant="outline" className="uppercase tracking-wide">
               {badge}

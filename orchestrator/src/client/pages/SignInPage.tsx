@@ -8,19 +8,14 @@ import {
   signupWithCredentials,
   startSsoLogin,
 } from "@client/api";
+import { OfferloopLogo } from "@client/components/brand/OfferloopMark";
 import type { SsoProviderInfo } from "@shared/types";
 import { useQuery } from "@tanstack/react-query";
 import type { FormEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -190,18 +185,17 @@ export function SignInPage() {
   };
 
   const title = authMode === "signup" ? "Create account" : "Sign in";
-  const description =
-    authMode === "signup"
-      ? "Create your JobOps account for this hosted workspace."
-      : "Enter your JobOps username and password.";
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,_color-mix(in_srgb,var(--primary)_8%,transparent),_transparent_45%),linear-gradient(180deg,_color-mix(in_srgb,var(--foreground)_2%,transparent),_transparent_30%)] px-4 py-16">
       <div className="mx-auto flex min-h-[70vh] max-w-md items-center">
         <Card className="w-full border-border/60 bg-background/95 shadow-xl">
           <CardHeader className="space-y-2">
-            <CardTitle className="text-2xl tracking-tight">{title}</CardTitle>
-            <CardDescription>{description}</CardDescription>
+            <OfferloopLogo className="text-2xl text-foreground" />
+            <p className="text-sm text-muted-foreground">
+              Tailor your search. Close the loop. Land the offer.
+            </p>
+            <CardTitle className="sr-only">{title}</CardTitle>
           </CardHeader>
           <CardContent>
             {hostedSignupEnabled ? (

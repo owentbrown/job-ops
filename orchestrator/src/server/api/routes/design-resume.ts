@@ -77,7 +77,7 @@ async function assertPictureSupportEnabled(req: Request): Promise<void> {
 
   throw conflict(
     availability.reason ??
-      "Resume Studio pictures require JobOps to be reachable at a public URL.",
+      "Resume Studio pictures require Offerloop to be reachable at a public URL.",
   );
 }
 

@@ -1051,7 +1051,7 @@ describe.sequential("Pipeline API routes", () => {
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toContain("text/html");
     expect(html).toContain("Challenge solved");
-    expect(html).toContain("return to Job Ops");
+    expect(html).toContain("return to Offerloop");
     expect(html).not.toContain("websockify");
   });
 

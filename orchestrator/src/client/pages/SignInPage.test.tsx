@@ -30,7 +30,7 @@ vi.mock("@client/api", () => ({
     isDisabled: false,
     hasPassword: true,
     workspaceId: "tenant_default",
-    workspaceName: "JobOps",
+    workspaceName: "Offerloop",
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString(),
   })),
@@ -121,7 +121,7 @@ describe("SignInPage", () => {
       isDisabled: false,
       hasPassword: true,
       workspaceId: "tenant_default",
-      workspaceName: "JobOps",
+      workspaceName: "Offerloop",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
@@ -239,7 +239,7 @@ describe("SignInPage", () => {
       isDisabled: false,
       hasPassword: true,
       workspaceId: "tenant_hosted",
-      workspaceName: "JobOps",
+      workspaceName: "Offerloop",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });

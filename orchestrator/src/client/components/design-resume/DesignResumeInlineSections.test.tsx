@@ -57,7 +57,7 @@ describe("BasicsCustomFieldsSection", () => {
     ]);
   });
 
-  it("loads JobOps asset picture previews through the authenticated blob API", async () => {
+  it("loads Offerloop asset picture previews through the authenticated blob API", async () => {
     const createObjectUrl = vi
       .spyOn(URL, "createObjectURL")
       .mockReturnValue("blob:preview");

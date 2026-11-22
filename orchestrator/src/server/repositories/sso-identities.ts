@@ -33,7 +33,7 @@ const identityColumns = {
 
 /**
  * Looked up without tenant or user scoping: a federated login carries no
- * JobOps identity until this row resolves it.
+ * Offerloop identity until this row resolves it.
  */
 export async function findSsoIdentity(input: {
   provider: SsoProvider;

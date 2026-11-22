@@ -277,7 +277,7 @@ export async function validateRxresume(options?: {
     return {
       valid: false,
       status: result.status,
-      message: `JobOps could not verify Reactive Resume because the instance at ${resolvedBaseUrl} is unavailable right now.`,
+      message: `Offerloop could not verify Reactive Resume because the instance at ${resolvedBaseUrl} is unavailable right now.`,
     };
   }
 
@@ -335,10 +335,10 @@ function getModelValidationMessage(args: {
 }): string {
   const baseMessage =
     args.validation.message ||
-    `Job Ops could not verify ${args.providerLabel}. Check the connection and try again.`;
+    `Offerloop could not verify ${args.providerLabel}. Check the connection and try again.`;
 
   if (args.provider === "ollama" && isUnavailable(args.validation)) {
-    return `${baseMessage} Local Ollama models can be slow or unavailable on smaller hardware. Try a smaller or faster model, make sure Ollama is reachable from the Job Ops container, add more CPU/GPU/RAM, or switch provider from the model step.`;
+    return `${baseMessage} Local Ollama models can be slow or unavailable on smaller hardware. Try a smaller or faster model, make sure Ollama is reachable from the Offerloop container, add more CPU/GPU/RAM, or switch provider from the model step.`;
   }
 
   return baseMessage;
@@ -462,8 +462,8 @@ async function buildResumeRequirement(): Promise<OnboardingRequirement> {
         confirmedSource === source ? "Resume confirmed" : "Review your resume",
       message:
         confirmedSource === source
-          ? "You confirmed the resume Job Ops should use for matching and applications."
-          : "Check the parsed resume, then confirm that Job Ops loaded the correct document.",
+          ? "You confirmed the resume Offerloop should use for matching and applications."
+          : "Check the parsed resume, then confirm that Offerloop loaded the correct document.",
       primaryAction: confirmedSource === source ? "none" : "confirm_resume",
       details: {
         source: "local",
@@ -483,7 +483,7 @@ async function buildResumeRequirement(): Promise<OnboardingRequirement> {
         status: "needs_action",
         title: "Choose a Reactive Resume template",
         message:
-          "Reactive Resume is connected. Select the resume Job Ops should use for matching, fit assessment, and applications.",
+          "Reactive Resume is connected. Select the resume Offerloop should use for matching, fit assessment, and applications.",
         primaryAction: "select_rxresume_template",
         details: { source: "rxresume" },
       });
@@ -494,7 +494,7 @@ async function buildResumeRequirement(): Promise<OnboardingRequirement> {
       status: "needs_action",
       title: "Load your resume",
       message:
-        "Upload a resume file, or connect Reactive Resume and choose a template. This gives Job Ops the baseline it needs for matching, fit assessment, and better application workflows.",
+        "Upload a resume file, or connect Reactive Resume and choose a template. This gives Offerloop the baseline it needs for matching, fit assessment, and better application workflows.",
       primaryAction: "upload_resume",
       details: {
         source: "none",
@@ -513,7 +513,7 @@ async function buildResumeRequirement(): Promise<OnboardingRequirement> {
         confirmedSource === source ? "Resume confirmed" : "Review your resume",
       message:
         confirmedSource === source
-          ? "You confirmed the Reactive Resume template Job Ops should use."
+          ? "You confirmed the Reactive Resume template Offerloop should use."
           : "Check the selected Reactive Resume document, then confirm it before continuing.",
       primaryAction: confirmedSource === source ? "none" : "confirm_resume",
       details: {
@@ -537,7 +537,7 @@ async function buildResumeRequirement(): Promise<OnboardingRequirement> {
         : "Resume source needs attention",
     message:
       validation.message ||
-      "Job Ops could not verify the selected resume. Recheck the source or choose another template.",
+      "Offerloop could not verify the selected resume. Recheck the source or choose another template.",
     primaryAction:
       status === "checking_unavailable"
         ? "recheck"
@@ -571,7 +571,7 @@ async function buildHostedResumeRequirement(): Promise<OnboardingRequirement> {
     status: "needs_action",
     title: "Upload your existing resume, PDF or DOCX",
     message:
-      "Upload your existing resume as a PDF or DOCX. Job Ops will use it as the baseline for matching, fit assessment, search terms, and application workflows.",
+      "Upload your existing resume as a PDF or DOCX. Offerloop will use it as the baseline for matching, fit assessment, search terms, and application workflows.",
     primaryAction: "upload_resume",
     details: { source: "upload" },
   });
@@ -677,7 +677,7 @@ export async function getOnboardingStatus(): Promise<OnboardingStatusResponse> {
     message:
       profileCompleted === "1"
         ? "Your location and workplace preferences will seed future runs."
-        : "Add your preferred locations and workplace style so Job Ops can prepare sensible run defaults and sponsor-focused sources.",
+        : "Add your preferred locations and workplace style so Offerloop can prepare sensible run defaults and sponsor-focused sources.",
     primaryAction: profileCompleted === "1" ? "none" : "save_profile",
   });
   const requirements = userEditableLlmSettings

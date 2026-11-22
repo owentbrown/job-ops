@@ -266,7 +266,7 @@ describe("latex resume renderer", () => {
         ],
         publications: [
           {
-            title: "Scaling JobOps",
+            title: "Scaling Offerloop",
             subtitle: "InfoQ",
             date: "2022",
             bullets: ["Published architecture write-up"],

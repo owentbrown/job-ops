@@ -188,7 +188,7 @@ export async function completeSsoLogin(input: {
 
   if (!config.allowSignup) {
     throw forbidden(
-      `No JobOps account is linked to this ${config.displayName} identity. Sign in with your password and connect it under Settings → Workspace Access.`,
+      `No Offerloop account is linked to this ${config.displayName} identity. Sign in with your password and connect it under Settings → Workspace Access.`,
     );
   }
   assertSignupAllowed(config, input.claims);

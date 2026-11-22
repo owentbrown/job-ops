@@ -25,7 +25,7 @@ export function AutomaticRankingPreferencesCard({
             3
           </span>
           <div className="flex min-w-0 flex-col gap-1">
-            <CardTitle>What should Job Ops prioritise?</CardTitle>
+            <CardTitle>What should Offerloop prioritise?</CardTitle>
             <CardDescription>
               These instructions affect ranking, not discovery. Write them in
               plain English.

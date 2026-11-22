@@ -17,7 +17,7 @@ export const AboutSettingsSection: React.FC<AboutSettingsSectionProps> = ({
   latestVersion,
   layoutMode,
 }) => (
-  <SettingsSectionFrame mode={layoutMode} title="About JobOps" value="about">
+  <SettingsSectionFrame mode={layoutMode} title="About Offerloop" value="about">
     <div className="space-y-4">
       <div className="space-y-1">
         <div className="text-sm font-medium">Version</div>

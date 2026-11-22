@@ -157,7 +157,7 @@ function formatStructuredPrompt(args: {
     .join("\n\n");
 
   return [
-    "You are generating a structured JSON response for JobOps.",
+    "You are generating a structured JSON response for Offerloop.",
     "Do not run commands or tools. Answer directly.",
     "Return only valid JSON with no markdown fences or extra text.",
     "The response must follow this schema exactly:",

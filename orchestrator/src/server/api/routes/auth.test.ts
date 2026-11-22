@@ -202,7 +202,7 @@ describe.sequential("Auth routes", () => {
         isSystemAdmin: false,
         isDisabled: false,
         workspaceId: "tenant_default",
-        workspaceName: "JobOps",
+        workspaceName: "Offerloop",
       });
 
       await expect(countTenants()).resolves.toBe(tenantsBefore);

@@ -206,7 +206,7 @@ export default function WatchlistJobRow({
                 <Tip
                   asChild
                   clickBehavior="none"
-                  content="View in JobOps workspace"
+                  content="View in Offerloop workspace"
                 >
                   <Button
                     type="button"
@@ -283,7 +283,7 @@ export default function WatchlistJobRow({
                 <Tip
                   asChild
                   clickBehavior="none"
-                  content="Move to JobOps workspace"
+                  content="Move to Offerloop workspace"
                 >
                   <Button
                     type="button"

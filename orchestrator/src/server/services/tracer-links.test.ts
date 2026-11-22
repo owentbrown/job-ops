@@ -209,7 +209,7 @@ describe("tracer-links service", () => {
     expect(readiness.isPubliclyAvailable).toBe(false);
     expect(readiness.canEnable).toBe(false);
     expect(readiness.publicBaseUrl).toBeNull();
-    expect(readiness.reason).toMatch(/no public jobops base url/i);
+    expect(readiness.reason).toMatch(/no public offerloop base url/i);
   });
 
   it("reports unavailable readiness for localhost/private origins", async () => {

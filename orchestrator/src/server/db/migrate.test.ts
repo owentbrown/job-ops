@@ -366,7 +366,7 @@ describe.sequential("database migrations", () => {
           UNIQUE(user_id, tenant_id)
         );
 
-        INSERT INTO tenants(id, name, slug) VALUES ('tenant_default', 'JobOps', 'default');
+        INSERT INTO tenants(id, name, slug) VALUES ('tenant_default', 'Offerloop', 'default');
         INSERT INTO users(id, username, display_name, password_hash, password_salt, is_system_admin)
         VALUES ('user-legacy', 'legacy', 'Legacy Owner', 'legacy-hash', 'legacy-salt', 1);
         INSERT INTO tenant_memberships(id, user_id, tenant_id, role)

@@ -449,7 +449,7 @@ export async function importResume(
     const creds = await readV5Credentials(options.v5);
     return await v5.importResume(
       {
-        name: payload.name?.trim() || "JobOps Tailored Resume",
+        name: payload.name?.trim() || "Offerloop Tailored Resume",
         slug: payload.slug?.trim() || "",
         data: payload.data,
       },

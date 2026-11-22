@@ -75,7 +75,7 @@ function formatMessagesPrompt(
     .join("\n\n");
 
   return [
-    "You are generating a structured JSON response for JobOps.",
+    "You are generating a structured JSON response for Offerloop.",
     "Do not use tools; answer directly using only the information in this transcript.",
     "",
     "Transcript:",
@@ -111,7 +111,7 @@ function formatMessagesStreamInput(
     {
       type: "text",
       text: [
-        "You are generating a structured JSON response for JobOps.",
+        "You are generating a structured JSON response for Offerloop.",
         "Do not use tools; answer directly using only the information in this transcript.",
         "",
         "Transcript:",

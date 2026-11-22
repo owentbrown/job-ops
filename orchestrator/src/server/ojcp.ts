@@ -194,7 +194,7 @@ const OJCP_TOOLS: Tool[] = [
   },
   {
     name: "get_job_detail",
-    description: "Retrieve full details for a specific JobOps job posting.",
+    description: "Retrieve full details for a specific Offerloop job posting.",
     annotations: { readOnlyHint: true, openWorldHint: false },
     inputSchema: {
       type: "object",
@@ -766,7 +766,7 @@ async function searchJobsWithMetadata(
   if (unsupported.length > 0) {
     throw ojcpError(
       "invalid_field_value",
-      `JobOps cannot apply these filters to live FreeHire results: ${unsupported.join(", ")}. Retry without them.`,
+      `Offerloop cannot apply these filters to live FreeHire results: ${unsupported.join(", ")}. Retry without them.`,
       { unsupported_filters: unsupported },
     );
   }
@@ -937,7 +937,7 @@ function createOjcpServer(req: Request): Server {
       });
       throw ojcpError(
         "provider_error",
-        "JobOps could not complete the request.",
+        "Offerloop could not complete the request.",
       );
     }
   });

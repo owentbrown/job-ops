@@ -1,3 +1,4 @@
+import { OfferloopMark } from "@client/components/brand/OfferloopMark";
 import type { JobListItem } from "@shared/types.js";
 import { Loader2 } from "lucide-react";
 import { forwardRef, useImperativeHandle } from "react";
@@ -93,6 +94,11 @@ export const JobListPanel = forwardRef<VirtualListHandle, JobListPanelProps>(
       return (
         <div className="min-w-0 rounded-xl border border-border bg-card shadow-sm">
           <div className="flex flex-col items-center justify-center gap-4 px-6 py-12 text-center">
+            <OfferloopMark
+              size={40}
+              title=""
+              className="text-muted-foreground/60"
+            />
             <div className="text-base font-semibold">No jobs found</div>
             <p className="max-w-md text-sm text-muted-foreground">
               {emptyStateMessage ?? emptyStateCopy[activeTab]}

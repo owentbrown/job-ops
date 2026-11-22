@@ -165,7 +165,8 @@ export const ConnectedAccountsSection: React.FC<
           <div className="space-y-1">
             <div className="text-sm font-semibold">Connected accounts</div>
             <p className="text-sm text-muted-foreground">
-              Sign in with an identity provider instead of your JobOps password.
+              Sign in with an identity provider instead of your Offerloop
+              password.
             </p>
           </div>
 
@@ -207,8 +208,8 @@ export const ConnectedAccountsSection: React.FC<
                             Unlink {displayName}?
                           </AlertDialogTitle>
                           <AlertDialogDescription>
-                            You will no longer be able to sign in to JobOps with
-                            this {displayName} account.
+                            You will no longer be able to sign in to Offerloop
+                            with this {displayName} account.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>

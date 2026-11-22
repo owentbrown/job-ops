@@ -1,4 +1,4 @@
-# Job Ops Orchestrator
+# Offerloop Orchestrator
 
 A unified orchestrator for the job application pipeline. Discovers jobs, scores them for suitability, generates tailored resumes, and provides a UI to manage applications.
 
@@ -38,7 +38,7 @@ orchestrator/
 
    After the server starts, onboarding saves your location and workplace defaults, verifies your LLM provider, and imports your resume. The parsed resume is shown for confirmation before setup completes. Search terms are chosen later when you start a run.
 
-   You can edit the confirmed document later in **Resume Studio**. JobOps uses that document as the primary context for tailoring, scoring, and PDF generation.
+   You can edit the confirmed document later in **Resume Studio**. Offerloop uses that document as the primary context for tailoring, scoring, and PDF generation.
 
 
    OpenRouter is the default LLM provider, but OpenAI, Claude (Anthropic), GLM, LM Studio, Ollama, `openai-compatible` endpoints, and Gemini are also supported.

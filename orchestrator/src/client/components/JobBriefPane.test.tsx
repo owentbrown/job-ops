@@ -1,5 +1,5 @@
 import { createJob } from "@shared/testing/factories.js";
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { JobBriefPane } from "./JobBriefPane";
 
@@ -55,6 +55,29 @@ describe("JobBriefPane", () => {
     expect(
       screen.getByText("Recalculate match to generate a concise JD brief."),
     ).toBeVisible();
+  });
+
+  it("offers a recalculate button next to the missing-brief note", () => {
+    const onRecalculate = vi.fn();
+    const job = createJob({ jobBrief: null });
+
+    const { rerender } = render(
+      <JobBriefPane job={job} onRecalculate={onRecalculate} />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /recalculate match/i }));
+    expect(onRecalculate).toHaveBeenCalledTimes(1);
+
+    rerender(
+      <JobBriefPane job={job} onRecalculate={onRecalculate} isRecalculating />,
+    );
+    expect(
+      screen.getByRole("button", { name: /recalculating/i }),
+    ).toBeDisabled();
+
+    rerender(<JobBriefPane job={job} />);
+    expect(
+      screen.queryByRole("button", { name: /recalculate match/i }),
+    ).not.toBeInTheDocument();
   });
 
   it("does not render empty sections", () => {

@@ -941,7 +941,11 @@ export const JobDetailPanel: React.FC<JobDetailPanelProps> = ({
             </div>
           )}
 
-          <JobBriefPane job={selectedJob} />
+          <JobBriefPane
+            job={selectedJob}
+            onRecalculate={() => rescoreJob(selectedJob.id)}
+            isRecalculating={isRescoring}
+          />
           <JobDescriptionPanel
             description={selectedJob.jobDescription}
             jobUrl={selectedJob.jobUrl}

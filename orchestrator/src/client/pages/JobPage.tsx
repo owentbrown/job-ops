@@ -672,7 +672,12 @@ export const JobPage: React.FC = () => {
                   navigationState={jobPageNavigationState}
                 />
 
-                <JobBriefPane job={job} />
+                <JobBriefPane
+                  job={job}
+                  onRecalculate={() => void handleRescore()}
+                  isRecalculating={activeAction === "rescore"}
+                  recalculateDisabled={isBusy}
+                />
 
                 <div className="grid gap-4 lg:grid-cols-2">
                   <article className="rounded-xl border border-border/50 bg-card/75 p-4">
@@ -887,7 +892,12 @@ export const JobPage: React.FC = () => {
 
                 <CoverLetterPanel key={job.id} job={job} />
 
-                <JobBriefPane job={job} />
+                <JobBriefPane
+                  job={job}
+                  onRecalculate={() => void handleRescore()}
+                  isRecalculating={activeAction === "rescore"}
+                  recalculateDisabled={isBusy}
+                />
 
                 <div id="job-description-panel">
                   <JobDescriptionPanel

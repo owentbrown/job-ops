@@ -1,13 +1,19 @@
 import type { Job, JobBrief } from "@shared/types.js";
 import { motion, useReducedMotion } from "framer-motion";
-import { Sparkles } from "lucide-react";
+import { RefreshCcw, Sparkles } from "lucide-react";
 import type React from "react";
 import { useMemo } from "react";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 type JobBriefPaneProps = {
   job: Job;
   className?: string;
+  /** When given, a "Recalculate match" button sits next to the missing-brief note. */
+  onRecalculate?: () => void;
+  isRecalculating?: boolean;
+  /** Disables the button while another action is running. */
+  recalculateDisabled?: boolean;
 };
 
 const CARD_ENTER_TRANSITION = { duration: 0.1, ease: "easeOut" } as const;
@@ -20,6 +26,9 @@ const FADE_ONLY_BULLET_SECTIONS = new Set(["Company offers", "They want"]);
 export const JobBriefPane: React.FC<JobBriefPaneProps> = ({
   job,
   className,
+  onRecalculate,
+  isRecalculating = false,
+  recalculateDisabled = false,
 }) => {
   const brief = parseJobBrief(job.jobBrief);
   const prefersReducedMotion = useReducedMotion();
@@ -51,9 +60,29 @@ export const JobBriefPane: React.FC<JobBriefPaneProps> = ({
         )}
       >
         <FitLine job={job} />
-        <p className="mt-2 text-xs text-muted-foreground">
-          Recalculate match to generate a concise JD brief.
-        </p>
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          <p className="text-xs text-muted-foreground">
+            Recalculate match to generate a concise JD brief.
+          </p>
+          {onRecalculate ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-7 px-2 text-xs"
+              onClick={onRecalculate}
+              disabled={isRecalculating || recalculateDisabled}
+            >
+              <RefreshCcw
+                className={cn(
+                  "mr-1.5 h-3.5 w-3.5",
+                  isRecalculating && "animate-spin",
+                )}
+              />
+              {isRecalculating ? "Recalculating..." : "Recalculate match"}
+            </Button>
+          ) : null}
+        </div>
       </section>
     );
   }

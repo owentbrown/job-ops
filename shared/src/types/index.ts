@@ -10,6 +10,7 @@ export * from "./jobs";
 export * from "./overview";
 export * from "./pipeline";
 export * from "./post-application";
+export * from "./prep-kit";
 export * from "./profile";
 export * from "./settings";
 export * from "./spend";

@@ -63,6 +63,11 @@ export interface LlmRequestOptions<_T> {
   signal?: AbortSignal;
   /** What the call is for, so spend can be broken down by task */
   feature?: LlmFeature;
+  /**
+   * Output token limit for providers that need one (Anthropic). Long answers
+   * from thinking models need more than the default.
+   */
+  maxTokens?: number;
 }
 
 export interface LlmResult<T> {
@@ -104,6 +109,8 @@ export type ProviderStrategy = {
     model: string;
     messages: LlmRequestOptions<unknown>["messages"];
     jsonSchema: JsonSchemaDefinition;
+    /** Output token limit, for providers that require one. */
+    maxTokens?: number;
   }) => { url: string; headers: Record<string, string>; body: unknown };
   extractText: (response: unknown) => string | null;
   isCapabilityError: (args: {

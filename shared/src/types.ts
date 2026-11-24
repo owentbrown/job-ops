@@ -19,6 +19,7 @@ export * from "./types/location";
 export * from "./types/overview";
 export * from "./types/pipeline";
 export * from "./types/post-application";
+export * from "./types/prep-kit";
 export * from "./types/profile";
 export * from "./types/settings";
 export * from "./types/spend";

@@ -394,6 +394,59 @@ export const jobNotes = sqliteTable(
   }),
 );
 
+/** One living interview prep kit per job (see services/prep-kit.ts). */
+export const jobPrepKits = sqliteTable(
+  "job_prep_kits",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id")
+      .notNull()
+      .default("tenant_default")
+      .references(() => tenants.id, { onDelete: "cascade" }),
+    userId: text("user_id").references(() => users.id, {
+      onDelete: "cascade",
+    }),
+    jobId: text("job_id")
+      .notNull()
+      .references(() => jobs.id, { onDelete: "cascade" }),
+    /** JSON: { sections, questions } */
+    content: text("content").notNull(),
+    createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
+    updatedAt: text("updated_at").notNull().default(sql`(datetime('now'))`),
+  },
+  (table) => ({
+    jobIndex: index("idx_job_prep_kits_job").on(table.jobId),
+  }),
+);
+
+/** Quick notes typed during a call, organised later by wrap-up. */
+export const jobJots = sqliteTable(
+  "job_jots",
+  {
+    id: text("id").primaryKey(),
+    tenantId: text("tenant_id")
+      .notNull()
+      .default("tenant_default")
+      .references(() => tenants.id, { onDelete: "cascade" }),
+    userId: text("user_id").references(() => users.id, {
+      onDelete: "cascade",
+    }),
+    jobId: text("job_id")
+      .notNull()
+      .references(() => jobs.id, { onDelete: "cascade" }),
+    text: text("text").notNull(),
+    sectionHint: text("section_hint"),
+    createdAt: text("created_at").notNull().default(sql`(datetime('now'))`),
+    wrappedUpAt: text("wrapped_up_at"),
+  },
+  (table) => ({
+    jobCreatedIndex: index("idx_job_jots_job_created").on(
+      table.jobId,
+      table.createdAt,
+    ),
+  }),
+);
+
 export const interviews = sqliteTable("interviews", {
   id: text("id").primaryKey(),
   tenantId: text("tenant_id")

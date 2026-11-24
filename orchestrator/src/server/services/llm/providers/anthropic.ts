@@ -96,11 +96,19 @@ export const anthropicStrategy = createProviderStrategy({
   requiresApiKey: true,
   modes: ["json_schema", "json_object", "none"],
   validationPaths: ["/v1/models"],
-  buildRequest: ({ mode, baseUrl, apiKey, model, messages, jsonSchema }) => {
+  buildRequest: ({
+    mode,
+    baseUrl,
+    apiKey,
+    model,
+    messages,
+    jsonSchema,
+    maxTokens,
+  }) => {
     const { system, anthropicMessages } = toAnthropicMessages(messages);
     const body: Record<string, unknown> = {
       model,
-      max_tokens: DEFAULT_MAX_TOKENS,
+      max_tokens: maxTokens ?? DEFAULT_MAX_TOKENS,
       messages: anthropicMessages,
     };
 

@@ -7,6 +7,7 @@ import type {
   JobActionResponse,
   JobActionStreamEvent,
   JobDocument,
+  JobJot,
   JobListItem,
   JobNote,
   JobOutcome,
@@ -14,6 +15,10 @@ import type {
   JobsRevisionResponse,
   JobTracerLinksResponse,
   PostApplicationJobEmailsResponse,
+  PrepKitContent,
+  PrepKitResponse,
+  PrepKitWrapUpApplyInput,
+  PrepKitWrapUpProposal,
   RelatedJobsResponse,
   StageEvent,
   StageEventMetadata,
@@ -179,6 +184,73 @@ export async function runCompanyCheck(
   return fetchApi<CompanyInfoResponse>(`/jobs/${id}/company/check`, {
     method: "POST",
   });
+}
+
+export async function getPrepKit(id: string): Promise<PrepKitResponse> {
+  return fetchApi<PrepKitResponse>(`/jobs/${id}/prep-kit`, {
+    cache: "no-store",
+  });
+}
+
+/** AI drafts the kit, or refreshes it with what's new. */
+export async function generatePrepKit(id: string): Promise<PrepKitResponse> {
+  return fetchApi<PrepKitResponse>(`/jobs/${id}/prep-kit/generate`, {
+    method: "POST",
+  });
+}
+
+export async function savePrepKit(
+  id: string,
+  content: PrepKitContent,
+): Promise<PrepKitResponse> {
+  return fetchApi<PrepKitResponse>(`/jobs/${id}/prep-kit`, {
+    method: "PUT",
+    body: JSON.stringify(content),
+  });
+}
+
+export async function addJot(
+  id: string,
+  input: { text: string; sectionHint?: string | null },
+): Promise<JobJot> {
+  return fetchApi<JobJot>(`/jobs/${id}/jots`, {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
+export async function updateJot(
+  id: string,
+  jotId: string,
+  text: string,
+): Promise<JobJot> {
+  return fetchApi<JobJot>(`/jobs/${id}/jots/${jotId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ text }),
+  });
+}
+
+export async function deleteJot(id: string, jotId: string): Promise<void> {
+  await fetchApi<null>(`/jobs/${id}/jots/${jotId}`, { method: "DELETE" });
+}
+
+/** AI organises the jots into a note and proposes kit changes. Saves nothing. */
+export async function proposePrepKitWrapUp(
+  id: string,
+): Promise<PrepKitWrapUpProposal> {
+  return fetchApi<PrepKitWrapUpProposal>(`/jobs/${id}/prep-kit/wrap-up`, {
+    method: "POST",
+  });
+}
+
+export async function applyPrepKitWrapUp(
+  id: string,
+  input: PrepKitWrapUpApplyInput,
+): Promise<PrepKitResponse & { note: JobNote }> {
+  return fetchApi<PrepKitResponse & { note: JobNote }>(
+    `/jobs/${id}/prep-kit/wrap-up/apply`,
+    { method: "POST", body: JSON.stringify(input) },
+  );
 }
 
 export async function getRelatedJobs(id: string): Promise<RelatedJobsResponse> {

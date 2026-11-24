@@ -15,6 +15,7 @@ export const FEATURE_LABELS: Record<string, string> = {
   profile_skills: "Profile skill refresh",
   profile_writing: "Profile writing",
   company_check: "Company check",
+  prep_kit: "Prep kit",
   other: "Other",
 };
 

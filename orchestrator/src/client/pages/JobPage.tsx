@@ -100,11 +100,14 @@ import {
 } from "./job-page/JobPageLeftSidebar";
 import { JobPageRightSidebar } from "./job-page/JobPageRightSidebar";
 import { OverviewGhostwriterComposer } from "./job-page/OverviewGhostwriterComposer";
+import { PrepKitEntryCard } from "./job-page/PrepKitEntryCard";
+import { PrepKitPanel } from "./job-page/PrepKitPanel";
 import { RelatedJobsCard } from "./job-page/RelatedJobsCard";
 
 const normalizeMemoryView = (view: string | undefined): JobMemoryView => {
   if (view === "notes" || view === "note") return "note";
   if (
+    view === "prep" ||
     view === "documents" ||
     view === "timeline" ||
     view === "emails" ||
@@ -652,11 +655,22 @@ export const JobPage: React.FC = () => {
             navigationState={jobPageNavigationState}
             selectedProjects={selectedProjects}
             sourceLabel={sourceLabel}
+            // In call mode on a phone, the cards come first; the dossier would
+            // push them below the fold.
+            className={
+              activeMemoryView === "prep" ? "hidden xl:block" : undefined
+            }
           />
 
           <div className="space-y-4">
             {activeMemoryView === "overview" && (
               <section className="space-y-4">
+                <PrepKitEntryCard
+                  job={job}
+                  baseJobPath={baseJobPath}
+                  navigationState={jobPageNavigationState}
+                />
+
                 <CompanyCard jobId={job.id} />
 
                 <RelatedJobsCard
@@ -859,6 +873,8 @@ export const JobPage: React.FC = () => {
                 </div>
               </section>
             )}
+
+            {activeMemoryView === "prep" && <PrepKitPanel job={job} />}
 
             {activeMemoryView === "note" && job.id && (
               <JobNotesCard jobId={job.id} />

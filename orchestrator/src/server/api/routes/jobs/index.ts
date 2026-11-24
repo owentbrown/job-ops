@@ -7,6 +7,7 @@ import { jobsDocumentsRouter } from "./documents";
 import { jobsMaintenanceRouter } from "./maintenance";
 import { jobsMutationsRouter } from "./mutations";
 import { jobsNotesRouter } from "./notes";
+import { jobsPrepKitRouter } from "./prep-kit";
 import { jobsReadRouter } from "./read";
 import { jobsStagesRouter } from "./stages";
 
@@ -15,6 +16,7 @@ export const jobsRouter = Router();
 jobsRouter.use(jobsReadRouter);
 jobsRouter.use(jobsActionsRouter);
 jobsRouter.use(jobsNotesRouter);
+jobsRouter.use(jobsPrepKitRouter);
 jobsRouter.use(jobsCompanyRouter);
 jobsRouter.use(jobsStagesRouter);
 jobsRouter.use(jobsDocumentsRouter);

@@ -32,11 +32,11 @@ import {
   resolveWritingOutputLanguage,
 } from "./output-language";
 import { getProfile } from "./profile";
+import { proofPointsForJob } from "./profile/proof-points";
 import {
   getEffectivePromptTemplate,
   renderPromptTemplate,
 } from "./prompt-templates";
-import { proofPointsForJob } from "./profile/proof-points";
 import { filterProfileProjectsForAi } from "./resumeProjects";
 import {
   getWritingStyle,
@@ -377,6 +377,13 @@ async function buildSystemPrompt(
   });
 }
 
+/**
+ * Notes can hold salary talk (a recruiter's ceiling, the user's current pay).
+ * Ghostwriter may use it for negotiation help, but must not leak it into text
+ * the user sends to an employer.
+ */
+export const PAY_PRIVACY_GHOSTWRITER_PROMPT = `Pay privacy: notes may mention salary numbers, what a recruiter said about pay, or the user's current pay. Use them freely when the user asks for negotiation help or wants to think about pay. Never put salary figures, expectations or current pay into anything meant for an employer (emails, cover letters, application answers, messages) unless the user explicitly asks for them in that draft.`;
+
 async function isStopSlopEnabled(): Promise<boolean> {
   const raw = await settingsRepo.getSetting("ghostwriterStopSlopEnabled");
   return (
@@ -425,9 +432,13 @@ export async function buildJobChatPromptContext(
     buildSelectedEmailsSnapshot(jobId, selectedEmailIds),
     buildSelectedDocumentsSnapshot(jobId, selectedDocumentIds),
   ]);
-  const systemPrompt = stopSlopEnabled
-    ? `${baseSystemPrompt}\n\n${STOP_SLOP_GHOSTWRITER_PROMPT}`
-    : baseSystemPrompt;
+  const systemPrompt = [
+    baseSystemPrompt,
+    stopSlopEnabled ? STOP_SLOP_GHOSTWRITER_PROMPT : null,
+    PAY_PRIVACY_GHOSTWRITER_PROMPT,
+  ]
+    .filter(Boolean)
+    .join("\n\n");
   const jobSnapshot = buildJobSnapshot(job);
 
   if (!jobSnapshot.trim()) {

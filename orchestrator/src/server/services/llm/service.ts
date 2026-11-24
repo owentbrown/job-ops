@@ -143,6 +143,7 @@ export class LlmService {
         jobId,
         signal,
         feature: options.feature,
+        maxTokens: options.maxTokens,
       });
 
       if (result.success) {
@@ -458,6 +459,7 @@ export class LlmService {
     jobId?: string;
     signal?: AbortSignal;
     feature?: LlmFeature;
+    maxTokens?: number;
   }): Promise<LlmResponse<T>> {
     const {
       mode,
@@ -497,6 +499,7 @@ export class LlmService {
           model,
           messages,
           jsonSchema,
+          maxTokens: args.maxTokens,
         });
 
         const response = await fetch(url, {

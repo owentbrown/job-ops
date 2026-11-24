@@ -10,6 +10,7 @@ import {
   FolderKanban,
   Mail,
   MessageSquareText,
+  NotebookPen,
   Sparkles,
 } from "lucide-react";
 import type React from "react";
@@ -22,6 +23,7 @@ export { ScoreRing, isAwaitingAiScore };
 
 export type JobMemoryView =
   | "overview"
+  | "prep"
   | "note"
   | "documents"
   | "timeline"
@@ -35,6 +37,7 @@ type JobPageLeftSidebarProps = {
   navigationState?: { jobPageBackTo: string };
   selectedProjects: string[];
   sourceLabel: string;
+  className?: string;
 };
 
 const memoryLinks = [
@@ -42,6 +45,11 @@ const memoryLinks = [
     id: "overview" as const,
     label: "Overview",
     icon: FolderKanban,
+  },
+  {
+    id: "prep" as const,
+    label: "Prep kit",
+    icon: NotebookPen,
   },
   {
     id: "note" as const,
@@ -93,8 +101,9 @@ export const JobPageLeftSidebar: React.FC<JobPageLeftSidebarProps> = ({
   navigationState,
   selectedProjects,
   sourceLabel,
+  className,
 }) => (
-  <aside className="space-y-4 xl:sticky xl:top-5">
+  <aside className={cn("space-y-4 xl:sticky xl:top-5", className)}>
     <section className="rounded-xl border border-border/50 bg-card/85 p-4">
       <div className="flex gap-4 flex-row items-start justify-between">
         <div className="min-w-0 space-y-1">

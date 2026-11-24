@@ -1350,6 +1350,34 @@ const migrations = [
     created_at TEXT NOT NULL
   )`,
   `CREATE UNIQUE INDEX IF NOT EXISTS idx_company_checks_tenant_employer ON company_checks(tenant_id, employer_key)`,
+
+  // Prep kit ("Scan, dig, jot"): one living set of interview cue cards per
+  // job, and quick notes typed during a call.
+  `CREATE TABLE IF NOT EXISTS job_prep_kits (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL DEFAULT 'tenant_default',
+    user_id TEXT,
+    job_id TEXT NOT NULL,
+    content TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE,
+    FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
+  )`,
+  `CREATE INDEX IF NOT EXISTS idx_job_prep_kits_job ON job_prep_kits(job_id)`,
+  `CREATE TABLE IF NOT EXISTS job_jots (
+    id TEXT PRIMARY KEY,
+    tenant_id TEXT NOT NULL DEFAULT 'tenant_default',
+    user_id TEXT,
+    job_id TEXT NOT NULL,
+    text TEXT NOT NULL,
+    section_hint TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    wrapped_up_at TEXT,
+    FOREIGN KEY (tenant_id) REFERENCES tenants(id) ON DELETE CASCADE,
+    FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
+  )`,
+  `CREATE INDEX IF NOT EXISTS idx_job_jots_job_created ON job_jots(job_id, created_at)`,
 ];
 
 console.log("🔧 Running database migrations...");

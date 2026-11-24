@@ -53,6 +53,23 @@ import { cn } from "@/lib/utils";
 
 const QUESTIONS_ANCHOR = "prep-questions";
 const JOTS_ANCHOR = "prep-jots";
+const QUESTIONS_KEY = "My questions";
+const JOTS_KEY = "Jots";
+/** Long enough for a full set of pasted call notes; matches the server. */
+const MAX_JOT_CHARS = 20000;
+
+function chipClass(selected: boolean): string {
+  return cn(
+    "shrink-0 rounded-full border px-3 py-1.5 text-sm font-medium",
+    selected
+      ? "border-primary/60 bg-primary/15 text-foreground"
+      : "border-border/60 bg-card",
+  );
+}
+
+function cardBorder(selected: boolean): string {
+  return selected ? "border-primary/60" : "border-border/50";
+}
 
 function newId(): string {
   return Math.random().toString(36).slice(2, 10);
@@ -130,7 +147,7 @@ export const PrepKitSectionCard: React.FC<SectionCardProps> = ({
       id={anchorFor(section)}
       className={cn(
         "scroll-mt-28 rounded-xl border bg-card/85 p-4 transition-colors",
-        isActive ? "border-primary/60" : "border-border/50",
+        cardBorder(isActive),
       )}
     >
       {editing ? (
@@ -265,12 +282,14 @@ export const PrepKitSectionCard: React.FC<SectionCardProps> = ({
 
 type QuestionsCardProps = {
   questions: PrepKitQuestion[];
+  isActive: boolean;
   onChange: (questions: PrepKitQuestion[]) => void;
   onActivate: () => void;
 };
 
 export const PrepKitQuestionsCard: React.FC<QuestionsCardProps> = ({
   questions,
+  isActive,
   onChange,
   onActivate,
 }) => {
@@ -296,7 +315,10 @@ export const PrepKitQuestionsCard: React.FC<QuestionsCardProps> = ({
   return (
     <section
       id={QUESTIONS_ANCHOR}
-      className="scroll-mt-28 space-y-3 rounded-xl border border-border/50 bg-card/85 p-4"
+      className={cn(
+        "scroll-mt-28 space-y-3 rounded-xl border bg-card/85 p-4 transition-colors",
+        cardBorder(isActive),
+      )}
     >
       <div className="flex items-center justify-between gap-2">
         <button
@@ -410,13 +432,17 @@ export const PrepKitQuestionsCard: React.FC<QuestionsCardProps> = ({
 
 const JotsCard: React.FC<{
   jots: JobJot[];
+  isActive: boolean;
   onDelete: (jot: JobJot) => void;
   onWrapUp: () => void;
   isWrappingUp: boolean;
-}> = ({ jots, onDelete, onWrapUp, isWrappingUp }) => (
+}> = ({ jots, isActive, onDelete, onWrapUp, isWrappingUp }) => (
   <section
     id={JOTS_ANCHOR}
-    className="scroll-mt-28 space-y-3 rounded-xl border border-border/50 bg-card/85 p-4"
+    className={cn(
+      "scroll-mt-28 space-y-3 rounded-xl border bg-card/85 p-4 transition-colors",
+      cardBorder(isActive),
+    )}
   >
     <div className="flex items-center justify-between gap-2">
       <div className="text-xs font-bold uppercase tracking-wider text-primary">
@@ -448,7 +474,7 @@ const JotsCard: React.FC<{
             <span className="w-14 shrink-0 pt-0.5 text-xs tabular-nums text-muted-foreground">
               {formatJotTime(jot.createdAt)}
             </span>
-            <span className="min-w-0 flex-1 break-words">
+            <span className="min-w-0 flex-1 whitespace-pre-wrap break-words">
               {jot.text}
               {jot.sectionHint && (
                 <Badge variant="outline" className="ml-2 text-[10px]">
@@ -477,7 +503,16 @@ const JotBar: React.FC<{
   onSubmit: (text: string) => Promise<void>;
 }> = ({ hint, onClearHint, onSubmit }) => {
   const [text, setText] = React.useState("");
-  const inputRef = React.useRef<HTMLInputElement>(null);
+  const inputRef = React.useRef<HTMLTextAreaElement>(null);
+
+  // Grow with the text (up to about a third of the screen, then scroll).
+  // biome-ignore lint/correctness/useExhaustiveDependencies: re-measure when the text changes
+  React.useLayoutEffect(() => {
+    const el = inputRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${el.scrollHeight}px`;
+  }, [text]);
 
   // Every Enter saves, even while an earlier jot is still on its way: fast
   // typing mid-call must never drop a note.
@@ -525,16 +560,29 @@ const JotBar: React.FC<{
             </button>
           </div>
         )}
-        <div className="flex gap-2">
-          <Input
+        <div className="flex items-end gap-2">
+          <Textarea
             ref={inputRef}
             id="prep-jot-input"
             value={text}
+            rows={1}
+            maxLength={MAX_JOT_CHARS}
             onChange={(event) => setText(event.target.value)}
+            onKeyDown={(event) => {
+              // Enter saves; Shift+Enter adds a line. Pasted line breaks stay.
+              if (
+                event.key === "Enter" &&
+                !event.shiftKey &&
+                !event.nativeEvent.isComposing
+              ) {
+                event.preventDefault();
+                void submit();
+              }
+            }}
             placeholder="Jot a note... Enter saves it"
             autoComplete="off"
             enterKeyHint="send"
-            className="h-11 text-base"
+            className="max-h-[35vh] min-h-11 resize-none overflow-y-auto py-2.5 text-base"
           />
           <Button
             type="submit"
@@ -674,7 +722,26 @@ const WrapUpDialog: React.FC<{
 export const PrepKitPanel: React.FC<{ job: Job }> = ({ job }) => {
   const queryClient = useQueryClient();
   const queryKey = queryKeys.jobs.prepKit(job.id);
+  // activeTitle: the card new jots are filed under (a hint for wrap-up).
+  // selected: what's highlighted in the chip bar and card borders.
   const [activeTitle, setActiveTitle] = React.useState<string | null>(null);
+  const [selected, setSelected] = React.useState<string | null>(null);
+  const navRef = React.useRef<HTMLElement>(null);
+
+  const select = (key: string, anchor: string, hint: boolean) => {
+    setSelected(key);
+    if (hint) setActiveTitle(key);
+    scrollToAnchor(anchor);
+    // Keep the chosen chip visible in the chip bar too.
+    navRef.current
+      ?.querySelector<HTMLElement>(`[data-chip="${CSS.escape(key)}"]`)
+      ?.scrollIntoView({ block: "nearest", inline: "nearest" });
+  };
+
+  const activate = (key: string) => {
+    setSelected(key);
+    setActiveTitle(key);
+  };
   const [proposal, setProposal] = React.useState<PrepKitWrapUpProposal | null>(
     null,
   );
@@ -879,6 +946,7 @@ export const PrepKitPanel: React.FC<{ job: Job }> = ({ job }) => {
 
       {kit && (
         <nav
+          ref={navRef}
           aria-label="Prep kit cards"
           className="sticky top-0 z-30 -mx-1 flex gap-1.5 overflow-x-auto bg-background/95 px-1 py-2 backdrop-blur [scrollbar-width:none]"
           style={{ top: "env(safe-area-inset-top, 0px)" }}
@@ -887,16 +955,10 @@ export const PrepKitPanel: React.FC<{ job: Job }> = ({ job }) => {
             <button
               key={section.id}
               type="button"
-              onClick={() => {
-                setActiveTitle(section.title);
-                scrollToAnchor(anchorFor(section));
-              }}
-              className={cn(
-                "shrink-0 rounded-full border px-3 py-1.5 text-sm font-medium",
-                activeTitle === section.title
-                  ? "border-primary/60 bg-primary/15 text-foreground"
-                  : "border-border/60 bg-card",
-              )}
+              data-chip={section.title}
+              aria-current={selected === section.title ? "true" : undefined}
+              onClick={() => select(section.title, anchorFor(section), true)}
+              className={chipClass(selected === section.title)}
             >
               {section.title}
             </button>
@@ -904,19 +966,21 @@ export const PrepKitPanel: React.FC<{ job: Job }> = ({ job }) => {
           {kit.questions.length > 0 && (
             <button
               type="button"
-              onClick={() => {
-                setActiveTitle("My questions");
-                scrollToAnchor(QUESTIONS_ANCHOR);
-              }}
-              className="shrink-0 rounded-full border border-border/60 bg-card px-3 py-1.5 text-sm font-medium"
+              data-chip={QUESTIONS_KEY}
+              aria-current={selected === QUESTIONS_KEY ? "true" : undefined}
+              onClick={() => select(QUESTIONS_KEY, QUESTIONS_ANCHOR, true)}
+              className={chipClass(selected === QUESTIONS_KEY)}
             >
               My Qs · {questionsLeft}
             </button>
           )}
           <button
             type="button"
-            onClick={() => scrollToAnchor(JOTS_ANCHOR)}
-            className="shrink-0 rounded-full border border-border/60 bg-card px-3 py-1.5 text-sm font-medium"
+            data-chip={JOTS_KEY}
+            aria-current={selected === JOTS_KEY ? "true" : undefined}
+            // Jumping to the jot list doesn't change which card jots go under.
+            onClick={() => select(JOTS_KEY, JOTS_ANCHOR, false)}
+            className={chipClass(selected === JOTS_KEY)}
           >
             Jots · {jots.length}
           </button>
@@ -927,8 +991,8 @@ export const PrepKitPanel: React.FC<{ job: Job }> = ({ job }) => {
         <PrepKitSectionCard
           key={section.id}
           section={section}
-          isActive={activeTitle === section.title}
-          onActivate={() => setActiveTitle(section.title)}
+          isActive={selected === section.title}
+          onActivate={() => activate(section.title)}
           onSave={(next) =>
             updateSections(
               kit.sections.map((s) => (s.id === next.id ? next : s)),
@@ -943,13 +1007,15 @@ export const PrepKitPanel: React.FC<{ job: Job }> = ({ job }) => {
       {kit && (
         <PrepKitQuestionsCard
           questions={kit.questions}
+          isActive={selected === QUESTIONS_KEY}
           onChange={updateQuestions}
-          onActivate={() => setActiveTitle("My questions")}
+          onActivate={() => activate(QUESTIONS_KEY)}
         />
       )}
 
       <JotsCard
         jots={jots}
+        isActive={selected === JOTS_KEY}
         onDelete={(jot) => void removeJot(jot)}
         onWrapUp={() => wrapUp.mutate()}
         isWrappingUp={wrapUp.isPending}

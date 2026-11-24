@@ -161,6 +161,57 @@ describe("PrepKitPanel", () => {
     expect(screen.getByText("first")).toBeVisible();
   });
 
+  it("highlights My Qs and Jots chips even when the page can't scroll", async () => {
+    vi.mocked(api.getPrepKit).mockResolvedValue(withKit);
+    renderPanel();
+    await screen.findByText("Ask for the upper end");
+
+    const myQs = screen.getByRole("button", { name: /my qs/i });
+    fireEvent.click(myQs);
+    expect(myQs).toHaveAttribute("aria-current", "true");
+    expect(screen.getByText(/jotting under/i)).toHaveTextContent(
+      "My questions",
+    );
+
+    const jotsChip = screen.getByRole("button", { name: /jots ·/i });
+    fireEvent.click(jotsChip);
+    expect(jotsChip).toHaveAttribute("aria-current", "true");
+    expect(myQs).not.toHaveAttribute("aria-current");
+    // Jumping to the jot list keeps jots filed under the last card.
+    expect(screen.getByText(/jotting under/i)).toHaveTextContent(
+      "My questions",
+    );
+  });
+
+  it("Enter saves a multi-line jot; Shift+Enter does not", async () => {
+    vi.mocked(api.getPrepKit).mockResolvedValue(withKit);
+    vi.mocked(api.addJot).mockImplementation(async (_id, input) => ({
+      id: "j1",
+      jobId: "job-1",
+      text: input.text,
+      sectionHint: null,
+      createdAt: "2026-11-24T19:10:00.000Z",
+      wrappedUpAt: null,
+    }));
+    renderPanel();
+    await screen.findByText("Ask for the upper end");
+
+    const box = screen.getByPlaceholderText(/jot a note/i);
+    const pasted = "TEAM: new role\nCOMP: ~$105K L3 mid";
+    fireEvent.change(box, { target: { value: pasted } });
+    fireEvent.keyDown(box, { key: "Enter", shiftKey: true });
+    expect(api.addJot).not.toHaveBeenCalled();
+
+    fireEvent.keyDown(box, { key: "Enter" });
+    await waitFor(() =>
+      expect(api.addJot).toHaveBeenCalledWith("job-1", {
+        text: pasted,
+        sectionHint: null,
+      }),
+    );
+    expect(box).toHaveValue("");
+  });
+
   it("wraps up into a reviewed note", async () => {
     vi.mocked(api.getPrepKit).mockResolvedValue({
       ...withKit,

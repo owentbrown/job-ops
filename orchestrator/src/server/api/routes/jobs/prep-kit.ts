@@ -33,12 +33,12 @@ const kitContentSchema = z.object({
 });
 
 const jotSchema = z.object({
-  text: z.string().trim().min(1).max(2000),
+  text: z.string().trim().min(1).max(20000),
   sectionHint: z.string().trim().max(80).nullable().optional(),
 });
 
 const jotEditSchema = z.object({
-  text: z.string().trim().min(1).max(2000),
+  text: z.string().trim().min(1).max(20000),
 });
 
 const applySchema = z.object({

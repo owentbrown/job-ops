@@ -121,11 +121,7 @@ export const DesignResumePage: React.FC<{ toolbar?: React.ReactNode }> = ({
   if (isLoading) {
     return (
       <div className="flex h-dvh flex-col overflow-hidden">
-        <PageHeader
-          icon={headerIcon}
-          title={headerTitle}
-          subtitle="Loading your resume"
-        />
+        <PageHeader icon={headerIcon} title={headerTitle} />
         <PageMain className={DESIGN_RESUME_PAGE_MAIN_CLASS_NAME}>
           {toolbar}
           <div className="rounded-2xl border border-border/70 bg-card px-6 py-20 text-center text-sm text-muted-foreground">
@@ -189,7 +185,6 @@ export const DesignResumePage: React.FC<{ toolbar?: React.ReactNode }> = ({
       <PageHeader
         icon={headerIcon}
         title={headerTitle}
-        subtitle="Your base resume. Each application gets a tailored copy built from it."
         actions={
           <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:flex-nowrap sm:justify-end">
             <div className="hidden items-center gap-2 sm:flex">

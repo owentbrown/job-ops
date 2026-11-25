@@ -33,11 +33,7 @@ export const ApplicationsPage: React.FC = () => {
   const active: AppTab = tab;
 
   return (
-    <PageFrame
-      icon={Columns3}
-      title="Applications"
-      subtitle="Everything after you apply"
-    >
+    <PageFrame icon={Columns3} title="Applications">
       {inboxAllowed ? (
         <nav
           aria-label="Applications views"

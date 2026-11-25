@@ -160,7 +160,7 @@ export const OnboardingPage: React.FC = () => {
 function LoadingState({ message }: { message: string }) {
   return (
     <>
-      <PageHeader icon={Sparkles} title="Set up Offerloop" subtitle={message} />
+      <PageHeader icon={Sparkles} title="Set up Offerloop" />
       <PageMain>
         <Card className="border-border/60 shadow-none">
           <CardContent className="flex min-h-72 items-center justify-center text-sm text-muted-foreground">
@@ -210,11 +210,7 @@ function AccountSetup({ onComplete }: { onComplete: () => void }) {
 
   return (
     <>
-      <PageHeader
-        icon={UserPlus}
-        title="Create your workspace account"
-        subtitle="This private account owns your Offerloop workspace."
-      />
+      <PageHeader icon={UserPlus} title="Create your workspace account" />
       <PageMain>
         <Card className="mx-auto max-w-2xl border-border/60 shadow-none">
           <CardContent className="p-6 sm:p-8">
@@ -481,11 +477,7 @@ function LaunchSetup({
 
   return (
     <>
-      <PageHeader
-        icon={Sparkles}
-        title="Set up Offerloop"
-        subtitle="Three focused choices, then you’re in. Search terms wait until your first run."
-      />
+      <PageHeader icon={Sparkles} title="Set up Offerloop" />
       <PageMain>
         <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[15rem_minmax(0,1fr)]">
           <nav className="space-y-2" aria-label="Setup progress">

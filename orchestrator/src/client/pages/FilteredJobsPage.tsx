@@ -156,11 +156,6 @@ export const FilteredJobsPage: React.FC<{
     <PageFrame
       icon={Filter}
       title="Filtered"
-      subtitle={
-        view === "jobs"
-          ? "Jobs the pre-score filter removed"
-          : "Pre-score filter: what it removed, and the rules it uses"
-      }
       badge={String(jobs.length)}
       actions={
         view === "jobs" ? undefined : (

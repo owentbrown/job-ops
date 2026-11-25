@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -49,9 +48,6 @@ export function AutomaticRunFooter({
             {disabled ? "Review" : "Ready"}
           </Badge>
         </div>
-        <CardDescription>
-          A plain-English preview of what Offerloop will do.
-        </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-0">
         <SummaryRow

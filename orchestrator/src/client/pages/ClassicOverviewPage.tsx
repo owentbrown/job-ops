@@ -135,7 +135,6 @@ export const ClassicOverviewPage: React.FC = () => {
       <PageHeader
         icon={ChartColumn}
         title="Overview (classic)"
-        subtitle="Analytics & Insights"
         actions={
           <DurationSelector value={duration} onChange={handleDurationChange} />
         }

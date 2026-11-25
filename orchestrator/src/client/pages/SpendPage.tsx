@@ -146,7 +146,6 @@ export function SpendPage() {
       <PageFrame
         icon={CircleDollarSign}
         title="Spend"
-        subtitle="Estimated AI cost, from the tokens each call used"
         actions={
           <Button
             variant="outline"

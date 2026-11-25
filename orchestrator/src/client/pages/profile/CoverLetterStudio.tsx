@@ -16,11 +16,7 @@ export const CoverLetterStudio: React.FC<{ switcher: React.ReactNode }> = ({
   const doNotUse = settings?.chatStyleDoNotUse?.value || "Nothing yet";
 
   return (
-    <PageFrame
-      icon={FileText}
-      title="Document Studio"
-      subtitle="The base documents every application starts from"
-    >
+    <PageFrame icon={FileText} title="Document Studio">
       {switcher}
       <section className="space-y-3 rounded-xl border bg-card p-5">
         <div className="flex items-start justify-between gap-3">

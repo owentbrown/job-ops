@@ -284,11 +284,7 @@ export const TracerLinksPage: React.FC = () => {
   };
 
   return (
-    <PageFrame
-      icon={BarChart3}
-      title="Tracer Links"
-      subtitle="Outbound resume link analytics"
-    >
+    <PageFrame icon={BarChart3} title="Tracer Links">
       <SectionCard className="p-0">
         <Accordion type="single" collapsible className="w-full">
           <AccordionItem value="filters" className="border-none">

@@ -195,9 +195,7 @@ async function renderPage() {
       </Routes>
     </MemoryRouter>,
   );
-  await screen.findByText(
-    "Three focused choices, then you’re in. Search terms wait until your first run.",
-  );
+  await screen.findByRole("navigation", { name: "Setup progress" });
 }
 
 describe("OnboardingPage", () => {

@@ -19,12 +19,7 @@ vi.mock("./layout", () => ({
 describe("PageFrame", () => {
   it("renders the app page header and main when standalone", () => {
     render(
-      <PageFrame
-        icon={Eye}
-        title="Watchlist"
-        subtitle="Career pages"
-        mainClassName="space-y-4"
-      >
+      <PageFrame icon={Eye} title="Watchlist" mainClassName="space-y-4">
         <p>body</p>
       </PageFrame>,
     );
@@ -39,7 +34,6 @@ describe("PageFrame", () => {
         <PageFrame
           icon={Eye}
           title="Watchlist"
-          subtitle="Career pages"
           badge="3"
           actions={<button type="button">Run</button>}
         >
@@ -52,7 +46,6 @@ describe("PageFrame", () => {
     expect(
       screen.getByRole("heading", { level: 2, name: /Watchlist/ }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Career pages")).toBeInTheDocument();
     expect(screen.getByText("3")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Run" })).toBeInTheDocument();
   });
@@ -63,7 +56,6 @@ describe("PageFrame", () => {
         <PageFrame
           icon={Eye}
           title="Watchlist"
-          subtitle="Career pages"
           actions={<button type="button">Run</button>}
         >
           <p>body</p>

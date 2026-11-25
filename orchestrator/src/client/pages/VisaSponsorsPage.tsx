@@ -362,7 +362,6 @@ export const VisaSponsorsPage: React.FC = () => {
         statusIndicator={
           isUpdateInProgress ? <StatusIndicator label="Updating" /> : undefined
         }
-        subtitle="Search sponsor data across available sources"
         actions={
           <>
             {status && (

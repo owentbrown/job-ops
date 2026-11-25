@@ -586,11 +586,7 @@ export const WatchlistPage: React.FC = () => {
 
   return (
     <>
-      <PageFrame
-        icon={Eye}
-        title="Watchlist"
-        subtitle="Career pages you're watching"
-      >
+      <PageFrame icon={Eye} title="Watchlist">
         <div className="space-y-3">
           <WatchlistSourcesCard
             sourceDrafts={sourceDrafts}

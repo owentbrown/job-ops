@@ -73,7 +73,6 @@ export const OverviewPage: React.FC = () => {
       <PageHeader
         icon={ChartColumn}
         title="Overview"
-        subtitle="Your search at a glance"
         actions={<DurationSelector value={range} onChange={setRange} />}
       />
       <PageMain className="space-y-10">

@@ -304,7 +304,6 @@ export const InProgressBoardPage: React.FC = () => {
       <PageFrame
         icon={Columns3}
         title="In Progress Board"
-        subtitle="Kanban view of application stages"
         actions={
           <div className="flex flex-wrap items-center justify-end gap-2">
             <Select

@@ -25,7 +25,6 @@ export const useIsEmbedded = () => useContext(EmbeddedContext).embedded;
 type PageFrameProps = {
   icon: LucideIcon | React.FC<{ className?: string }>;
   title: string;
-  subtitle: string;
   badge?: string;
   statusIndicator?: React.ReactNode;
   actions?: React.ReactNode;
@@ -40,7 +39,6 @@ type PageFrameProps = {
 export const PageFrame: React.FC<PageFrameProps> = ({
   icon,
   title,
-  subtitle,
   badge,
   statusIndicator,
   actions,
@@ -55,7 +53,6 @@ export const PageFrame: React.FC<PageFrameProps> = ({
         <PageHeader
           icon={icon}
           title={title}
-          subtitle={subtitle}
           badge={badge}
           statusIndicator={statusIndicator}
           actions={actions}
@@ -72,7 +69,7 @@ export const PageFrame: React.FC<PageFrameProps> = ({
           {hideHeading ? (
             <div>{statusIndicator}</div>
           ) : (
-            <div className="min-w-0 space-y-1">
+            <div className="min-w-0">
               <h2 className="flex items-center gap-2 text-lg font-semibold">
                 {title}
                 {badge ? (
@@ -82,7 +79,6 @@ export const PageFrame: React.FC<PageFrameProps> = ({
                 ) : null}
                 {statusIndicator}
               </h2>
-              <p className="text-sm text-muted-foreground">{subtitle}</p>
             </div>
           )}
           {actions ? (

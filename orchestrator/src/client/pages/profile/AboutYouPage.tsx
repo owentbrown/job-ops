@@ -64,11 +64,7 @@ export const AboutYouPage: React.FC = () => {
   const data = insights.data;
 
   return (
-    <PageFrame
-      icon={UserRound}
-      title="About you"
-      subtitle="Who you are and what you're aiming for"
-    >
+    <PageFrame icon={UserRound} title="About you">
       <div className="space-y-4">
         {insights.isLoading ? (
           <AboutSkeleton />

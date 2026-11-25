@@ -14,13 +14,7 @@ import {
 } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { sourceLabel } from "@/lib/utils";
 
 const SOURCE_MOTION_EASE = [0.22, 1, 0.36, 1] as const;
@@ -87,9 +81,6 @@ export function AutomaticSourcePickerCard({
           </span>
           <div className="flex min-w-0 flex-col gap-1">
             <CardTitle>Where should Offerloop search?</CardTitle>
-            <CardDescription>
-              Review the sources that are ready for this location and search.
-            </CardDescription>
           </div>
         </div>
       </CardHeader>

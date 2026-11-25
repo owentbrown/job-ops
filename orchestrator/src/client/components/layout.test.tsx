@@ -40,7 +40,7 @@ const renderAt = (path: string) =>
   renderWithQueryClient(
     <MemoryRouter initialEntries={[path]}>
       <PersistentSidebarContext.Provider value>
-        <PageHeader icon={Home} title="t" subtitle="s" />
+        <PageHeader icon={Home} title="t" />
       </PersistentSidebarContext.Provider>
       <Path />
     </MemoryRouter>,
@@ -251,7 +251,7 @@ describe("Appearance popover", () => {
     renderWithQueryClient(
       <AppearanceProvider>
         <MemoryRouter initialEntries={["/overview"]}>
-          <PageHeader icon={Home} title="t" subtitle="s" />
+          <PageHeader icon={Home} title="t" />
         </MemoryRouter>
       </AppearanceProvider>,
     );
@@ -273,7 +273,6 @@ describe("PageHeader mode toggle", () => {
           <PageHeader
             icon={Home}
             title="t"
-            subtitle="s"
             actions={<button type="button">act</button>}
           />
         </MemoryRouter>
@@ -308,7 +307,7 @@ describe("PageHeader mode toggle", () => {
     renderWithQueryClient(
       <AppearanceProvider>
         <MemoryRouter initialEntries={["/overview"]}>
-          <PageHeader icon={Home} title="t" subtitle="s" />
+          <PageHeader icon={Home} title="t" />
         </MemoryRouter>
       </AppearanceProvider>,
     );
@@ -346,7 +345,7 @@ describe("PageHeader hamburger", () => {
   it("stays visible when there is no persistent sidebar", () => {
     renderWithQueryClient(
       <MemoryRouter initialEntries={["/onboarding"]}>
-        <PageHeader icon={Home} title="t" subtitle="s" />
+        <PageHeader icon={Home} title="t" />
       </MemoryRouter>,
     );
     expect(

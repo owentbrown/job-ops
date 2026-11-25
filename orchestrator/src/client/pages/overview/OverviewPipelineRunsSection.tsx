@@ -16,13 +16,7 @@ import {
 import type React from "react";
 import { useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Sheet,
   SheetContent,
@@ -546,9 +540,6 @@ export const OverviewPipelineRunsSection: React.FC = () => {
                 <History className="h-4 w-4 text-muted-foreground" />
                 <CardTitle>Pipeline runs</CardTitle>
               </div>
-              <CardDescription>
-                Review recent pipeline activity without leaving Overview.
-              </CardDescription>
             </div>
             {currentStatus ? <RunStatusBadge status={currentStatus} /> : null}
           </div>

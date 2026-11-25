@@ -645,7 +645,6 @@ export const TrackingInboxPage: React.FC = () => {
       <PageFrame
         icon={Inbox}
         title="Tracking Inbox"
-        subtitle="Post-application message review"
         actions={embedded ? undefined : refreshButton}
         mainClassName="space-y-4"
       >

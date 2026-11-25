@@ -2029,11 +2029,7 @@ export const SettingsPage: React.FC = () => {
 
   return (
     <FormProvider {...methods}>
-      <PageHeader
-        icon={Settings}
-        title="Settings"
-        subtitle="Configure AI, scoring, integrations, and recovery from one focused workspace."
-      />
+      <PageHeader icon={Settings} title="Settings" />
 
       <main className="container mx-auto px-4 py-6 pb-12">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[300px_minmax(0,1fr)]">

@@ -454,7 +454,6 @@ type PageHeaderProps = PageHeaderBaseProps &
     | {
         icon: LucideIcon | React.FC<{ className?: string }>;
         title: string;
-        subtitle: string;
         brand?: never;
       }
     | {
@@ -466,14 +465,12 @@ type PageHeaderProps = PageHeaderBaseProps &
         brand: true;
         icon?: never;
         title?: never;
-        subtitle?: never;
       }
   );
 
 export const PageHeader: React.FC<PageHeaderProps> = ({
   icon: Icon,
   title,
-  subtitle,
   brand,
   badge,
   statusIndicator,
@@ -554,7 +551,6 @@ export const PageHeader: React.FC<PageHeaderProps> = ({
                 >
                   {title}
                 </div>
-                <div className="text-xs text-muted-foreground">{subtitle}</div>
               </div>
             </>
           )}

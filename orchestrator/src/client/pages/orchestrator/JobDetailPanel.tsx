@@ -13,7 +13,6 @@ import {
   type SkipJobConfirmInput,
   SkipJobDialog,
 } from "@client/components/SkipJobDialog";
-import { Tip } from "@client/components/Tip";
 import { TailoringWorkspace } from "@client/components/tailoring/TailoringWorkspace";
 import {
   useMarkAsAppliedMutation,
@@ -110,26 +109,22 @@ const tabCopy: Record<
   InspectorTab,
   {
     label: string;
-    description: string;
     dotClassName: string;
     selectedClassName: string;
   }
 > = {
   brief: {
     label: "Brief",
-    description: "Read the role, fit, and job description.",
     dotClassName: "bg-info/70",
     selectedClassName: "!border-info/65 !bg-info/20 !text-info",
   },
   tailoring: {
     label: "Tailoring",
-    description: "Shape the resume material for this job.",
     dotClassName: "bg-warning/70",
     selectedClassName: "!border-warning/65 !bg-warning/20 !text-warning",
   },
   apply: {
     label: "Apply",
-    description: "Use the generated kit, Ghostwriter, and final actions.",
     dotClassName: "bg-success/70",
     selectedClassName: "!border-success/65 !bg-success/20 !text-success",
   },
@@ -142,7 +137,7 @@ const InspectorTabsList: React.FC<{
   <TabsList className="mb-4 grid h-auto grid-cols-3 gap-1 rounded-lg bg-muted/90 text-sm">
     {Object.entries(tabCopy).map(([value, copy]) => {
       const isSelected = inspectorTab === value;
-      const trigger = (
+      return (
         <TabsTrigger
           key={value}
           value={value}
@@ -155,17 +150,6 @@ const InspectorTabsList: React.FC<{
           <span className={cn("size-1.5 rounded-full", copy.dotClassName)} />
           <span className="text-sm">{copy.label}</span>
         </TabsTrigger>
-      );
-
-      return (
-        <Tip
-          key={value}
-          asChild
-          content={<p>{copy.description}</p>}
-          contentClassName="max-w-xs text-center"
-        >
-          {trigger}
-        </Tip>
       );
     })}
   </TabsList>

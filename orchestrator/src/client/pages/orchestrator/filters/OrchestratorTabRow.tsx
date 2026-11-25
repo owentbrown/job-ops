@@ -1,5 +1,4 @@
 import { KbdHint } from "@client/components/KbdHint";
-import { Tip } from "@client/components/Tip";
 import { getDisplayKey, SHORTCUTS } from "@client/lib/shortcut-map";
 import { Filter, RotateCcw, Search } from "lucide-react";
 import type React from "react";
@@ -7,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
 import { type FilterTab, jobListItems, tabs } from "../constants";
-import { tabDescriptions } from "./filterOptions";
 import { JobListSwiper } from "./JobListSwiper";
 import type { OrchestratorTabRowProps } from "./types";
 
@@ -34,8 +32,7 @@ export const OrchestratorTabRow: React.FC<OrchestratorTabRowProps> = ({
       <div className="hidden flex-wrap items-center gap-1 md:flex">
         <TabsList className="h-auto w-full flex-wrap justify-start gap-1 lg:w-auto">
           {tabs.map((tab, index) => {
-            const description = tabDescriptions[tab.id];
-            const trigger = (
+            return (
               <TabsTrigger
                 key={tab.id}
                 value={tab.id}
@@ -49,19 +46,6 @@ export const OrchestratorTabRow: React.FC<OrchestratorTabRowProps> = ({
                   </span>
                 )}
               </TabsTrigger>
-            );
-
-            return description ? (
-              <Tip
-                key={tab.id}
-                asChild
-                content={<p>{description}</p>}
-                contentClassName="max-w-xs text-center"
-              >
-                {trigger}
-              </Tip>
-            ) : (
-              trigger
             );
           })}
         </TabsList>

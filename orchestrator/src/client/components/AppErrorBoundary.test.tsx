@@ -1,14 +1,15 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ApiClientError } from "@/client/api/core";
 import * as appStatusApi from "@/client/api/app-status";
+import { ApiClientError } from "@/client/api/core";
 import * as errorToast from "@/client/lib/error-toast";
 import {
   AppErrorBoundary,
   buildFatalIssueUrl,
   createFatalErrorSnapshot,
   FatalErrorScreen,
+  isBrowserInjectedScriptError,
   isNetworkFailure,
   isOpaqueCrossOriginError,
   isThirdPartyScriptError,
@@ -140,29 +141,26 @@ describe("AppErrorBoundary", () => {
     ["Safari", "Load failed"],
     ["Chrome", "Failed to fetch"],
     ["Firefox", "NetworkError when attempting to fetch resource."],
-  ])(
-    "keeps the app up when a request fails in %s (%s)",
-    async (_browser, message) => {
-      vi.spyOn(console, "warn").mockImplementation(() => undefined);
-      renderBoundary(<div>Healthy app</div>, "/jobs/ready");
-      const event = new Event("unhandledrejection", {
-        cancelable: true,
-      }) as PromiseRejectionEvent;
-      Object.defineProperty(event, "reason", {
-        value: new TypeError(message),
-      });
+  ])("keeps the app up when a request fails in %s (%s)", async (_browser, message) => {
+    vi.spyOn(console, "warn").mockImplementation(() => undefined);
+    renderBoundary(<div>Healthy app</div>, "/jobs/ready");
+    const event = new Event("unhandledrejection", {
+      cancelable: true,
+    }) as PromiseRejectionEvent;
+    Object.defineProperty(event, "reason", {
+      value: new TypeError(message),
+    });
 
-      act(() => {
-        window.dispatchEvent(event);
-      });
+    act(() => {
+      window.dispatchEvent(event);
+    });
 
-      expect(screen.getByText("Healthy app")).toBeInTheDocument();
-      expect(
-        screen.queryByRole("heading", { name: "Something went wrong" }),
-      ).not.toBeInTheDocument();
-      expect(appStatusApi.reportClientCrash).not.toHaveBeenCalled();
-    },
-  );
+    expect(screen.getByText("Healthy app")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: "Something went wrong" }),
+    ).not.toBeInTheDocument();
+    expect(appStatusApi.reportClientCrash).not.toHaveBeenCalled();
+  });
 
   it("keeps the app up when another site's script throws", () => {
     renderBoundary(<div>Healthy app</div>, "/jobs/ready");
@@ -341,7 +339,9 @@ describe("AppErrorBoundary", () => {
     renderBoundary(<div>Healthy app</div>, "/overview");
     // A real code error: network failures are never fatal (tested above).
     const reason = new TypeError("x is not a function");
-    reason.stack = frames ? `TypeError: x is not a function\n${frames}` : frames;
+    reason.stack = frames
+      ? `TypeError: x is not a function\n${frames}`
+      : frames;
     const event = new Event("unhandledrejection", {
       cancelable: true,
     }) as PromiseRejectionEvent;
@@ -531,5 +531,34 @@ describe("isThirdPartyScriptError", () => {
       filename: `${window.location.origin}/assets/index.js`,
     });
     expect(isThirdPartyScriptError(own)).toBe(false);
+  });
+});
+
+describe("isBrowserInjectedScriptError", () => {
+  it("is true for Brave on iPhone's injected playlist script", () => {
+    const brave = new ErrorEvent("error", {
+      message:
+        "TypeError: undefined is not an object (evaluating 'window.__firefox__.playlistLongPressed_37D5')",
+      filename: window.location.href,
+    });
+    expect(isBrowserInjectedScriptError(brave)).toBe(true);
+  });
+
+  it("is true for any inline script error reported against the page itself", () => {
+    const inline = new ErrorEvent("error", {
+      message: "boom",
+      error: new Error("boom"),
+      filename: `${window.location.origin}${window.location.pathname}`,
+    });
+    expect(isBrowserInjectedScriptError(inline)).toBe(true);
+  });
+
+  it("is false for the app's own script files", () => {
+    const own = new ErrorEvent("error", {
+      message: "boom",
+      error: new Error("boom"),
+      filename: `${window.location.origin}/assets/index.js`,
+    });
+    expect(isBrowserInjectedScriptError(own)).toBe(false);
   });
 });

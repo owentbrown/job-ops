@@ -1,0 +1,660 @@
+{
+  "user": {
+    "username": "demo",
+    "displayName": "Jordan Lee"
+  },
+  "resume": {
+    "basics": {
+      "name": "Jordan Lee",
+      "headline": "Senior Product Manager, Digital Onboarding & Growth",
+      "email": "jordan.lee@example.com",
+      "phone": "416-555-0142",
+      "location": "Toronto, ON"
+    },
+    "profiles": [
+      {
+        "network": "LinkedIn",
+        "username": "jordanlee-pm",
+        "url": "https://linkedin.com/in/jordanlee-pm",
+        "label": "linkedin.com/in/jordanlee-pm",
+        "icon": "linkedin"
+      }
+    ],
+    "summary": "<p>Product manager with 8+ years in fintech and insurance, turning messy customer journeys into measurable digital products. I lead cross-functional squads from discovery to launch, write the business case, and own the adoption metrics after go-live.</p>",
+    "experience": [
+      {
+        "company": "Maplewave Financial",
+        "position": "Senior Product Manager, Digital Onboarding",
+        "location": "Toronto, ON",
+        "period": "Mar 2023 - Present",
+        "bullets": [
+          "Own the end-to-end account opening experience across web and mobile for 1.2M retail clients, leading two squads (11 engineers, 2 designers, 1 analyst).",
+          "Rebuilt identity verification and funding steps; onboarding completion rose from 54% to 71% in three quarters and drop-off support calls fell 38%.",
+          "Wrote the business case that secured $4.8M in multi-year funding for a reusable onboarding platform now used by three product lines.",
+          "Introduced an experimentation cadence (weekly A/B readouts, guardrail metrics) that shipped 23 tests in 2025 with a 35% win rate.",
+          "Partnered with Legal, Privacy and Risk to launch e-signature and digital ID in Quebec, including a Privacy Impact Assessment and French-language content review."
+        ]
+      },
+      {
+        "company": "Harbourline Insurance",
+        "position": "Product Manager, Claims Experience",
+        "location": "Toronto, ON",
+        "period": "Jun 2020 - Feb 2023",
+        "bullets": [
+          "Launched digital first notice of loss for auto and home claims; 46% of claims filed digitally within 12 months, up from 9%.",
+          "Led a vendor selection and integration for claims status notifications, cutting \"where is my claim\" calls by 27%.",
+          "Defined the claims experience roadmap and quarterly OKRs with Operations, IT and the contact centre; ran monthly business reviews with the VP Claims.",
+          "Owned go-live and a 6-week hypercare period for the new claims portal, triaging 140+ issues with a zero-P1 launch."
+        ]
+      },
+      {
+        "company": "Ledgerly",
+        "position": "Product Manager, Growth",
+        "location": "Toronto, ON (startup, Series A)",
+        "period": "Aug 2018 - May 2020",
+        "bullets": [
+          "Owned activation and trial-to-paid conversion for an SMB bookkeeping app; trial conversion improved from 11% to 17%.",
+          "Built the first product analytics stack (event taxonomy, funnels, cohort dashboards) with Amplitude and SQL.",
+          "Ran pricing and packaging tests with Marketing and Sales that lifted average revenue per account 14%."
+        ]
+      },
+      {
+        "company": "Bayfield Consulting",
+        "position": "Business Analyst, Financial Services",
+        "location": "Toronto, ON",
+        "period": "Sep 2016 - Jul 2018",
+        "bullets": [
+          "Mapped customer and operations processes for bank and insurer clients; built business cases and current/future-state journeys for digital transformation programs."
+        ]
+      }
+    ],
+    "education": [
+      {
+        "school": "Queen's University",
+        "degree": "Bachelor of Commerce (Honours)",
+        "area": "Commerce, Information Systems concentration",
+        "period": "2012 - 2016"
+      }
+    ],
+    "skills": [
+      {
+        "name": "Product strategy & roadmaps",
+        "keywords": [
+          "Product vision",
+          "Roadmapping",
+          "OKRs",
+          "Prioritization"
+        ]
+      },
+      {
+        "name": "Growth & experimentation",
+        "keywords": [
+          "A/B testing",
+          "Funnel optimization",
+          "Activation",
+          "Pricing tests"
+        ]
+      },
+      {
+        "name": "Analytics",
+        "keywords": [
+          "SQL",
+          "Amplitude",
+          "Looker",
+          "Cohort analysis"
+        ]
+      },
+      {
+        "name": "Delivery & launch",
+        "keywords": [
+          "Agile",
+          "Go-live",
+          "Hypercare",
+          "Vendor management"
+        ]
+      },
+      {
+        "name": "Stakeholder leadership",
+        "keywords": [
+          "Executive communication",
+          "Business cases",
+          "Legal & Risk partnership"
+        ]
+      },
+      {
+        "name": "AI tools",
+        "keywords": [
+          "Claude",
+          "ChatGPT",
+          "Prompt design",
+          "Workflow automation"
+        ]
+      }
+    ],
+    "certifications": [
+      {
+        "title": "Certified Scrum Product Owner (CSPO)",
+        "issuer": "Scrum Alliance",
+        "date": "2019"
+      },
+      {
+        "title": "Product Analytics Certification",
+        "issuer": "Amplitude Academy",
+        "date": "2021"
+      }
+    ],
+    "projects": [
+      {
+        "name": "Renter's Toolkit (side project)",
+        "description": "<p><strong>Personal project.</strong> Built a small web app with Claude and Supabase that helps Ontario renters compare leases and track maintenance requests; 600 monthly users.</p>"
+      }
+    ]
+  },
+  "brand": {
+    "line": "Product manager who turns messy customer journeys into measurable digital products, from business case to post-launch adoption.",
+    "industries": [
+      "Fintech",
+      "Insurance",
+      "SaaS"
+    ]
+  },
+  "pitch": {
+    "s15": "I'm a product manager who fixes the parts of a customer journey where people give up. At Maplewave I took digital onboarding completion from 54% to 71%.",
+    "s30": "I'm a product manager with 8 years in fintech and insurance. I'm best at the messy middle: finding where customers drop off, building the business case, and leading squads through launch. At Maplewave Financial I rebuilt account opening and took completion from 54% to 71%, and before that I launched digital claims at Harbourline Insurance.",
+    "s60": "I'm a product manager with 8 years in fintech and insurance, and I'm happiest in the messy middle of a customer journey. I started as a business analyst mapping processes for banks, moved into growth at a Series A startup where I learned to live in the data, then led claims experience at Harbourline Insurance, where digital claims went from 9% to 46% in a year. Today at Maplewave Financial I own digital onboarding for 1.2 million clients: I rebuilt identity verification and funding, took completion from 54% to 71%, and secured $4.8M to turn it into a platform. I'm looking for a senior product role where I own outcomes, not just a backlog.",
+    "builtFrom": {
+      "storyIds": [],
+      "values": [
+        "Ownership of outcomes",
+        "Customer obsession",
+        "Clear writing"
+      ]
+    }
+  },
+  "values": {
+    "items": [
+      {
+        "label": "Ownership of outcomes",
+        "starred": true
+      },
+      {
+        "label": "Customer obsession",
+        "starred": true
+      },
+      {
+        "label": "Clear writing",
+        "starred": true
+      },
+      {
+        "label": "Learning culture",
+        "starred": false
+      },
+      {
+        "label": "Flexible / remote-friendly",
+        "starred": false
+      },
+      {
+        "label": "Mission I believe in",
+        "starred": false
+      }
+    ],
+    "ideal": {
+      "size": 55,
+      "management": 35,
+      "office": 30
+    }
+  },
+  "stories": [
+    {
+      "title": "Rescuing a stalled onboarding redesign",
+      "themes": [
+        "delivery",
+        "analytics",
+        "customer"
+      ],
+      "situation": "Maplewave's account opening redesign had slipped two quarters and completion was stuck at 54%. Leadership was close to pausing it.",
+      "task": "Get the program back on track and show a measurable lift within two quarters.",
+      "action": "I paired funnel data with 14 customer interviews, found identity verification caused 60% of drop-off, cut the scope to the three worst steps, and shipped them behind experiments with weekly readouts to the VP.",
+      "result": "Completion rose to 71% in three quarters, support calls about onboarding fell 38%, and the program secured $4.8M of follow-on funding.",
+      "metric": "54% to 71% completion",
+      "source": "manual"
+    },
+    {
+      "title": "Launching digital claims with zero P1s",
+      "themes": [
+        "delivery",
+        "leadership"
+      ],
+      "situation": "Harbourline's new claims portal had to replace a paper-and-phone process before a fixed regulatory date.",
+      "task": "Own the launch and keep claims flowing through cut-over.",
+      "action": "I ran a phased rollout by province, set up a daily hypercare stand-up with IT, Operations and the vendor, and published a single issue tracker the contact centre could see.",
+      "result": "We went live on date with zero P1 incidents, resolved 140+ issues in a 6-week hypercare period, and reached 46% digital claims within a year.",
+      "metric": "9% to 46% digital claims",
+      "source": "manual"
+    },
+    {
+      "title": "A pricing test that failed, and what it taught me",
+      "themes": [
+        "failure",
+        "analytics"
+      ],
+      "situation": "At Ledgerly I was confident a lower entry price would grow paid accounts.",
+      "task": "Prove it with a clean pricing experiment.",
+      "action": "We ran the test for four weeks. Signups rose but revenue per account dropped and churn rose in the cheaper tier. I shared the result openly and proposed a packaging test instead.",
+      "result": "The packaging change lifted revenue per account 14%. I now define guardrail metrics before every pricing test.",
+      "metric": "+14% revenue per account",
+      "source": "manual"
+    },
+    {
+      "title": "Getting Legal and Risk to yes on e-signature",
+      "themes": [
+        "influence",
+        "customer"
+      ],
+      "situation": "Digital ID and e-signature for Quebec clients had been blocked for a year by privacy and language concerns.",
+      "task": "Find a launch path Legal, Privacy and Risk could all support.",
+      "action": "I ran the Privacy Impact Assessment myself, brought Legal into design reviews early, and proposed a limited launch with extra monitoring.",
+      "result": "Approved in 8 weeks; Quebec clients can now open accounts fully online.",
+      "metric": "Approved in 8 weeks",
+      "source": "manual"
+    }
+  ],
+  "proofPoints": [
+    {
+      "title": "Onboarding completion from 54% to 71%",
+      "text": "At Maplewave Financial I rebuilt identity verification and funding in digital account opening, using funnel analysis, customer interviews and A/B tests. Completion went from 54% to 71% in three quarters and onboarding support calls dropped 38%.",
+      "role": "Senior Product Manager, Digital Onboarding at Maplewave Financial",
+      "skills": [
+        {
+          "label": "Funnel optimization",
+          "keywords": [
+            "conversion",
+            "funnel",
+            "drop-off",
+            "activation"
+          ]
+        },
+        {
+          "label": "Experimentation",
+          "keywords": [
+            "A/B testing",
+            "experiments",
+            "experimentation"
+          ]
+        }
+      ],
+      "keywords": [
+        "onboarding",
+        "conversion",
+        "funnel",
+        "A/B testing",
+        "experimentation",
+        "customer journey",
+        "activation",
+        "digital adoption",
+        "fintech",
+        "banking",
+        "growth",
+        "user research"
+      ],
+      "metric": "54% to 71% completion",
+      "followUps": [],
+      "source": "manual"
+    },
+    {
+      "title": "$4.8M business case for an onboarding platform",
+      "text": "Wrote and presented the business case that secured $4.8M in multi-year funding to turn our onboarding flow into a reusable platform, now used by three product lines.",
+      "role": "Senior Product Manager, Digital Onboarding at Maplewave Financial",
+      "skills": [
+        {
+          "label": "Business cases",
+          "keywords": [
+            "business case",
+            "funding",
+            "ROI",
+            "investment"
+          ]
+        },
+        {
+          "label": "Executive communication",
+          "keywords": [
+            "executive",
+            "senior leadership",
+            "VP"
+          ]
+        }
+      ],
+      "keywords": [
+        "business case",
+        "funding",
+        "ROI",
+        "executive stakeholders",
+        "platform strategy",
+        "product strategy",
+        "roadmap",
+        "investment"
+      ],
+      "metric": "$4.8M funded",
+      "followUps": [],
+      "source": "manual"
+    },
+    {
+      "title": "Digital claims launch, go-live and hypercare",
+      "text": "Owned go-live of Harbourline's digital claims portal and ran a 6-week hypercare with IT, Operations and the vendor. Zero P1 incidents, 140+ issues resolved, and digital claims grew from 9% to 46% in a year.",
+      "role": "Product Manager, Claims Experience at Harbourline Insurance",
+      "skills": [
+        {
+          "label": "Launch management",
+          "keywords": [
+            "go-live",
+            "launch",
+            "rollout",
+            "hypercare"
+          ]
+        },
+        {
+          "label": "Vendor management",
+          "keywords": [
+            "vendor",
+            "third-party",
+            "integration"
+          ]
+        }
+      ],
+      "keywords": [
+        "go-live",
+        "hypercare",
+        "launch",
+        "rollout",
+        "insurance",
+        "claims",
+        "vendor management",
+        "cross-functional",
+        "operations",
+        "delivery",
+        "implementation"
+      ],
+      "metric": "9% to 46% digital claims",
+      "followUps": [],
+      "source": "manual"
+    },
+    {
+      "title": "Trial-to-paid conversion from 11% to 17%",
+      "text": "At Ledgerly I owned activation for an SMB bookkeeping app, built the event taxonomy and funnels in Amplitude, and ran onboarding and pricing experiments. Trial conversion rose from 11% to 17%.",
+      "role": "Product Manager, Growth at Ledgerly",
+      "skills": [
+        {
+          "label": "Product analytics",
+          "keywords": [
+            "Amplitude",
+            "SQL",
+            "analytics",
+            "dashboards"
+          ]
+        },
+        {
+          "label": "Product-led growth",
+          "keywords": [
+            "PLG",
+            "self-serve",
+            "trial",
+            "activation"
+          ]
+        }
+      ],
+      "keywords": [
+        "product-led growth",
+        "PLG",
+        "activation",
+        "trial conversion",
+        "SaaS",
+        "B2B",
+        "SMB",
+        "Amplitude",
+        "SQL",
+        "analytics",
+        "pricing",
+        "growth"
+      ],
+      "metric": "11% to 17% trial conversion",
+      "followUps": [],
+      "source": "manual"
+    },
+    {
+      "title": "Privacy Impact Assessment and Legal partnership",
+      "text": "Led the Privacy Impact Assessment for digital ID and e-signature, partnering with Legal, Privacy and Risk to unblock a Quebec launch that had been stalled for a year. Approved in 8 weeks.",
+      "role": "Senior Product Manager, Digital Onboarding at Maplewave Financial",
+      "skills": [
+        {
+          "label": "Risk and compliance partnership",
+          "keywords": [
+            "legal",
+            "privacy",
+            "compliance",
+            "risk",
+            "PIA"
+          ]
+        }
+      ],
+      "keywords": [
+        "privacy impact assessment",
+        "PIA",
+        "privacy",
+        "compliance",
+        "legal",
+        "risk",
+        "regulated",
+        "governance",
+        "security review"
+      ],
+      "metric": "Approved in 8 weeks",
+      "followUps": [],
+      "source": "manual"
+    },
+    {
+      "title": "Daily AI workflow and a shipped side project",
+      "text": "I use Claude and ChatGPT daily for research synthesis, PRD drafts and SQL. I built and run a renter's toolkit web app with Claude and Supabase that has about 600 monthly users.",
+      "role": null,
+      "skills": [
+        {
+          "label": "AI tools",
+          "keywords": [
+            "AI",
+            "LLM",
+            "Claude",
+            "ChatGPT",
+            "generative AI"
+          ]
+        }
+      ],
+      "keywords": [
+        "AI",
+        "AI tools",
+        "LLM",
+        "generative AI",
+        "Claude",
+        "ChatGPT",
+        "prototyping",
+        "automation",
+        "side project"
+      ],
+      "metric": "600 monthly users",
+      "followUps": [],
+      "source": "manual"
+    }
+  ],
+  "skillMap": [
+    {
+      "label": "Cross-functional leadership",
+      "keywords": [
+        "cross-functional",
+        "partner with",
+        "work with",
+        "work closely with"
+      ]
+    },
+    {
+      "label": "Regulated financial services",
+      "keywords": [
+        "insurance",
+        "banking",
+        "bank",
+        "compliance",
+        "regulated",
+        "KYC",
+        "KYB",
+        "claims",
+        "lending",
+        "payments",
+        "credit"
+      ]
+    },
+    {
+      "label": "Data-driven decisions",
+      "keywords": [
+        "data",
+        "analytics",
+        "SQL",
+        "metrics",
+        "KPI",
+        "KPIs",
+        "dashboards",
+        "measure"
+      ]
+    },
+    {
+      "label": "Onboarding & conversion",
+      "keywords": [
+        "onboarding",
+        "activation",
+        "conversion",
+        "completion",
+        "funnel",
+        "signup",
+        "sign-up",
+        "first-time"
+      ]
+    },
+    {
+      "label": "Team leadership",
+      "keywords": [
+        "lead",
+        "team",
+        "teams",
+        "hire",
+        "coach",
+        "mentor",
+        "manage",
+        "managers",
+        "direct reports"
+      ]
+    },
+    {
+      "label": "Product strategy & roadmap",
+      "keywords": [
+        "roadmap",
+        "strategy",
+        "vision",
+        "prioritize",
+        "prioritized"
+      ]
+    },
+    {
+      "label": "Experimentation",
+      "keywords": [
+        "experiment",
+        "experiments",
+        "experimentation",
+        "A/B",
+        "test"
+      ]
+    },
+    {
+      "label": "Launch & go-live",
+      "keywords": [
+        "launch",
+        "launches",
+        "go-live",
+        "hypercare",
+        "rollout",
+        "pilot"
+      ]
+    },
+    {
+      "label": "Change management",
+      "keywords": [
+        "change management",
+        "training",
+        "enablement",
+        "adoption"
+      ]
+    },
+    {
+      "label": "AI & automation",
+      "keywords": [
+        "AI",
+        "automation",
+        "LLM"
+      ]
+    },
+    {
+      "label": "Pricing & packaging",
+      "keywords": [
+        "pricing",
+        "packaging",
+        "monetization"
+      ]
+    },
+    {
+      "label": "Vendor management",
+      "keywords": [
+        "vendor",
+        "vendors"
+      ]
+    },
+    {
+      "label": "Business cases",
+      "keywords": [
+        "business case",
+        "business cases",
+        "investment"
+      ]
+    },
+    {
+      "label": "Agile delivery",
+      "keywords": [
+        "agile",
+        "scrum",
+        "sprint",
+        "backlog",
+        "user stories",
+        "release",
+        "Jira"
+      ]
+    },
+    {
+      "label": "Communication",
+      "keywords": [
+        "communication",
+        "communicate",
+        "communicating",
+        "written",
+        "writing",
+        "documentation",
+        "memo",
+        "clear"
+      ]
+    },
+    {
+      "label": "Technical fluency",
+      "keywords": [
+        "technical",
+        "API",
+        "APIs",
+        "specs",
+        "architecture",
+        "engineering"
+      ]
+    }
+  ]
+}

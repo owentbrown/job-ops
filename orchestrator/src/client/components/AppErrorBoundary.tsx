@@ -347,6 +347,32 @@ export function isThirdPartyScriptError(event: ErrorEvent): boolean {
   }
 }
 
+/** Globals iPhone browsers inject into every page (Brave and Firefox, Chrome). */
+const INJECTED_BROWSER_GLOBALS = ["__firefox__", "__gCrWeb"];
+
+/**
+ * True for an error from a script the browser itself put into the page, such
+ * as Brave on iPhone's playlist script. Those run as inline code, so their
+ * filename is the page address rather than one of Offerloop's script files,
+ * and the same-site check above can't tell them apart.
+ */
+export function isBrowserInjectedScriptError(event: ErrorEvent): boolean {
+  const message = String(event.message ?? event.error?.message ?? "");
+  if (INJECTED_BROWSER_GLOBALS.some((name) => message.includes(name))) {
+    return true;
+  }
+  if (!event.filename || typeof window === "undefined") return false;
+  try {
+    const source = new URL(event.filename);
+    return (
+      source.origin === window.location.origin &&
+      source.pathname === window.location.pathname
+    );
+  } catch {
+    return false;
+  }
+}
+
 const NETWORK_FAILURE_MESSAGES = [
   "load failed", // Safari, and every iPhone browser
   "failed to fetch", // Chrome
@@ -383,7 +409,11 @@ export function AppErrorBoundary({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const handleError = (event: ErrorEvent) => {
-      if (isOpaqueCrossOriginError(event) || isThirdPartyScriptError(event)) {
+      if (
+        isOpaqueCrossOriginError(event) ||
+        isThirdPartyScriptError(event) ||
+        isBrowserInjectedScriptError(event)
+      ) {
         // Non-actionable third-party/extension noise — don't crash the app.
         return;
       }

@@ -37,3 +37,8 @@ orchestrator/storage
 .claude/launch.json
 Overview-V2/
 signature.png
+
+# Demo build output (login, ids)
+demo/.build/
+# Fictional demo persona and jobs (not real data)
+!demo/data/

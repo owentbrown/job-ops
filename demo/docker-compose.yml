@@ -1,0 +1,38 @@
+# Demo copy of the app with a fictional persona (Jordan Lee).
+# Fully separate from the real app: own container, own port, own database.
+#
+#   Start:  docker compose -f demo/docker-compose.yml up -d
+#   Stop:   docker compose -f demo/docker-compose.yml stop
+#   Open:   http://localhost:3006   (login details in demo/.build/credentials.txt)
+#
+# No search schedule, no email sync and no phone alerts are configured here,
+# so it never runs on its own. AI features work and use your own API key.
+name: job-ops-demo
+
+services:
+  job-ops-demo:
+    image: job-ops:local
+    pull_policy: never
+    container_name: job-ops-demo
+    ports:
+      - "3006:3001"
+    volumes:
+      - demo-data:/app/data
+      - tectonic-cache:/root/.cache/Tectonic
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - JWT_EXPIRY_SECONDS=2592000
+      - PYTHON_PATH=/usr/bin/python3
+      - CODEX_HOME=/app/codex-home
+      - DATA_DIR=/app/data
+      - DATABASE_PATH=/app/data/jobs.db
+      - PREFILTER_CONFIG_PATH=/app/data/prefilter.json
+    restart: "no"
+
+volumes:
+  demo-data:
+    name: job-ops-demo-data
+  tectonic-cache:
+    name: job-ops_tectonic-cache
+    external: true

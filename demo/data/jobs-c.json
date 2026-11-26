@@ -1,0 +1,92 @@
+[
+  {
+    "key": "maplestone", "title": "Senior Product Manager, Mobile Banking", "employer": "Maplestone Bank",
+    "location": "Toronto, ON (Hybrid)", "workFromHomeType": "hybrid", "isRemote": false,
+    "salary": "CAD 140,000-160,000 / yearly", "salaryMin": 140000, "salaryMax": 160000,
+    "source": "linkedin", "jobLevel": "mid-senior level", "companyIndustry": "Banking",
+    "discoveredDaysAgo": 40, "plan": "history",
+    "track": [["applied", 39], ["screening", 34, "Recruiter screen", null, "interview_log"], ["closed", 29, "Rejected", "Looking for someone with more mobile app store release experience.", null, "rejected"]],
+    "description": "**Maplestone Bank** is hiring a Senior Product Manager for its mobile banking app (1.4M active users).\n\n**You'll**\n* Own the mobile roadmap: payments, transfers, alerts\n* Lead two squads across iOS and Android\n* Grow monthly active usage and app store rating\n\n**You have**\n* 6+ years of product management, 3+ on consumer mobile apps\n* Banking or fintech experience\n\n$140,000 to $160,000, bonus, hybrid 2 days a week."
+  },
+  {
+    "key": "brookfieldhealth", "title": "Product Manager, Member Experience", "employer": "Brookside Benefits",
+    "location": "Remote (Canada)", "workFromHomeType": "remote", "isRemote": true,
+    "salary": "CAD 120,000-140,000 / yearly", "salaryMin": 120000, "salaryMax": 140000,
+    "source": "indeed", "jobLevel": "mid-senior level", "companyIndustry": "Insurance",
+    "discoveredDaysAgo": 37, "plan": "history",
+    "track": [["applied", 36], ["closed", 22, "Rejected", "Automated rejection email.", null, "rejected"]],
+    "description": "**Brookside Benefits** provides group benefits to 900 employers.\n\n**The role**\n* Own the member app and claims submission experience\n* Partner with Claims and IT to raise digital adoption\n* Run research with plan members\n\n**Requirements**\n* 4+ years of product management, benefits or insurance preferred\n\n$120,000 to $140,000, fully remote in Canada."
+  },
+  {
+    "key": "vervepay", "title": "Product Manager, Card Onboarding", "employer": "VervePay",
+    "location": "Toronto, ON (Hybrid)", "workFromHomeType": "hybrid", "isRemote": false,
+    "salary": "CAD 130,000-150,000 / yearly", "salaryMin": 130000, "salaryMax": 150000,
+    "source": "hiringcafe", "jobLevel": "mid-senior level", "companyIndustry": "Financial Services",
+    "discoveredDaysAgo": 35, "plan": "history",
+    "track": [["applied", 34], ["screening", 28, "Recruiter screen", "Good chat; team is 5 PMs.", "interview_log"], ["interview", 23, "Hiring manager interview", null, "interview_log"], ["closed", 18, "Rejected", "Made it to final two; they chose someone with credit card issuing experience.", null, "rejected"]],
+    "description": "**VervePay** issues prepaid and credit cards for 300,000 Canadians.\n\n**The role**\n* Own card application and activation, from apply to first purchase\n* Work with Credit Risk and Compliance on KYC and decisioning\n* Improve approval-to-activation conversion\n\n**You have**\n* 5+ years in product, fintech or card issuing\n* Experience with KYC and regulated onboarding\n\n$130,000 to $150,000, equity, hybrid 2 days a week."
+  },
+  {
+    "key": "orchardsaas", "title": "Senior Product Manager, Self-Serve", "employer": "Orchard CRM",
+    "location": "Remote (Canada)", "workFromHomeType": "remote", "isRemote": true,
+    "salary": "CAD 145,000-165,000 / yearly", "salaryMin": 145000, "salaryMax": 165000,
+    "source": "linkedin", "jobLevel": "mid-senior level", "companyIndustry": "Software Development",
+    "discoveredDaysAgo": 33, "plan": "history",
+    "track": [["applied", 32], ["closed", 12, "No response", "Nothing after 3 weeks.", null, "no_response"]],
+    "description": "**Orchard CRM** serves 20,000 small businesses.\n\n**The role**\n* Own self-serve signup, trial and upgrade\n* Run pricing and onboarding experiments\n* Partner with Marketing on product-led growth\n\n**You have**\n* 6+ years in B2B SaaS product management\n* PLG and experimentation experience\n\n$145,000 to $165,000, fully remote in Canada."
+  },
+  {
+    "key": "atlasins", "title": "Product Owner, Digital Quote and Bind", "employer": "Atlas Shield Insurance",
+    "location": "Toronto, ON (Hybrid)", "workFromHomeType": "hybrid", "isRemote": false,
+    "salary": "CAD 115,000-130,000 / yearly", "salaryMin": 115000, "salaryMax": 130000,
+    "source": "indeed", "jobLevel": "mid-senior level", "companyIndustry": "Insurance",
+    "discoveredDaysAgo": 31, "plan": "history",
+    "track": [["applied", 30], ["screening", 25, "Recruiter screen", null, "interview_log"], ["closed", 20, "Rejected", "Role re-scoped to a more junior level.", null, "rejected"]],
+    "description": "**Atlas Shield Insurance** is building online quote and bind for auto insurance.\n\n**The role**\n* Own the quote-and-bind backlog for one agile team\n* Improve quote-to-bind conversion\n* Work with Underwriting and IT\n\n**Requirements**\n* 4+ years as Product Owner or PM, insurance preferred\n\n$115,000 to $130,000, hybrid 2 days a week."
+  },
+  {
+    "key": "nordicapp", "title": "Growth Product Manager", "employer": "Nordic Habit",
+    "location": "Remote (Canada)", "workFromHomeType": "remote", "isRemote": true,
+    "salary": "CAD 125,000-140,000 / yearly", "salaryMin": 125000, "salaryMax": 140000,
+    "source": "startupjobs", "jobLevel": "mid-senior level", "companyIndustry": "Wellness and Fitness Services",
+    "discoveredDaysAgo": 29, "plan": "history",
+    "track": [["applied", 28], ["closed", 9, "No response", null, null, "ghosted"]],
+    "description": "**Nordic Habit** makes a habit-tracking and wellness subscription app.\n\n**The role**\n* Own activation, trial conversion and retention\n* Run experiments on onboarding and paywalls\n\n**You have**\n* 3+ years in growth product roles for consumer subscription apps\n\n$125,000 to $140,000, fully remote."
+  },
+  {
+    "key": "keystonelend", "title": "Senior Product Manager, Mortgage Origination", "employer": "Keystone Lending",
+    "location": "Toronto, ON (Hybrid)", "workFromHomeType": "hybrid", "isRemote": false,
+    "salary": "CAD 145,000-165,000 / yearly", "salaryMin": 145000, "salaryMax": 165000,
+    "source": "linkedin", "jobLevel": "mid-senior level", "companyIndustry": "Financial Services",
+    "discoveredDaysAgo": 27, "plan": "history",
+    "track": [["applied", 26], ["closed", 17, "Rejected", null, null, "rejected"]],
+    "description": "**Keystone Lending** is a digital mortgage lender.\n\n**The role**\n* Own the online mortgage application and document collection\n* Work with Underwriting and Compliance\n* Cut time from application to approval\n\n**You have**\n* 6+ years of product management, lending experience required\n\n$145,000 to $165,000, bonus, hybrid 3 days a week."
+  },
+  {
+    "key": "civicworks", "title": "Product Manager, Digital Services", "employer": "CivicWorks Digital",
+    "location": "Remote (Canada)", "workFromHomeType": "remote", "isRemote": true,
+    "salary": "CAD 110,000-125,000 / yearly", "salaryMin": 110000, "salaryMax": 125000,
+    "source": "workingnomads", "jobLevel": "mid-senior level", "companyIndustry": "Government Administration",
+    "discoveredDaysAgo": 25, "plan": "history",
+    "track": [["applied", 24], ["closed", 6, "No response", null, null, "no_response"]],
+    "description": "**CivicWorks Digital** builds online services for municipalities.\n\n**The role**\n* Own permit and licence application services\n* Run user research with residents and staff\n* Improve online completion rates\n\n**You have**\n* 4+ years of product management for public-facing digital services\n\n$110,000 to $125,000, fully remote in Canada."
+  },
+  {
+    "key": "haloinsure", "title": "Senior Product Manager, Claims Automation", "employer": "Halo Assurance",
+    "location": "Remote (Canada)", "workFromHomeType": "remote", "isRemote": true,
+    "salary": "CAD 150,000-170,000 / yearly", "salaryMin": 150000, "salaryMax": 170000,
+    "source": "linkedin", "jobLevel": "mid-senior level", "companyIndustry": "Insurance",
+    "discoveredDaysAgo": 23, "plan": "history",
+    "track": [["applied", 22], ["screening", 17, "Recruiter screen", "Strong interest; role paused for budget.", "interview_log"], ["closed", 13, "Role paused", "Hiring freeze until Q2. Recruiter will reach out.", null, "rejected"]],
+    "description": "**Halo Assurance** is an insurtech automating property claims with AI.\n\n**The role**\n* Own straight-through claims processing and AI triage\n* Partner with Claims Ops, Data Science and vendors\n* Own launches and hypercare\n\n**You have**\n* 6+ years of product management, insurance claims experience\n* Interest in AI and automation\n\n$150,000 to $170,000, equity, fully remote in Canada."
+  },
+  {
+    "key": "pathwayed", "title": "Product Manager, Learner Onboarding", "employer": "Pathway Learning",
+    "location": "Toronto, ON (Hybrid)", "workFromHomeType": "hybrid", "isRemote": false,
+    "salary": "CAD 115,000-130,000 / yearly", "salaryMin": 115000, "salaryMax": 130000,
+    "source": "indeed", "jobLevel": "mid-senior level", "companyIndustry": "E-Learning Providers",
+    "discoveredDaysAgo": 21, "plan": "history",
+    "track": [["applied", 20], ["closed", 11, "Rejected", null, null, "rejected"]],
+    "description": "**Pathway Learning** runs online professional certificate programs.\n\n**The role**\n* Own learner signup, enrolment and first-week engagement\n* Run onboarding experiments\n\n**You have**\n* 4+ years of product management in consumer or edtech\n\n$115,000 to $130,000, hybrid 2 days a week."
+  }
+]
